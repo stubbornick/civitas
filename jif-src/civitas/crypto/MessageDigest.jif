@@ -1,0 +1,23 @@
+/*
+ * This file is part of the Civitas software distribution.
+ * Copyright (c) 2007-2008, Civitas project group, Cornell University.
+ * See the LICENSE file accompanying this distribution for further license
+ * and copyright information.
+ */ 
+package civitas.crypto;
+
+public interface MessageDigest[label L] {
+    void update{L}(byte{L}[]{L} bs);
+    void update{L}(byte{L}const[]{L} bs, boolean constBytes);
+    void update{L}(byte{L} b);
+    void update{L}(int{L} i);
+    void update{L}(long{L} l);
+    void update{L}(String{L} s);
+    void update{L}(char{L}[]{L} cbuf, int off, int len);
+    
+    // Get the digest. Note that we assume the digest
+    // does not reveal any information about data used
+    // to update it, i.e. it is a byte{this}const[],
+    // not a byte{L}const[].
+    byte{this}const[]{this} digest{L}();
+}

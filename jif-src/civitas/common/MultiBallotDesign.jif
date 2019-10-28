@@ -1,0 +1,283 @@
+/*
+ * This file is part of the Civitas software distribution.
+ * Copyright (c) 2007-2008, Civitas project group, Cornell University.
+ * See the LICENSE file accompanying this distribution for further license
+ * and copyright information.
+ */ 
+package civitas.common;
+
+import civitas.crypto.*;
+import jif.util.*;
+import java.io.*;
+
+/**
+ * This class is the ballot design of a multi-race. A multi-race consists of a sequence
+ * of races. A MultiBallotDesign is the ballot designs for these races.
+ */
+public class MultiBallotDesign extends BallotDesign {
+    public static final String{*<-*} KIND = "multi";
+
+    public final BallotDesign{this} const[]{this} designs;
+    public MultiBallotDesign(label lbl, BallotDesign{*lbl}[]{*lbl} designs) where {*lbl} <= {this} {
+        BallotDesign{this} const[]{this} ds = null;
+        if (designs != null) {
+            ds = designs.clone();
+        }
+        this.designs = ds;
+        super();
+    }
+        
+    public void checkBallot{*lbl}(label{*lbl} lbl, Ballot[lbl]{*lbl} b) throws (IllegalArgumentException{*lbl}) {
+        if (!(b instanceof MultiBallot[lbl])) {
+            throw new IllegalArgumentException("Ballot is not a multi-ballot.");
+        }
+        
+        MultiBallot[lbl] mb = (MultiBallot[lbl])b;
+        Ballot[lbl]{*lbl}[] ballots = mb.ballots;
+        
+        if (designs == null || ballots == null) {
+            throw new IllegalArgumentException("Missing the ballots.");
+        }
+        
+        if (designs.length != ballots.length) {
+            throw new IllegalArgumentException("Incorrect number of ballots");            
+        }
+        
+        for (int i = 0; i < designs.length; i++) {
+            try {
+                BallotDesign bdsub = designs[i];
+                Ballot[lbl] bsub = ballots[i];
+                if (bdsub == null) throw new IllegalArgumentException("Null ballot");
+                bdsub.checkBallot(lbl, bsub);
+            }
+            catch (ArrayIndexOutOfBoundsException imposs) { }
+        }
+    }
+
+    public int{this} votesProducedPerBallot() {
+        // the sum of the votes produced by each sub-design
+        int sum = 0;
+        
+        if (designs != null) {
+            for (int i = 0; i < designs.length; i++) {
+                try {
+                    BallotDesign bdsub = designs[i];
+                    sum += bdsub==null?0:bdsub.votesProducedPerBallot();
+                }
+                catch (ArrayIndexOutOfBoundsException imposs) { }
+            }
+        }
+        return sum;
+    }
+    
+    public int{this} maxPossibleChoices() {
+        // the max of maxPossibleChoices produced by each sub-design
+        int max = 0;
+        
+        if (designs != null) {
+            for (int i = 0; i < designs.length; i++) {
+                try {
+                    BallotDesign bdsub = designs[i];
+                    int n = bdsub==null?0:bdsub.maxPossibleChoices();
+                    if (n > max) max = n;
+                }
+                catch (ArrayIndexOutOfBoundsException imposs) { }
+            }
+        }
+        return max;
+    }
+
+    public VoterSubmission{*lbl} decompose{*lbl}(label{*lbl} lbl, Ballot[lbl]{*lbl} ballot, int{*lbl} voterBlock, 
+            ElGamalPublicKey{*lbl} key, 
+            ElGamalCiphertext{*lbl}const[]{*lbl} ciphertexts,
+            String{*lbl} context, 
+            Map[lbl,lbl]{*lbl} capabilities) throws (IllegalArgumentException{*lbl}) 
+            {
+        int size = votesProducedPerBallot();
+        VerifiableVote{*lbl}[] votes = new VerifiableVote[size<0 ? 0 : size];
+        // go through each ballot in turn and decompose
+        try {
+            MultiBallot[lbl] mb = null;
+            if (ballot instanceof MultiBallot[lbl]) {
+                mb = (MultiBallot[lbl])ballot;
+            }
+            else {
+                throw new IllegalArgumentException("incorrect ballot");
+            }
+            int votesCount = 0;
+            for (int i = 0; i < mb.ballots.length; i++) {
+                Ballot[lbl] subBallot = mb.ballots[i];
+                VoterSubmission subVS = designs[i].decompose(lbl, subBallot, voterBlock, key, ciphertexts, context+i+":", capabilities);
+                
+                if (subVS.votes != null) {
+                    for (int j = 0; j < subVS.votes.length; j++) {
+                        votes[votesCount] = subVS.votes[j]; 
+                        votesCount++;
+                    }
+                }
+            }
+        }
+        catch (NullPointerException imposs) { }
+        catch (ArrayIndexOutOfBoundsException imposs) { 
+            throw new IllegalArgumentException("incorrect ballot");
+        }
+        VoterSubmission vs = new VoterSubmission(lbl, voterBlock, votes);
+        return vs;
+    }
+
+
+    /**
+     * To check a multi-ballot voter submission, we check that each sub-ballot 
+     * design is in turn correct.
+     */
+    public void checkVoterSubmission(VoterSubmission vs, int startIndex, String context, CiphertextList ciphertexts, ElGamalPublicKey pubKey) 
+    throws (IllegalArgumentException{this;vs;startIndex;context;ciphertexts;pubKey}) {
+        int start = startIndex;
+        if (designs == null) {
+            // no designs, so we swallow zero votes, and are thus correct...
+            return;
+        }
+        
+        for (int i = 0; i < designs.length; i++) {
+            try {
+                BallotDesign bdsub = designs[i];
+                if (bdsub == null) throw new IllegalArgumentException("Null design");
+                bdsub.checkVoterSubmission(vs, start, context + i + ":", ciphertexts, pubKey);
+                start += bdsub.votesProducedPerBallot();
+            }
+            catch (ArrayIndexOutOfBoundsException imposs) { }
+        }
+    }
+    
+    public void contextsNeeded{*lbl}(label{*lbl} lbl, List[lbl]{*lbl} l, String{*lbl} context) throws (IllegalArgumentException{*lbl}) {
+        if (designs == null) {
+            // no designs, so no contexts needed
+            return;
+        }
+        
+        for (int i = 0; i < designs.length; i++) {
+            try {
+                BallotDesign bdsub = designs[i];
+                if (bdsub == null) throw new IllegalArgumentException("Null design");
+                bdsub.contextsNeeded(lbl, l, context + i + ":");
+            }
+            catch (ArrayIndexOutOfBoundsException imposs) { }
+        }        
+    }
+
+    public String nthContext(int n) {        
+        if (designs == null) {
+            return null;
+        }
+        int s = 0;
+        int t = 0;
+        for (int i = 0; i < designs.length; i++) {
+            try {
+                BallotDesign bdsub = designs[i];
+                if (bdsub == null) return null;
+                s = t;
+                t += bdsub.votesProducedPerBallot();
+                if (n >= s && n < t) {
+                    return i + ":" + bdsub.nthContext(n-s); 
+                }
+            }
+            catch (ArrayIndexOutOfBoundsException imposs) { }
+        }
+        return null;
+    }
+
+
+    public void tally{*lbl}(label{*lbl} lbl, String{*lbl} ctxt, ElGamalMsg{*lbl} m, String{*lbl} c, TallyState[lbl]{*lbl} s, ElGamalParameters{*lbl} params) throws (IllegalArgumentException{*lbl}) {
+        if (!(s instanceof MultiTallyState[lbl])) {
+            throw new IllegalArgumentException("Incorrect tally state");
+        }
+        MultiTallyState[lbl] mts = (MultiTallyState[lbl])s;
+        
+        if (designs == null) {
+            throw new IllegalArgumentException("No designs in this multi-ballot design");
+        }
+        
+        boolean done = false;
+        for (int i = 0; i < designs.length; i++) {
+            try {
+                BallotDesign bdsub = designs[i];
+                if (bdsub == null) throw new IllegalArgumentException("Null design");
+                if (c != null && c.startsWith(ctxt + i + ":")) {
+                    bdsub.tally(lbl, ctxt + i + ":", m, c, mts.get(i), params);
+                    done = true;
+                    break;
+                }
+            }
+            catch (ArrayIndexOutOfBoundsException imposs) { }
+        }
+        if (!done) {
+            throw new IllegalArgumentException("Invalid context for vote: " + c);
+        }
+        
+    }
+    
+    public TallyState[lbl]{*lbl2} newTallyState{*lbl2}(label{*lbl2} lbl, label{*lbl2} lbl2) where lbl2 <= lbl {
+        if (designs == null) return null;
+        
+        TallyState[lbl]{*lbl}[] states = new TallyState[lbl][designs.length];
+        
+        for (int i = 0; i < designs.length; i++) {
+            try {
+                BallotDesign bdsub = designs[i];
+                if (bdsub != null) {
+                    states[i] = bdsub.newTallyState(lbl, lbl);
+                }
+            }
+            catch (ArrayIndexOutOfBoundsException imposs) { }
+        }
+        return new MultiTallyState[lbl](states);
+    }
+
+
+    public void toXML{*lbl}(label lbl, PrintWriter[lbl]{*lbl} sb) where {this} <= lbl  {
+        if (sb == null) return;
+        sb.print("<" + OPENING_TAG + ">");
+        sb.print("<kind>");
+        sb.print(MultiBallotDesign.KIND);
+        sb.print("</kind>");
+        if (this.designs != null) {
+            sb.print("<size>");
+            sb.print(this.designs.length);
+            sb.print("</size>");
+        }
+        else {
+            sb.print("<size>0</size>");            
+        }
+        sb.print("<designs>");
+        try {
+            for (int i = 0; i < designs.length; i++) {
+                designs[i].toXML(lbl, sb);
+            }        
+        }
+        catch (NullPointerException imposs) { }
+        catch (ArrayIndexOutOfBoundsException imposs) { }
+        sb.print("</designs>");
+        sb.print("</" + OPENING_TAG + ">");
+    }
+    
+    public static BallotDesign{*lbl} fromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r)  throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {        
+        int size = Util.readSimpleIntTag(lbl, r, "size");
+        Util.swallowTag(lbl, r, "designs");
+
+        BallotDesign{*lbl}[] n = new BallotDesign[size<0?0:size];
+
+        for (int i = 0; i < size; i++) {
+            try {
+                n[i] = BallotDesign.fromXML(lbl, r);
+            }
+            catch (ArrayIndexOutOfBoundsException e) { 
+                throw new IOException("Too many ballot designs");
+            }
+        }
+
+        MultiBallotDesign b = new MultiBallotDesign(lbl, n);
+        
+        Util.swallowEndTag(lbl, r, "designs");
+        return b;
+    }
+}

@@ -1,0 +1,111 @@
+/*
+ * This file is part of the Civitas software distribution.
+ * Copyright (c) 2007-2008, Civitas project group, Cornell University.
+ * See the LICENSE file accompanying this distribution for further license
+ * and copyright information.
+ */ 
+package civitas.common;
+
+import civitas.crypto.*;
+import java.io.*;
+
+/**
+ * Associates a collection of encrypted capability shares and a voter
+ * block with a voter name. Each registration teller posts one of 
+ * these for each voter.
+ */
+public class VoterEncCapabilityShares implements XMLSerializable {
+    public static final String{*<-*} OPENING_TAG = "voterEncCapabilityShares";
+    /**
+     * Which registration teller did these capabilities come from.
+     */
+    public final int{this} regTellerIndex;
+    
+    /**
+     * The voter's name
+     */
+    public final String{this} name;
+    
+    /**
+     * for the purposes of blocking, voters are divided into blocks, according
+     * to the security parameters of the election details.
+     */
+    public final int{this} voterBlock; 
+    
+    //  the order of these capabilities is important: the ith capability must
+    // be used for the ith context, i.e., the ith produced vote.
+    public final ElGamalSignedCiphertext{}[]{this} encCapabilityShares;  
+
+    public VoterEncCapabilityShares(int{this} regTellerIndex, String{this} name, int{this} voterBlock, ElGamalSignedCiphertext{}[]{this} encCapabilityShares) {
+        this.regTellerIndex = regTellerIndex;
+        this.name = name;
+        this.voterBlock = voterBlock;
+        this.encCapabilityShares = encCapabilityShares;
+    }
+            
+    public void toXML{}(PrintWriter[{}]{} sb) {
+        if (sb == null) return;
+        final label lbl = new label {};
+        sb.print("<" + OPENING_TAG + ">");
+
+        sb.print("<regTellerIndex>");
+        sb.print(this.regTellerIndex);
+        sb.print("</regTellerIndex>");
+        sb.print("<name>");
+        Util.escapeString(this.name, lbl, sb);
+        sb.print("</name>");
+        sb.print("<voterBlock>");
+        sb.print(this.voterBlock);
+        sb.print("</voterBlock>");
+        sb.print("<encCapabilityShares>");
+        if (encCapabilityShares != null) {
+            sb.print("<size>");
+            sb.print(this.encCapabilityShares.length);
+            sb.print("</size>");
+            for (int i = 0; i < encCapabilityShares.length; i++) {
+                try {
+                    ElGamalSignedCiphertext vc = encCapabilityShares[i];
+                    if (vc != null) vc.toXML(lbl, sb);
+                }
+                catch (ArrayIndexOutOfBoundsException imposs) { }
+            }
+        }
+        else {
+            sb.print("<size>0</size>");
+            
+        }
+        sb.print("</encCapabilityShares>");
+        
+        sb.print("</" + OPENING_TAG + ">");
+    }
+    
+    public static VoterEncCapabilityShares fromXML{}(Reader[{}]{} r) throws (IllegalArgumentException{}, IOException{}) {
+        final label lbl = new label {};
+        Util.swallowTag(lbl, r, OPENING_TAG);
+        int regTellerIndex = Util.readSimpleIntTag(lbl, r, "regTellerIndex");
+        String name = Util.unescapeString(Util.readSimpleTag(lbl, r, "name"));
+
+        int voterBlock = Util.readSimpleIntTag(lbl, r, "voterBlock");
+
+        Util.swallowTag(lbl, r, "encCapabilityShares");
+        int size = Util.readSimpleIntTag(lbl, r, "size");
+        ElGamalSignedCiphertext{}[] caps = new ElGamalSignedCiphertext[size<0?0:size];
+        for (int i = 0; i < size; i++) {
+            ElGamalSignedCiphertext c = null;
+            try {
+                c = CryptoUtil.factory().elGamalSignedCiphertextFromXML(lbl, r);
+            }
+            catch (NullPointerException{} imposs) { }
+            try {
+                caps[i] = c;
+            }
+            catch (ArrayIndexOutOfBoundsException imposs) { }
+        }
+
+        Util.swallowEndTag(lbl, r, "encCapabilityShares");
+
+        
+        Util.swallowEndTag(lbl, r, OPENING_TAG);
+        return new VoterEncCapabilityShares(regTellerIndex, name, voterBlock, caps);
+    }    
+}

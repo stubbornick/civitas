@@ -1,0 +1,5 @@
+#!/bin/sh
+# Simple script to run the supervisor client
+
+bindir=`dirname "$0"`
+$bindir/civitasrun civitas.supervisor.cli.Main $@

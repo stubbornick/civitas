@@ -1,0 +1,372 @@
+<project name="civitas" default="all" basedir=".">
+	<description>Civitas build file</description>
+
+
+	<!-- ****************************************
+		Configuration properties.
+		****************************************  -->
+	<import file="config.xml" />
+
+	<!-- ****************************************
+		set global properties for this build
+		****************************************  -->
+
+    <!-- distribution directory -->
+    <property name="dist" location="${basedir}/dist" />
+
+
+	<!-- ****************************************
+		Clean up targets and other admin tasks
+		****************************************  -->
+	<target name="clean" description="clean up">
+		<!-- Delete the ${civitas.classes} directory tree -->
+		<delete dir="${civitas.classes}" quiet="true" />
+		<delete dir="sig-classes" quiet="true" />
+	</target>
+
+	<target name="clean-civitas-native" 
+                      description="clean up the generated Civitas native files">
+	        <delete includeemptydirs="true">
+	            <fileset dir="${basedir}/java-src">
+	                <include name="**/*.o" />
+	                <include name="**/*.h" />
+	            </fileset>
+	            <fileset dir="${civitas.lib}">
+	                <include name="*civitasbigint*" />
+	            </fileset>
+	        </delete>
+	</target>
+
+	<target name="clobber" depends="clean,clean-civitas-native"
+                  description="clean up the generated files">
+		<delete dir="${dist}" quiet="true" />
+	</target>
+
+	<target name="all" depends="civitas-test,civitas" />
+
+	<!-- initialize the build -->
+	<target name="init">
+		<!-- Create the time stamp -->
+		<tstamp />
+		<!-- Create the build directory structures used by compile -->
+		<mkdir dir="${civitas.classes}" />
+	</target>
+
+    <!-- generate the Civitas distribution -->
+    <target name="dist" description="generate the distribution">
+        <!-- Create the distribution directory -->
+        <mkdir dir="${dist}" />
+
+        <!-- Clobber everything so we're in a clean state -->
+        <antcall target="clobber" />
+
+        <!-- Copy src files over. -->
+        <copy todir="${dist}" includeEmptyDirs="no">
+            <fileset dir="${basedir}" defaultexcludes="yes">
+                <include name="java-src/**" />
+                <include name="jif-src/**" />
+                <include name="sig-src/**" />
+                <include name="test/**" />
+                <include name="bin/civitasrun" />
+                <include name="bin/jifec" />
+                <include name="bin/*client" />
+                <exclude name="java-src/civitas/crypto/symbolic/**" />
+
+                <include name="lib/*.jar" />
+
+            	<include name="README" />
+                <include name="LICENSE*" />
+                <include name="CHANGES" />
+                <include name="build.xml" />
+                <include name="config.xml" />
+                <include name="config.properties" />
+            	
+            	<include name="experiments/src/**/*.pl" />
+            	<include name="experiments/src/**/*.pm" />
+            	<include name="experiments/sample1.exp" />
+            	<include name="experiments/sample2.exp" />
+            	<include name="experiments/README" />
+            	<include name="experiments/keys/elGamal*KeyParams*.xml" />
+    	    </fileset>
+        </copy>
+
+        <!-- Create civitas.jar and copy all the jars over -->
+        <antcall target="jar" />
+        <copy todir="${dist}" includeEmptyDirs="no">
+            <fileset dir="${basedir}" defaultexcludes="yes">
+                <include name="lib/*.jar" />
+            </fileset>
+        </copy>        
+    	
+    	<!-- Call configure in the dist directory -->
+    	<ant antfile="${dist}/build.xml" inheritAll="false" target="configure"/>
+    </target>
+    
+    
+    <target name="jar" depends="civitas,civitas-test">
+        <jar jarfile="${civitas.lib}/civitas.jar" basedir="${civitas.classes}" includes="civitas/**" />
+    </target>
+    
+	<!-- ****************************************
+		Civitas targets
+		****************************************  -->
+
+	<target name="civitas" depends="civitas-jif,civitas-java"
+		description="Builds Civitas (synonym for compile)" />
+	<target name="compile" depends="civitas" description="Builds Civitas" />
+
+	<target name="civitas-java" depends="init,configure"
+		description="Build the Java source code for Civitas">
+		<mkdir dir="${basedir}/tempjavaclasses" />
+		<javac srcdir="${basedir}/java-src"
+			destdir="${basedir}/tempjavaclasses">
+			<classpath refid="civitas.classpath" />
+		</javac>
+		<move todir="${civitas.classes}" includeemptydirs="false">
+			<fileset dir="${basedir}/tempjavaclasses">
+				<include name="**/*.class" />
+			</fileset>
+		</move>
+		<delete dir="${basedir}/tempjavaclasses" />
+	</target>
+
+	<target name="civitas-test" depends="civitas"
+		description="Build the test Java source code for Civitas">
+		<javac srcdir="${basedir}/test" destdir="${civitas.classes}">
+			<classpath refid="civitas.classpath" />
+		</javac>
+	</target>
+
+	<target name="civitas-jif" depends="civitas-jif-sig"
+		description="Build the Jif source code for Civitas">
+		<apply executable="sh" parallel="true" failonerror="true"
+			dest="${basedir}" relative="true" skipemptyfilesets="true"
+			vmlauncher="false">
+			<arg value="${jifec}" />
+			<arg value="-j" />
+			<arg value="-Xmx100M" />
+			<arg value="-j" />
+			<arg value="-Xms100M" />
+			<arg value="-simpleoutput" />
+			<arg value="-explain" />
+			<arg value="-noserial" />
+			<arg value="-robust" />
+			<arg value="-d" />
+			<arg value="classes" />
+			<arg value="-sourcepath" />
+			<arg value="jif-src" />
+			<arg value="-addsigcp" />
+			<arg value="sig-classes" />
+			<arg value="-classpath" />
+			<arg value="sig-classes" />
+			<!-- add sig-classes to the runtime classpath because we build first the jif code then the java code -->
+			<arg value="-classpath" />
+			<arg pathref="civitas.classpath" />
+			<srcfile />
+			<fileset dir="${basedir}" includes="jif-src/**/*.jif" />
+			<mapper type="regexp" from="^jif-src(.*)\.jif"
+				to="classes\1\.class" />
+		</apply>
+	</target>
+
+	<!-- The Jif signatures for the standard Java classes -->
+	<target name="civitas-jif-sig" depends="init,configure"
+		description="Compile the Civitas Jif signature classes, i.e., the Jif files in sig-src">
+		<apply executable="sh" parallel="true" failonerror="true"
+			dest="${basedir}" relative="true" skipemptyfilesets="true"
+			vmlauncher="false">
+			<arg value="${jifec}" />
+			<arg value="-j" />
+			<arg value="-Xmx100M" />
+			<arg value="-j" />
+			<arg value="-Xms100M" />
+			<arg value="-explain" />
+			<arg value="-simpleoutput" />
+			<arg value="-robust" />
+			<arg value="-d" />
+			<arg value="sig-classes" />
+			<arg value="-sourcepath" />
+			<arg value="sig-src${path.separator}jif-src" />
+			<srcfile />
+			<fileset dir="${basedir}" includes="sig-src/**/*.jif" />
+			<mapper type="regexp" from="^sig-src(.*)\.jif"
+				to="sig-classes\1\.class" />
+		</apply>
+		<!-- clean up any files that got produced due to inclusion from jif-src -->
+		<delete quiet="true">
+			<fileset dir="${basedir}/sig-classes">
+				<not>
+					<present targetdir="sig-src">
+						<mapper type="regexp"
+							from="^(.*)(_JIF_IMPL)?\.(class|java)" to="\1\.jif" />
+					</present>
+				</not>
+			</fileset>
+		</delete>
+	</target>
+
+	<!-- ****************************************
+		Civitas native targets
+		****************************************  -->
+	<target name="civitas-native" description="compile the native code">
+		<!-- Compile the headers for civitas.util.CivitasBigInteger-->
+		<javah class="civitas.util.CivitasBigInteger"
+			destdir="${basedir}/java-src/civitas/util" force="yes">
+			<classpath>
+				<path refid="civitas.classpath" />
+			</classpath>
+		</javah>
+
+		<fail if="os.unsupported-os"
+			message="Cannot compile the native code. This is not a supported OS." />
+
+		<!-- Make sure we can find the appropriate OS specific native include directory -->
+		<condition property="civitas-native.java-include-dir"
+			value="${env.JAVA_HOME}/include/${env.OSTYPE}">
+			<and>
+				<not>
+					<isset property="civitas-native.java-include-dir" />
+				</not>
+				<isset property="env.OSTYPE" />
+				<available
+					file="${env.JAVA_HOME}/include/${env.OSTYPE}" />
+			</and>
+		</condition>
+		<condition property="civitas-native.java-include-dir"
+			value="${env.JAVA_HOME}/include/linux">
+			<and>
+				<not>
+					<isset property="civitas-native.java-include-dir" />
+				</not>
+				<available file="${env.JAVA_HOME}/include/linux" />
+			</and>
+		</condition>
+		<condition property="civitas-native.java-include-dir"
+			value="${env.JAVA_HOME}/include/solaris">
+			<and>
+				<not>
+					<isset property="civitas-native.java-include-dir" />
+				</not>
+				<available file="${env.JAVA_HOME}/include/solaris" />
+			</and>
+		</condition>
+		<condition property="civitas-native.java-include-dir"
+			value="${env.JAVA_HOME}/include/win32">
+			<and>
+				<not>
+					<isset property="civitas-native.java-include-dir" />
+				</not>
+				<available file="${env.JAVA_HOME}/include/win32" />
+			</and>
+		</condition>
+		<condition property="civitas-native.java-include-dir"
+			value="${env.JAVA_HOME}/include">
+			<and>
+				<not>
+					<isset property="civitas-native.java-include-dir" />
+				</not>
+				<available file="${env.JAVA_HOME}/include/jni.h" />
+			</and>
+		</condition>
+		<available file="${civitas-native.java-include-dir}"
+			property="civitas-native.java-include-dir.available" />
+		<fail unless="civitas-native.java-include-dir.available">
+			Cannot find the OS-specific directory in
+			${env.JAVA_HOME}/include to include. Please try setting the
+			property "civitas-native.java-include-dir" to be the absolute
+			path of this directory.
+		</fail>
+		<property name="civitas-native.java-include-dir.location"
+			location="${civitas-native.java-include-dir}" />
+
+		<antcall target="civitas-native-unix" />
+		<antcall target="civitas-native-windows" />
+	</target>
+
+	<!-- compile the jif runtime native code for unix -->
+	<target name="civitas-native-unix" if="os.isUnix">
+		<condition property="jif-native-unix.sharedflag"
+			value="-shared">
+			<os name="linux" />
+		</condition>
+		<condition property="jif-native-unix.sharedflag" value="-G">
+			<os name="solaris" />
+		</condition>
+		<condition property="jif-native-unix.sharedflag"
+			value="-dynamiclib">
+			<os name="Mac OS X" />
+		</condition>
+		<condition property="jif-native-unix.sharedflag"
+			value="-shared">
+			<not>
+				<isset property="jif-native-unix.sharedflag" />
+			</not>
+		</condition>
+
+		<condition property="jif-native-unix.library"
+			value="libcivitasbigint.jnilib">
+			<os name="Mac OS X" />
+		</condition>
+		<condition property="jif-native-unix.library"
+			value="libcivitasbigint.so">
+			<not>
+				<isset property="jif-native-unix.library" />
+			</not>
+		</condition>
+
+		<apply executable="gcc" failonerror="false" dest="${civitas.lib}"
+			skipemptyfilesets="true" vmlauncher="false">
+			<arg value="${jif-native-unix.sharedflag}" />
+			<arg value="-I." />
+			<arg value="-I" />
+			<arg path="${env.JAVA_HOME}/include" />
+			<arg value="-I" />
+			<arg path="${civitas-native.java-include-dir.location}" />
+			<srcfile />
+			<arg value="-lgmp" />
+			<arg value="-o" />
+			<targetfile />
+			<fileset dir="${basedir}/java-src"
+				includes="civitas/util/CivitasBigInteger.c" />
+			<mapper type="merge" to="${jif-native-unix.library}" />
+		</apply>
+	</target>
+
+	<!-- compile the jif runtime native code for windows -->
+	<target name="civitas-native-windows" if="os.isWindows">
+		<echo>Compiling windows runtime</echo>
+		<apply executable="gcc" failonerror="false"
+			dest="${basedir}/java-src" skipemptyfilesets="true" parallel="false"
+			vmlauncher="false">
+			<arg value="-mno-cygwin" />
+			<arg value="-c" />
+			<arg value="-I" />
+			<arg path="${env.JAVA_HOME}/include" />
+			<arg value="-I" />
+			<arg path="${civitas-native.java-include-dir.location}" />
+			<srcfile />
+			<arg value="-o" />
+			<targetfile />
+			<fileset dir="${basedir}/java-src"
+				includes="civitas/util/CivitasBigInteger.c" />
+			<mapper type="glob" from="*.c" to="*.o" />
+		</apply>
+
+		<apply executable="gcc" failonerror="false" dest="${civitas.lib}"
+			skipemptyfilesets="true" parallel="true" vmlauncher="false">
+			<arg value="-o" />
+			<targetfile />
+			<arg value="-mno-cygwin" />
+			<arg value="-shared" />
+			<arg value="-Wl,--export-all-symbols" />
+			<arg value="-Wl,--add-stdcall-alias" />
+			<srcfile />
+			<arg value="-lgmp" />
+			<fileset dir="${basedir}/java-src">
+				<include name="civitas/util/*.o" />
+			</fileset>
+			<mapper type="merge" to="civitasbigint.dll" />
+		</apply>
+	</target>
+
+</project>

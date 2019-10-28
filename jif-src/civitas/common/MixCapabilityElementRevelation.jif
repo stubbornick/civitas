@@ -1,0 +1,82 @@
+/*
+ * This file is part of the Civitas software distribution.
+ * Copyright (c) 2007-2008, Civitas project group, Cornell University.
+ * See the LICENSE file accompanying this distribution for further license
+ * and copyright information.
+ */ 
+package civitas.common;
+
+import civitas.crypto.*;
+import java.io.*;
+
+/**
+ * A revelation of a single element of a vote mix. 
+ */
+public class MixCapabilityElementRevelation extends MixElementRevelation {
+    public static final String{*<-*} OPENING_TAG = "capRev";
+    
+    public final ElGamalReencryptFactor{this} reencryptFactor;
+    
+    public MixCapabilityElementRevelation(int{this} mapping, byte{}const[]{this} nonce, ElGamalReencryptFactor{this} reencryptFactor) {
+        this.reencryptFactor = reencryptFactor;
+        super(mapping, nonce);
+    }
+    
+    boolean{} verify{}(ElGamalPublicKey{} key, int{} fromIndex, int{} toIndex, Mix{} fromMix, Mix{} toMix) {
+        if (!(fromMix instanceof CapabilityMix && toMix instanceof CapabilityMix)) {
+            return false;
+        }
+        CapabilityMix fromCMix = (CapabilityMix)fromMix;
+        CapabilityMix toCMix = (CapabilityMix)toMix;
+        
+        try {
+            ElGamalCiphertext fromCipher = fromCMix.capabilities[fromIndex];
+        
+            ElGamalCiphertext toCipher = toCMix.capabilities[toIndex];
+
+            // check that toCipher is a reencryption of fromCipher using reencryptFactor
+            ElGamalCiphertext recipher = CryptoUtil.factory().elGamalReencrypt(key, fromCipher, reencryptFactor);
+            return recipher.equals(toCipher);
+        }
+        catch (NullPointerException e) {
+            return false;
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
+            return false;
+        }
+    }
+
+    public void toXML{*lbl}(label lbl, PrintWriter[lbl]{*lbl} sb) where {this;_!:_;_:_} <= lbl {
+        if (sb == null) return;
+        sb.print("<");
+        sb.print(OPENING_TAG);
+        sb.print(">");
+        sb.print("<mapping>" + mapping + "</mapping>");
+        sb.print("<nonce>" + Util.constBytesToString(new label {}, nonce) + "</nonce>");
+        sb.print("<r>");
+        if (reencryptFactor != null)
+            reencryptFactor.toXML(lbl, sb);
+        sb.print("</r>");
+        sb.print("</");
+        sb.print(OPENING_TAG);
+        sb.print(">");        
+    }
+    public static MixCapabilityElementRevelation fromXMLsub{}(Reader[{}]{} r)  throws (IllegalArgumentException{}, IOException{}) {
+        final label lbl = new label {};
+        Util.swallowTag(lbl, r, OPENING_TAG);
+        int mapping = Util.readSimpleIntTag(lbl, r, "mapping");
+        byte{} const[] nonce = Util.stringToConstBytes(lbl, Util.readSimpleTag(lbl, r, "nonce"));
+
+        Util.swallowTag(lbl, r, "r");
+        ElGamalReencryptFactor reencryptFactor = null;
+        try {
+            reencryptFactor = CryptoUtil.factory().elGamalReencryptFactorFromXML(lbl, r);
+        }
+        catch (NullPointerException imposs) { }
+        Util.swallowEndTag(lbl, r, "r");
+
+        Util.swallowEndTag(lbl, r, OPENING_TAG);
+        
+        return new MixCapabilityElementRevelation(mapping, nonce, reencryptFactor);
+    }
+}

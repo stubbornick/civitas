@@ -1,0 +1,185 @@
+/*
+ * This file is part of the Civitas software distribution.
+ * Copyright (c) 2007-2008, Civitas project group, Cornell University.
+ * See the LICENSE file accompanying this distribution for further license
+ * and copyright information.
+ */ 
+package civitas.common;
+
+import java.io.*;
+
+/**
+ * A data structure to to combine a list of registration tellers,
+ * a list of tabulation tellers, and a list of voter ballot boxes.
+ */
+public class TellerDetails implements XMLSerializable {
+    public final Host{this} const[]{this} registrationTellers;
+    public final Host{this} const[]{this} tabulationTellers;
+    public final Host{this} const[]{this} voterBBs;
+    
+    public static final String{*<-*} META = "tellerDetails";
+    
+    public TellerDetails(label lbl,
+            Host{*lbl}[]{*lbl} registrationTellers,
+            Host{*lbl}[]{*lbl} tabulationTellers,
+            Host{*lbl}[]{*lbl} voterBBs) where {*lbl} <= {this} {
+        Host{this} const[]{this} rts = null;
+        if (registrationTellers != null) {
+            rts = registrationTellers.clone();
+        }
+        Host{this} const[]{this} tts = null;
+        if (tabulationTellers != null) {
+            tts = tabulationTellers.clone();
+        }
+        Host{this} const[]{this} bbs = null;
+        if (voterBBs != null) {
+            bbs = voterBBs.clone();
+        }
+
+        this.registrationTellers = rts;
+        this.tabulationTellers = tts;
+        this.voterBBs = bbs;
+    }
+        
+    public String{this} toString() {
+        String s = "";
+
+        s += "registrationTellers: ";
+        try {
+            for (int i = 0; i < registrationTellers.length; i++) {
+                if (i != 0) s += ", "; 
+                s += registrationTellers[i].toString();
+            }        
+        }
+        catch (NullPointerException imposs) { }
+        catch (ArrayIndexOutOfBoundsException imposs) { }
+        
+        s += "  tabulationTellers: ";
+        try {
+            for (int i = 0; i < tabulationTellers.length; i++) {
+                if (i != 0) s += ", "; 
+                s += tabulationTellers[i].toString();
+            }        
+        }
+        catch (NullPointerException imposs) { }
+        catch (ArrayIndexOutOfBoundsException imposs) { }
+
+        s += "  voter BBs: ";
+        try {
+            for (int i = 0; i < voterBBs.length; i++) {
+                if (i != 0) s += ", "; 
+                s += voterBBs[i].toString();
+            }        
+        }
+        catch (NullPointerException imposs) { }
+        catch (ArrayIndexOutOfBoundsException imposs) { }
+
+        return s;
+    }
+
+    public void toXML{}(PrintWriter[{}]{} sb) {
+        toXML(new label {}, sb);
+    }
+    public void toXML{*lbl}(label{*lbl} lbl, PrintWriter[lbl]{*lbl} sb) where {this} <= lbl  {        
+        if (sb == null) return;
+        sb.print("<tellerDetails>");
+
+        if (this.registrationTellers != null) {
+            sb.print("<numRegTellers>");
+            sb.print(this.registrationTellers.length);
+            sb.print("</numRegTellers>");
+        }
+        else {
+            sb.print("<numRegTellers>0</numRegTellers>");            
+        }
+        sb.print("<registrationTellers>");
+        try {
+            for (int i = 0; i < registrationTellers.length; i++) {
+                registrationTellers[i].toXML(lbl, sb);
+            }        
+        }
+        catch (NullPointerException imposs) { }
+        catch (ArrayIndexOutOfBoundsException imposs) { }
+        sb.print("</registrationTellers>");
+        
+        if (this.tabulationTellers != null) {
+            sb.print("<numTabTellers>");
+            sb.print(this.tabulationTellers.length);
+            sb.print("</numTabTellers>");
+        }
+        else {
+            sb.print("<numTabTellers>0</numTabTellers>");            
+        }
+        sb.print("<tabulationTellers>");
+        try {
+            for (int i = 0; i < tabulationTellers.length; i++) {
+                tabulationTellers[i].toXML(lbl, sb);
+            }        
+        }
+        catch (NullPointerException imposs) { }
+        catch (ArrayIndexOutOfBoundsException imposs) { }
+        sb.print("</tabulationTellers>");
+
+        if (this.voterBBs != null) {
+            sb.print("<numVoterBBs>");
+            sb.print(this.voterBBs.length);
+            sb.print("</numVoterBBs>");
+        }
+        else {
+            sb.print("<numVoterBBs>0</numVoterBBs>");            
+        }
+        sb.print("<voterBBs>");
+        try {
+            for (int i = 0; i < voterBBs.length; i++) {
+                voterBBs[i].toXML(lbl, sb);
+            }        
+        }
+        catch (NullPointerException imposs) { }
+        catch (ArrayIndexOutOfBoundsException imposs) { }
+        sb.print("</voterBBs>");
+
+        sb.print("</tellerDetails>");
+    }
+    
+
+    public static TellerDetails{*lbl} fromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r) throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
+        Util.swallowTag(lbl, r, "tellerDetails");
+        
+        int rtSize = Util.readSimpleIntTag(lbl, r, "numRegTellers");
+        Host{*lbl}[] n = new Host[rtSize<0?0:rtSize];
+        Util.swallowTag(lbl, r, "registrationTellers");
+        for (int i = 0; i < rtSize; i++) {
+            try {
+                n[i] = Host.fromXML(lbl, r);
+            }
+            catch (ArrayIndexOutOfBoundsException imposs) { }
+        }
+        Util.swallowEndTag(lbl, r, "registrationTellers");
+        
+        int ttSize = Util.readSimpleIntTag(lbl, r, "numTabTellers");
+        Host{*lbl}[] m = new Host[ttSize<0?0:ttSize];
+        Util.swallowTag(lbl, r, "tabulationTellers");
+        for (int i = 0; i < ttSize; i++) {
+            try {
+                m[i] = Host.fromXML(lbl, r);
+            }
+            catch (ArrayIndexOutOfBoundsException imposs) { }
+        }
+        Util.swallowEndTag(lbl, r, "tabulationTellers");
+
+        int bbSize = Util.readSimpleIntTag(lbl, r, "numVoterBBs");
+        Host{*lbl}[] bbs = new Host[bbSize<0?0:bbSize];
+        Util.swallowTag(lbl, r, "voterBBs");
+        for (int i = 0; i < bbSize; i++) {
+            try {
+                bbs[i] = Host.fromXML(lbl, r);
+            }
+            catch (ArrayIndexOutOfBoundsException imposs) { }
+        }
+        Util.swallowEndTag(lbl, r, "voterBBs");
+        Util.swallowEndTag(lbl, r, "tellerDetails");
+
+        TellerDetails td = new TellerDetails(lbl, n,m,bbs);        
+        return td;
+    }    
+}

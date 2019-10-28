@@ -1,0 +1,80 @@
+/*
+ * This file is part of the Civitas software distribution.
+ * Copyright (c) 2007-2008, Civitas project group, Cornell University.
+ * See the LICENSE file accompanying this distribution for further license
+ * and copyright information.
+ */ 
+package civitas.common;
+
+import civitas.crypto.*;
+import java.io.*;
+
+/**
+ * A teller's shares of Plaintext Equivalence Test (PET) commitments
+ */
+public class TabTellerPETShareCommitments implements XMLSerializable {
+    public final static String{*<-*} META_PREFIX = "ttPETShareCommits:";
+
+    public final int{this} tellerIndex;
+    
+    // an array of the commitments
+    public final PETCommitment{}[]{this} commitments;
+
+    public TabTellerPETShareCommitments(int{this} tellerIndex, PETCommitment{}[]{this} commitments) {
+        this.tellerIndex = tellerIndex;
+        this.commitments = commitments;
+    }
+    
+    public void toXML{}(PrintWriter[{}]{} sb) {
+        toXML(new label {}, sb);
+    }
+    public void toXML{*lbl}(label lbl, PrintWriter[lbl]{*lbl} sb) where {this; _!:_; _:_} <= lbl  {
+        if (sb == null) return;
+        sb.print("<tabTellerPETShareCommitments>");
+
+        sb.print("<index>");
+        sb.print(this.tellerIndex);
+        sb.print("</index>");
+        if (this.commitments != null) {
+            sb.print("<size>");
+            sb.print(this.commitments.length);
+            sb.print("</size>");
+            for (int i = 0; i < commitments.length; i++) {
+                try {
+                    PETCommitment c = commitments[i];
+                    if (c != null) {
+                        c.toXML(lbl, sb);
+                    }
+                }
+                catch (ArrayIndexOutOfBoundsException imposs) { }
+            }
+        }
+        else {
+            sb.print("<size>0</size>");            
+        }
+        
+        sb.print("</tabTellerPETShareCommitments>");
+    }
+    
+    public static TabTellerPETShareCommitments fromXML{}(Reader[{}]{} r) throws (IllegalArgumentException{}, IOException{}) {
+        final label lbl = new label {};
+        Util.swallowTag(lbl, r, "tabTellerPETShareCommitments");
+        int index = Util.readSimpleIntTag(lbl, r, "index");
+        int size = Util.readSimpleIntTag(lbl, r, "size");
+        PETCommitment{}[] commitments = new PETCommitment[size<0?0:size];
+        for (int i = 0; i < size; i++) {
+            PETCommitment c = null;
+            try {
+                c = CryptoUtil.factory().petCommitmentFromXML(lbl, r);
+            }
+            catch (NullPointerException{} imposs) { }
+            try {
+                commitments[i] = c;
+            }
+            catch (ArrayIndexOutOfBoundsException imposs) { }
+        }
+                
+        Util.swallowEndTag(lbl, r, "tabTellerPETShareCommitments");
+        return new TabTellerPETShareCommitments(index, commitments);
+    }    
+}

@@ -1,0 +1,53 @@
+LICENSE
+
+This license governs use of the accompanying Civitas software, and
+your use of the software constitutes acceptance of this license.  This
+software is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+No guarantees can be made that this software is correct and under no
+conditions will the authors, including Cornell University, be liable for
+any damages whatsoever resulting from loss of use, data or profits,
+whether in an action of contract, negligence or other tortious
+action, arising out of or in connection with the use of this software.
+
+This software is copyright (C) 2007-2008, Civitas project group, Cornell
+University.  The project group members are:  Stephen Chong, Michael Clarkson,
+and Andrew Myers.
+
+You may use this software for any non-commercial purpose, subject to the
+restrictions in this license.
+
+You may not use or distribute this software or any derivative works in
+any form for commercial purposes.
+
+Excluding the files enumerated below, all files in this release are
+released under the Eclipse Public License.  A copy of the Eclipse
+Public License can be found in the file LICENSE.Eclipse, included in
+this distribution.
+
+1. lib/bcprov-jdk15-133.jar
+   Use of the Legion of the Bouncy Castle Java cryptography library is
+   governed by the license given in the file LICENSE.BouncyCastle,
+   included in this distribution.
+
+2. lib/java_cup.jar
+   Use of the JavaCup library is governed by the GNU Lesser General
+   Public License. A copy of this license can be found in the file
+   LICENSE.LGPL, included in this distribution.
+
+3. lib/polyglot.jar
+   Use of the Polyglot Compiler library is governed by the license
+   given in the file LICENSE.Polyglot, included in this distribution.
+
+4. lib/jif.jar, lib/jifsig.jar, lib/jiflib.jar, lib/jifrt.jar
+   Use of the Jif Compiler library is governed by the license given
+   in the file LICENSE.Jif, included in this distribution.
+
+5. lib/jife.jar, lib/jifesig.jar, lib/jifelib.jar, lib/jifert.jar
+   The JifE compiler is a derivative work of the Jif compiler, and may
+   not be used in any form for commercial purposes. See the Jif
+   license in the file LICENSE.Jif for more details.
+
+

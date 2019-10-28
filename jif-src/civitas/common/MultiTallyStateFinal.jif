@@ -1,0 +1,71 @@
+/*
+ * This file is part of the Civitas software distribution.
+ * Copyright (c) 2007-2008, Civitas project group, Cornell University.
+ * See the LICENSE file accompanying this distribution for further license
+ * and copyright information.
+ */ 
+package civitas.common;
+
+import java.io.*;
+
+/**
+ * TallyStateFinal for a MultiballotDesign.
+ */
+public class MultiTallyStateFinal extends TallyStateFinal {        
+    private final TallyStateFinal{this} const[]{this} states;
+    
+    MultiTallyStateFinal(label lbl, TallyStateFinal{*lbl}[]{*lbl} states) 
+    where {*lbl} <= {this} {
+        TallyStateFinal{this} const[] ss = null;
+        if (states != null) ss = states.clone();
+        this.states = ss;
+        super();
+    }
+    
+    TallyStateFinal get(int i) {
+        if (states != null && i >= 0 && i < states.length) {
+            try {
+                return states[i];
+            }
+            catch (ArrayIndexOutOfBoundsException imposs) { }
+        }
+        return null;
+    }
+    
+    public void toXML{*lbl}(label lbl, PrintWriter[lbl]{*lbl} sb) where {this} <= lbl  {
+        if (sb == null) return;
+        sb.print("<" + OPENING_TAG + ">");
+        sb.print("<kind>");
+        sb.print(MultiBallotDesign.KIND);
+        sb.print("</kind>");
+        sb.print("<count>");
+        sb.print(states == null ? 0 : states.length);
+        sb.print("</count>");
+        sb.print("<tallyStates>");
+        try {
+            for (int i = 0; i < states.length; i++) {
+                states[i].toXML(lbl, sb);
+            }        
+        }
+        catch (NullPointerException imposs) { }
+        catch (ArrayIndexOutOfBoundsException imposs) { }
+        sb.print("</tallyStates>");
+        sb.print("</" + OPENING_TAG + ">");
+    }
+    
+    public static TallyStateFinal fromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r)  throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {        
+        int count = Util.readSimpleIntTag(lbl, r,  "count");
+        
+        Util.swallowTag(lbl, r,  "tallyStates");
+        TallyStateFinal{*lbl}[] states = new TallyStateFinal[count<0 ? 0 : count];
+        for (int i = 0; i < count; i++) {
+            try {
+                states[i] = TallyStateFinal.fromXML(lbl, r);
+            }
+            catch (ArrayIndexOutOfBoundsException imposs) { }
+        }        
+        
+        Util.swallowEndTag(lbl, r,  "tallyStates");
+        return new MultiTallyStateFinal(lbl, states);
+    }
+}

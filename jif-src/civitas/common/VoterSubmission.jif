@@ -1,0 +1,139 @@
+/*
+ * This file is part of the Civitas software distribution.
+ * Copyright (c) 2007-2008, Civitas project group, Cornell University.
+ * See the LICENSE file accompanying this distribution for further license
+ * and copyright information.
+ */ 
+package civitas.common;
+
+import java.io.*;
+
+/**
+ * A submission made by a voter to the ballot box.
+ * It is a collection of VeriableVotes, and the voter block that the voter belings in.
+ */
+public class VoterSubmission implements JifObject[{}], XMLSerializable {
+    public final static String meta(int voterBlock) {
+        return "voterSubmission-voterBlock" + voterBlock;
+    }
+
+    /**
+     * for the purposes of blocking, voters are divided into blocks, according
+     * to the security parameters of the election details.
+     */
+    public final int{this} voterBlock; 
+
+    /**
+     * Verifiable votes, which are the decomposition of the voter's ballot.
+     */
+    public final VerifiableVote{this} const[]{this} votes;
+
+    public VoterSubmission(label lbl, int{*lbl} voterBlock, VerifiableVote{*lbl}[]{*lbl} votes) where {*lbl} <= {this} {
+        super();
+        VerifiableVote{this} const[]{this} vs = null;
+        if (votes != null) {
+            vs = votes.clone();
+        }
+        this.votes = vs;
+        this.voterBlock = voterBlock;
+    }
+    
+    public int size() {
+        return votes == null ? 0 : votes.length;
+    }
+    
+    public String{} toString() {
+        return "voter-submission";
+//        StringBuffer[{}] sb = new StringBuffer[{}](); 
+//        this.toXML(new label {}, sb);
+//        return sb.toString();
+    }
+    public int{} hashCode() {
+        int hash = voterBlock;
+        try {
+            for (int i = 0; i < this.votes.length && i < 1; i++) {
+                // just use the first enc capability as the hash code.
+                hash ^= this.votes[i].encCapability.hashCode();
+            }
+        }
+        catch (ArrayIndexOutOfBoundsException imposs) {  }
+        catch (NullPointerException ignore) {  }
+        return hash;
+    }
+    public boolean{_:_; obj} equals(IDComparable[{}] obj) {
+        return equals(new label {}, obj);
+    }
+    public boolean{_:_; *lbl; lbl; obj} equals(label lbl, IDComparable[lbl] obj) {
+        if (obj instanceof VoterSubmission) {
+            VoterSubmission that = (VoterSubmission)obj;
+            if (this.voterBlock == that.voterBlock && this.size() == that.size()) {
+                if (this.votes != null) {
+                    for (int i = 0; i < this.votes.length; i++) {
+                        try {
+                            if (!this.votes[i].equals(that.votes[i])) {
+                                return false;
+                            }
+                        }
+                        catch (ArrayIndexOutOfBoundsException imposs) { return false; }
+                        catch (NullPointerException imposs) { return false; }
+                    }
+                }
+                return true;    
+            }
+        }
+        return false;
+    }
+    
+    public void toXML{}(PrintWriter[{}]{} sb) {
+        toXML(new label {}, sb);
+    }
+    public void toXML{*lbl}(label lbl, PrintWriter[lbl]{*lbl} sb) where {this} <= lbl  {
+        if (sb == null) return;
+        sb.print("<voterSubmission>");
+        sb.print("<voterBlock>");
+        sb.print(this.voterBlock);
+        sb.print("</voterBlock>");
+        if (this.votes != null) {
+            sb.print("<size>");
+            sb.print(this.votes.length);
+            sb.print("</size>");
+        }
+        else {
+            sb.print("<size>0</size>");            
+        }
+        sb.print("<votes>");
+        try {
+            for (int i = 0; i < votes.length; i++) {
+                votes[i].toXML(lbl, sb);
+            }        
+        }
+        catch (NullPointerException imposs) { }
+        catch (ArrayIndexOutOfBoundsException imposs) { }
+        sb.print("</votes>");
+        sb.print("</voterSubmission>");
+    }
+    
+    public static VoterSubmission{*lbl} fromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r)  throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
+        Util.swallowTag(lbl, r, "voterSubmission");
+        
+        int voterBlock = Util.readSimpleIntTag(lbl, r, "voterBlock");
+        int size = Util.readSimpleIntTag(lbl, r, "size");
+
+        Util.swallowTag(lbl, r, "votes");
+        VerifiableVote{*lbl}[] n = new VerifiableVote[size<0?0:size];
+
+        for (int i = 0; i < size; i++) {
+            try {
+                n[i] = VerifiableVote.fromXML(lbl, r);
+            }
+            catch (ArrayIndexOutOfBoundsException e) { 
+                throw new IOException("Too many verifiable votes");
+            }
+        }
+        
+        Util.swallowEndTag(lbl, r, "votes");
+        Util.swallowEndTag(lbl, r, "voterSubmission");
+        VoterSubmission vs = new VoterSubmission(lbl, voterBlock, n);
+        return vs;
+    }
+}

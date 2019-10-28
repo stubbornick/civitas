@@ -1,0 +1,106 @@
+# This is a sample Civitas experiment description file.
+# It has 100 voters
+# --------------------------------------------------------------
+# Election parameters
+
+# length of the El Gamal keys
+elGamalKeyLength = 224
+elGamalGroupLength = 2048
+
+# length of the El Gamal keys used by the voters
+elGamalVoterKeyLength = 224
+elGamalVoterGroupLength = 2048
+
+# lengths of the public and shared keys.
+publicKeyLength = 2048
+sharedKeyLength = 128
+
+# length of nonces
+nonceLength = 1024
+
+# number of voters in the experiment
+numVoters = 100
+
+# the voter anonymity parameter
+voterAnon = 100
+
+# number of ballots submitted that use the duplicate capabilities 
+numDuplicateBallots = 0
+
+# number of ballots submitted that use the invalid capabilities 
+numInvalidBallots = 0
+
+# --------------------------------------------------------------
+# File and directory specifications
+
+# Specify the Civitas installation directory. This directory
+# needs to make sense on all hosts. By default, it will be determined 
+# by assuming that the perl scripts (.e.g, coordinator.pl) are in the
+# directory $CIVITAS/experiments/src.
+# e.g. civitasDir = /civitas
+# Because this script is designed to run locally (i.e., only on localhost),\
+# and because we want to be compatible with Cygwin (which has some trouble
+# with Unix-style and Windows-style paths), we assume the 
+# current directory is the Civitas directory.
+# (On *nix, you could comment out the following line.)
+civitasDir = .
+
+# LOCAL PATHS. These directories should point to file systems
+# local to the machines that the tellers will be running on.
+# They are used to cache local data.
+
+# to store local data
+localDataDir=./experiments/localData
+# to cache keys locally
+localKeysDir=./experiments/localKeys
+
+# SHARED PATHS. These directories should point to shared file systems
+# They are used by the tellers to get common (public) keys and parameter
+# settings, and to store experiment results
+centralDataDir=./experiments/centralData
+centralKeysDir=./experiments/keys
+
+# directory for putting experiment results.
+resultsDir=./experiments/results
+
+# --------------------------------------------------------------
+# Teller and bulletin board specifications
+#
+# There should be excatly one adminBB, and one or more of each of
+# tabTeller, regTeller, and voterBB
+
+# the administrator bulletin board in the form "host port"
+adminBB = localhost 3444
+
+# one or more tabulation tellers in the form "host port"
+tabTeller = localhost 3450
+
+# one or more registration tellers in the form "host port"
+regTeller = localhost 3460
+
+# one or more voter bulletin boards in the form "host port"
+voterBB = localhost 3470
+
+# zero or more voter hosts. They do not actually participate in the 
+# election, just perform voter submission. That is they are part of
+# the experimental framework. The same host may be
+# listed more than once, and will just have more than one process
+# running on it.
+voterHost = localhost
+
+# --------------------------------------------------------------
+# Misc specifications
+
+# SSH credentials
+# These are the ssh credential used by the test harness to ssh to 
+# other machines, e.g., to start the teller processes.
+# Currently, the same credentials must be used for all machines.
+# If specified, the sshUser and sshIdentityFile will be used
+# in ssh commands as:
+#      ssh -i sshIdentityFile sshUser@host ....
+# and if no sshUser and sshIdentityFile are specified, the command 
+# will be 
+#      ssh host ....
+# See Civitas::Experiments.civitasRemoteExec for more details.
+# sshUser=civitas
+# sshIdentityFile=~/.ssh/id_rsa

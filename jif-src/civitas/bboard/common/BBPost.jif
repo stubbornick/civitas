@@ -1,0 +1,143 @@
+/*
+ * This file is part of the Civitas software distribution.
+ * Copyright (c) 2007-2008, Civitas project group, Cornell University.
+ * See the LICENSE file accompanying this distribution for further license
+ * and copyright information.
+ */ 
+package civitas.bboard.common;
+
+import civitas.crypto.*;
+import civitas.common.*;
+import java.io.*;
+
+/**
+ * A representation of a bulletin board post.
+ */
+public final class BBPost implements JifObject[{}], XMLSerializable {
+    public static final String{*<-*} OPENING_TAG = "post";
+    /**
+     * The ID of the bulletin board this post is from
+     */
+    public final String{this} bbid;
+    /**
+     * The timestamp of this post
+     */
+    public final long{this} timestamp;
+
+    /**
+     * The meta field of this post
+     */
+    public final String{this} meta;
+    /**
+     * The message field of this post
+     */
+    public final XMLSerializable{this} msg;
+    /**
+     * The signature field of this post. If this field is non-null
+     * then it should be a signature of the msg field.
+     */
+    public final Signature{this} sig;
+    
+    
+    public BBPost(String{this} bbid,
+            long{this} timestamp, 
+            String{this} meta,
+            XMLSerializable{this} msg,
+            Signature{this} sig) {
+        this.bbid = bbid;
+        this.timestamp = timestamp;
+        this.meta = meta;
+        this.msg = msg;
+        this.sig = sig;
+    }
+    
+    /**
+     * Verify that the signature is correct. If no signature exists for this
+     * post, then false is returned.
+     */
+    public boolean{_!:_;K} verify{}(final PublicKey{} K) {
+        if (sig == null) return false;
+        try {
+            final label lbl = new label {};
+            MessageDigest[{}] md = CryptoUtil.factory().messageDigest(lbl);
+            MessageDigestWriter[{}] mdw = new MessageDigestWriter[{}](null, md);
+            if (msg != null) msg.toXML(new PrintWriter[{}](mdw));
+            
+            return CryptoUtil.factory().publicKeyVerifySignature(K, sig, lbl, md.digest());
+        }
+        catch (NullPointerException imposs) {
+            return false;
+        }
+    }
+//    public String{this;signer;p} meet {*->*;p <- signer} verify{this}(principal p, PublicKey signer) where caller(p), endorse({this} meet {*->*;p<-signer}) {
+//        if (sig == null) return null;
+//        String s = null;
+//        if (p instanceof PublicKey) {
+//            try {
+//                s = CryptoUtil.factory().publicKeyVerifySignatureMsg(signer, sig, CryptoUtil.factory().publicKeyMsg(msg)).toString();
+//            }
+//            catch (NullPointerException ignore) {
+//            }
+//            catch (CryptoException e) {
+//            }
+//        }
+//        return endorse(s, {this;signer;p} meet {*->*; p <- signer});        
+//    }
+//
+    
+    public boolean{other;_<-_} equals(IDComparable[{}] other) {
+        return equals(new label {}, other);
+    }
+
+    public boolean{_<-_; *lbl; lbl; obj} equals(label lbl, IDComparable[lbl] obj) {
+        if (obj instanceof BBPost) {
+            BBPost that = (BBPost)obj;
+            return eq(this.bbid, that.bbid) &&
+                   this.timestamp == that.timestamp &&
+                   eq(this.meta, that.meta) &&
+                   this.msg == that.msg;
+        }
+        return false;        
+    }
+    
+    /**
+     * Utility method to compare two strings.
+     */
+    private boolean eq(String s, String t) {
+        return s == t || (s != null && s.equals(t));
+    }
+    
+    public String{} toString() {
+        return "BBPost(unimpl)";
+    }
+    public void toXML{}(PrintWriter[{}]{} sb) {
+        if (sb == null) return;
+        sb.print("<" + OPENING_TAG + ">");
+
+        sb.print("<id>");
+        Util.escapeString(this.bbid, new label {}, sb);
+        sb.print("</id>");
+        sb.print("<stamp>");
+        sb.print(this.timestamp);
+        sb.print("</stamp>");
+        sb.print("<meta>");
+        Util.escapeString(this.meta, new label {}, sb);
+        sb.print("</meta>");
+        sb.print("<msg>");
+        if (msg != null) {
+            msg.toXML(sb);
+        }
+        sb.print("</msg>");
+        if (sig != null) {
+            sig.toXML(new label {}, sb);
+        }
+        
+        sb.print("</" + OPENING_TAG + ">");
+    }
+
+    public int{} hashCode() {
+        return (bbid==null?0:bbid.hashCode()) ^ ((int)timestamp);
+    }
+    
+    
+}

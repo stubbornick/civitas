@@ -1,0 +1,9 @@
+package civitas.common;
+
+
+public class FileBasedElectionCache extends ElectionCache {
+    private static int __JIF_SIG_OF_JAVA_CLASS$20030619 = 0;
+
+    public FileBasedElectionCache{}(String cacheRootDir, String uniqueID) {
+    }
+}

@@ -1,0 +1,5 @@
+#!/bin/sh
+# Simple script to run the voter client
+
+bindir=`dirname "$0"`
+$bindir/civitasrun civitas.voter.cli.Main $@

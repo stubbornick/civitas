@@ -1,0 +1,248 @@
+Civitas
+=======
+v0.7.1
+May 2008
+
+  Civitas is a coercion-resistant, universally and voter verifiable
+  electronic voting scheme. Civitas is suitable for remote voting,
+  where there is no supervision of voters or computing devices during
+  voting. Civitas is described in the 2008 paper "Civitas: Toward a
+  Secure Voting System", by Michael R. Clarkson, Stephen Chong, and
+  Andrew C. Myers, published in the Proceedings of the 2008 IEEE
+  Symposium on Security and Privacy.
+
+  This distribution is a prototype implementation of the Civitas
+  election scheme. (We define voting schemes as cryptographic
+  protocols, and voting systems as implementations; this distribution
+  is a voting system.) Assurance in the Civitas scheme is established
+  by security proofs. Assurance in this implementation is provided by
+  an information-flow security analysis.
+
+  This document describes the files in this distribution and provides
+  instructions for running and compiling Civitas. Restrictions on use
+  and pointers for further information are given at the end of this
+  document. For license information, please see the file LICENSE.
+
+  QUICK START: This distribution contains pre-compiled versions of the
+  Java and JifE source code. This distribution can be run "out of the
+  box." The following command will simulate a simple election with 5
+  voters:
+
+    $ experiments/src/coordinator.pl experiments/sample1.exp
+
+
+
+
+1. Files in this distribution
+-----------------------------
+
+  The following tree describes some of the files and directories
+  contained in this distribution.
+
+     +- README               This file.
+     +- LICENSE              License information.
+     +- experiments          Scripts to run performance measurements.
+     |  +- README                Instructions on how to run experiments.
+     +- bin                  Executable programs.
+     |  +- civitasrun            Wrapper for invoking Java classes. Sets
+     |  |                            class path correctly.
+     |  +- jifec                 JifE compiler.
+     +- build.xml            Ant file for compiling Civitas.
+     +- config.xml           Auxiliary ant file for compiling Civitas. 
+     +- config.properties    Override ant configuration settings.
+     +- java-src             Java source code for Civitas. Mostly the
+     |                         implementation of a cryptographic library,
+     |                         and socket listeners for services.
+     +- jif-src              JifE source code for Civitas.
+     +- lib                  Jar files for Civitas and components on which 
+     |                         Civitas depends
+     +- sig-src              JifE signature files for the Java code in java-src.
+     +- test                 Java code for test harnesses and to facilitate
+                               performance measurements.
+
+
+
+2. Running Civitas
+------------------
+
+  This distribution is a prototype implementation of the Civitas
+  election scheme. It contains implementations of the bulletin board,
+  ballot box, registration teller, and tabulation teller services, as
+  well as rudimentary programs for the supervisor, registrar, and
+  voter clients. Instructions for starting the various services, and
+  invoking the client commands, are given below.
+
+  This distribution also contains a framework for running
+  experiments. Based on an experiment description file, the framework
+  will create appropriate keys, start the services (locally or
+  remotely) and simulate the actions of the supervisor, registrar, and
+  voters. For more information on the experiment framework, see the
+  file experiments/README.
+
+2.1 Configuration
+-----------------
+
+  To run Civitas, you will require a Java run-time environment. These
+  instructions have been tested on with the JDK 1.5.0. You will also
+  need to have unlimited strength Java Cryptography. Go to the Java
+  Sun website (http://java.sun.com/), and download and install the
+  Unlimited Strength Jurisdiction Policy File for the Java
+  Cryptographic Extension (JCE) appropriate to your Java installation.
+
+  For improved performance on arithmetic operations, you can compile
+  native C code that allows Civitas to use the GNU Multiple Precision
+  Arithmetic Library (GMP). See Section 3.1 below.
+
+
+2.2 Services and clients
+------------------------
+  
+  If you are not using the experiment framework to simulate an
+  election, you can manually start services and run clients.
+
+  To start a bulletin board or ballot box service, run the following
+  command:
+
+    $ bin/civitasrun civitas.bboard.server.GenericBBS [-log logfile] \
+                         rootdir port pubKey privKey
+
+  The optional argument logfile specifies a file to log output to. The
+  argument rootdir is a directory where the service will store its
+  data. The service will listen to requests on the port specified by
+  the argument port, and pubKey and privKey are public and private key
+  files respectively. (Key files can be generated XXX
+
+  To start a registration teller service, run the following command:
+
+    $ bin/civitasrun civitas.registration.server.RegTeller cachedir \
+                        port pubKey privKey
+
+  The argument cachedir is a directory where the service will cache
+  data it retrieves. The service will listen to requests on the port
+  specified by the argument port, and pubKey and privKey are public
+  and private key files respectively.
+
+  To start a tabulation teller service, run the following command:
+
+    $ bin/civitasrun civitas.tabulation.server.ThreadAwareTabTeller \
+                        rootdir cachedir port pubKey privKey
+
+  The argument rootdir is a directory where the service will store its
+  data. The argument cachedir is a directory where the service will
+  cache data it retrieves. The service will listen to requests on the
+  port specified by the argument port, and pubKey and privKey are
+  public and private key files respectively.
+
+  Alternatively the Perl script experiments/src/startServer.pl can be
+  used to start a bulletin board, ballot box, registration teller, or
+  tabulation teller service. Run the following command for more
+  information:
+
+    $ experiments/src/startServer.pl -h
+
+
+
+  This distribution contains simple command-line interfaces for the
+  supervisor, registrar, and voters. To explore these interfaces, try
+  running the following commands:
+
+    $ bin/supclient help
+    $ bin/regclient help
+    $ bin/voterclient help
+
+  These commands will present more information about the supervisor,
+  registrar, and voter clients respectively.
+
+3. Compiling Civitas
+--------------------
+
+  To compile Civitas you will need Apache Ant, available at
+  http://ant.apache.org. These instructions have been tested using
+  Apache Ant version 1.6.5.
+
+  To compile Civitas, simply execute the command:
+
+    $ ant civitas
+
+  This will compile the source code in the java-src and jif-src
+  directories, and place the resulting class files in the classes
+  directory.
+
+  To compile the Civitas experiment framework, execute the command:
+
+    $ ant civitas-test
+
+  This will compile the source code in the directory named test, and
+  place the resulting class files in the classes directory.
+
+  The classpath is specified such that files in the classes directory
+  will be used in preference to the pre-compiled files, contained in
+  the lib/civitas.jar file.
+
+
+3.1 Native arithmetic operations
+--------------------------------
+
+  For improved performance on arithmetic operations, you can compile
+  native C code that allows Civitas to use the GNU Multiple Precision
+  Arithmetic Library (GMP). This requires the GNU C compiler, gcc, and
+  the GMP libraries. We have successfully compiled the Civitas native
+  code using GMP 4.2.1 on OS X 10.4 and Linux 2.6.9.
+
+  To compile the native code, execute the following command:
+
+    $ ant civitas-native
+
+  This command will invoke the gcc compiler, expecting to be able to
+  find gmp.h on the include path, and the GMP library on the library
+  path. Depending on your system setup, it may be necessary to add the
+  appropriate include directory to the environment variable
+  C_INCLUDE_PATH, and the appropriate library directory to the
+  environment variable LIBRARY_PATH.
+
+  To test if the native code compiled correctly, run the following command:
+
+    $ bin/civitasrun civitas.util.CivitasBigInteger
+
+  This will run some performance tests using the GMP arithmetic
+  operations and the java.util.BigInteger arithmetic operations, and
+  compare the results. It will produce a warning if the native library
+  was not available.
+
+
+4. Restrictions on use
+----------------------
+
+  This free release of the Civitas voting system may be used,
+  modified, and redistributed as governed by the license included in
+  the attached file LICENSE.
+
+
+5. More information
+-------------------
+
+  More information about Civitas can be found at the Civitas web site:
+
+      http://www.cs.cornell.edu/projects/civitas
+
+
+6. Acknowledgments
+------------------
+
+  The file java-src/civitas/crypto/common/Base64 is derived from
+  public domain code written by Robert Harder. See
+  http://iharder.net/base64/.
+
+  The file java-src/civitas/util/CivitasBigInteger.c is derived from
+  I2P's NativeBigInteger code, placed in the public domain. See
+  http://www.i2p2.de/.
+
+  This work was supported by the Department of the Navy, Office of
+  Naval Research, ONR Grant N00014-01-1-0968; Air Force Office of
+  Scientific Research, Air Force Materiel Command, USAF, grant number
+  F9550-06-0019; National Science Foundation grants 0208642, 0133302,
+  0430161, and CCF-0424422 (TRUST); and a grant from Intel
+  Corporation. Michael Clarkson was supported by a National Science
+  Foundation Graduate Research Fellowship and an Intel PhD Fellowship;
+  Andrew Myers was supported by an Alfred P. Sloan Research
+  Fellowship.

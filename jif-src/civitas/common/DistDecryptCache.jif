@@ -1,0 +1,22 @@
+/*
+ * This file is part of the Civitas software distribution.
+ * Copyright (c) 2007-2008, Civitas project group, Cornell University.
+ * See the LICENSE file accompanying this distribution for further license
+ * and copyright information.
+ */ 
+package civitas.common;
+
+import until.util.*;
+import civitas.crypto.*;
+import civitas.common.*;
+
+/**
+ * Cache information useful for distributed decryptions
+ */
+public interface DistDecryptCache {
+    boolean{} hasDecryptShare{}(String{} meta, int{} block, int{} ballotIndex, int{} tellerIndex);
+    TabTellerDistributedDecryptions{} getDecryptShare{}(String{} meta, int{} block, int{} ballotIndex, int{} tellerIndex);
+    void setDecryptShare{}(String{} meta, int{} block, int{} ballotIndex,int{} tellerIndex, TabTellerDistributedDecryptions{} d);
+    void setCiphertexts{TT<-SUP}(String{TT<-SUP} meta, int{TT<-SUP;TT<-TELLS} block, int{TT<-SUP;TT<-TELLS} ballotIndex,principal TT, principal SUP, principal TELLS, ElGamalCiphertext{TT<-SUP;TT<-TELLS}[]{TT<-SUP} ciphertexts);
+    ElGamalCiphertext{TT<-SUP;TT<-TELLS}[]{meta;block;ballotIndex} getCiphertexts{TT<-SUP;TT<-TELLS}(String{TT<-SUP;TT<-TELLS} meta, int{TT<-SUP;TT<-TELLS} block, int{TT<-SUP;TT<-TELLS} ballotIndex, principal TT, principal SUP, principal TELLS);
+}

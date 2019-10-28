@@ -1,0 +1,36 @@
+/*
+ * This file is part of the Civitas software distribution.
+ * Copyright (c) 2007-2008, Civitas project group, Cornell University.
+ * See the LICENSE file accompanying this distribution for further license
+ * and copyright information.
+ */ 
+package civitas.common;
+
+import java.io.*;
+
+/**
+ * This class encapsulates an election identifier. An election identitifier
+ * is composed of the bulletin board host, port, and a bulletin board id.
+ */
+public class ElectionID extends BulletinBoardID {
+    public ElectionID(String{this} host, int{this} port, String{this} id) {
+        super(host, port, id);
+    }
+    
+    public boolean equals(ElectionID that) {
+        return this.equals((BulletinBoardID)that);
+    }
+    
+    private static final String{*<-*} TAG = "electionID";
+    protected String{this} tag() {
+        return TAG;
+    }
+    public static ElectionID{*lbl} fromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r) throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
+        Util.swallowTag(lbl, r, TAG);
+        String host = Util.unescapeString(Util.readSimpleTag(lbl, r, "host"));
+        int port = Util.readSimpleIntTag(lbl, r, "port");
+        String id = Util.unescapeString(Util.readSimpleTag(lbl, r, "id"));
+        Util.swallowEndTag(lbl, r, TAG);
+        return new ElectionID(host, port, id);
+    }    
+}

@@ -1,0 +1,45 @@
+/*
+ * This file is part of the Civitas software distribution.
+ * Copyright (c) 2007-2008, Civitas project group, Cornell University.
+ * See the LICENSE file accompanying this distribution for further license
+ * and copyright information.
+ */ 
+package civitas.common;
+
+import java.util.*;
+import java.io.*;
+
+/**
+ * TallyState for a SingleChoiceballotDesign.
+ */
+public class SingleChoiceTallyState[label L] extends TallyState[L] {        
+    private final int{L}[]{this} counts;
+    public final String{this} const[]{this} candidates;
+    
+    SingleChoiceTallyState(String{this} const[]{this} candidates) {
+        this.candidates = candidates;
+        int size = candidates == null ? 0 : candidates.length;
+        this.counts = new int[size<0?0:size];
+        super();
+    }
+    SingleChoiceTallyState(String{this} const[]{this} candidates, int{L}[]{this} counts) {
+        this.candidates = candidates;
+        this.counts = counts;
+        super();
+    }
+    
+    void increment{L}(int{L} i) throws (IndexOutOfBoundsException{L}) {
+        if (counts != null && i >= 0 && i < counts.length) {
+            try {
+                counts[i]++;
+                return;
+            }
+            catch (ArrayIndexOutOfBoundsException imposs) { }
+        }
+        throw new IndexOutOfBoundsException();
+    }
+    
+    public TallyStateFinal{L} finalTally{L}() {
+        return new SingleChoiceTallyStateFinal(L, candidates, counts);
+    }
+}

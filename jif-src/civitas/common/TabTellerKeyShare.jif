@@ -1,0 +1,69 @@
+/*
+ * This file is part of the Civitas software distribution.
+ * Copyright (c) 2007-2008, Civitas project group, Cornell University.
+ * See the LICENSE file accompanying this distribution for further license
+ * and copyright information.
+ */ 
+package civitas.common;
+
+import civitas.crypto.*;
+import java.io.*;
+
+/**
+ * A teller's share of a public key.
+ */
+public class TabTellerKeyShare implements XMLSerializable {
+    public final static String{*<-*} META = "ttKeyShare";
+
+    public final int{this} tellerIndex;
+    public final ElGamalKeyShare{this} keyShare;
+
+    public TabTellerKeyShare(int{this} tellerIndex, ElGamalKeyShare{this} keyShare) {
+        this.tellerIndex = tellerIndex;
+        this.keyShare = keyShare;
+    }
+    
+    public void toXML{}(PrintWriter[{}]{} sb) {
+        toXML(new label {}, sb);
+    }
+    public void toXML{*lbl}(label lbl, PrintWriter[lbl]{*lbl} sb) where {this} <= lbl  {
+        if (sb == null) return;
+        sb.print("<tabTellerKeyShare>");
+
+        sb.print("<index>");
+        sb.print(this.tellerIndex);
+        sb.print("</index>");
+        if (this.keyShare != null) {
+            this.keyShare.toXML(lbl, sb);
+        }
+        
+        sb.print("</tabTellerKeyShare>");
+    }
+    public TabTellerKeyShareCommitment{*lbl} constructCommitment{*lbl}(label{*lbl} lbl) {
+        CryptoFactory factory = CryptoUtil.factory();
+        String hash = null;
+        if (factory != null) {
+            MessageDigest[lbl] md = factory.messageDigest(lbl);
+            if (md != null) {
+                StringWriter[lbl] sb = new StringWriter[lbl]();
+                this.toXML(lbl, new PrintWriter[lbl](sb));                
+                md.update(sb.toString());
+                hash = factory.constBytesToBase64(lbl, md.digest());
+            }
+        }
+        return new TabTellerKeyShareCommitment(tellerIndex, hash);
+    }
+    
+    public static TabTellerKeyShare fromXML{}(Reader[{}]{} r) throws (IllegalArgumentException{}, IOException{}) {
+        final label lbl = new label {};
+        Util.swallowTag(lbl, r, "tabTellerKeyShare");
+        int index = Util.readSimpleIntTag(lbl, r, "index");
+        ElGamalKeyShare keyShare = null;
+        try {
+            keyShare = CryptoUtil.factory().elGamalKeyShareFromXML(lbl, r);
+        }
+        catch (NullPointerException imposs) { }
+        Util.swallowEndTag(lbl, r, "tabTellerKeyShare");
+        return new TabTellerKeyShare(index, keyShare);
+    }    
+}

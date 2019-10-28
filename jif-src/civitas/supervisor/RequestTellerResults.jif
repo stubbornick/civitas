@@ -1,0 +1,21 @@
+/*
+ * This file is part of the Civitas software distribution.
+ * Copyright (c) 2007-2008, Civitas project group, Cornell University.
+ * See the LICENSE file accompanying this distribution for further license
+ * and copyright information.
+ */ 
+package civitas.supervisor;
+
+import civitas.common.*;
+
+public class RequestTellerResults {
+    public final TellerDetails{this} accepted;
+    public final TellerDetails{this} declined;
+    public final TellerDetails{this} uncontactable;
+    
+    RequestTellerResults(TellerDetails{this} accepted, TellerDetails{this} declined, TellerDetails{this} uncontactable) {
+        this.accepted = accepted;
+        this.declined = declined;
+        this.uncontactable = uncontactable;
+    }
+}

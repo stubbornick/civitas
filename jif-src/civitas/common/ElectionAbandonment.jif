@@ -1,0 +1,65 @@
+/*
+ * This file is part of the Civitas software distribution.
+ * Copyright (c) 2007-2008, Civitas project group, Cornell University.
+ * See the LICENSE file accompanying this distribution for further license
+ * and copyright information.
+ */ 
+package civitas.common;
+
+import java.io.*;
+
+/**
+ * An election abandonment states that a teller has abandoned the election,
+ * and gives the reason why.
+ */
+public class ElectionAbandonment implements XMLSerializable {
+    public final static String{*<-*} META = "electionAbandonment";
+
+    public final int{this} tellerIndex;
+    public final boolean{this} isTabulationTeller;
+
+    public final String{this} reason;
+    
+    public ElectionAbandonment(int{this} tellerIndex, boolean{this} isTabulationTeller, String{this} reason) {
+        this.tellerIndex = tellerIndex;
+        this.isTabulationTeller = isTabulationTeller;
+        this.reason = reason;
+    }
+    
+    public String{} reporter() {
+        if (isTabulationTeller) {
+            return "tabulation teller " + tellerIndex;
+        }
+        return "unknown entity";
+    }
+
+    public void toXML{}(PrintWriter[{}]{} sb) {
+        toXML(new label {}, sb);
+    }
+    public void toXML{*lbl}(label lbl, PrintWriter[lbl]{*lbl} sb) where {this} <= lbl  {
+        if (sb == null) return;
+        sb.print("<electionAbandonment>");
+        sb.print("<tellerIndex>");
+        sb.print(tellerIndex);
+        sb.print("</tellerIndex>");
+        sb.print("<isTabulationTeller>");
+        sb.print(isTabulationTeller);
+        sb.print("</isTabulationTeller>");
+        sb.print("<reason>");
+        Util.escapeString(reason, lbl, sb);
+        sb.print("</reason>");
+
+        sb.print("</electionAbandonment>");
+    }
+    
+    public static ElectionAbandonment{} fromXML{}(Reader[{}]{} r)  throws (IllegalArgumentException{}, IOException{}) {
+        final label lbl = new label {};
+        Util.swallowTag(lbl, r,  "electionAbandonment");
+        int ti = Util.readSimpleIntTag(lbl, r,  "tellerIndex");
+        boolean isTab = Util.readSimpleBooleanTag(lbl, r,  "isTabulationTeller");
+        String reason = Util.unescapeString(Util.readSimpleTag(lbl, r,  "reason"));        
+        Util.swallowEndTag(lbl, r,  "electionAbandonment");
+        
+        return new ElectionAbandonment(ti, isTab, reason);
+    }
+}

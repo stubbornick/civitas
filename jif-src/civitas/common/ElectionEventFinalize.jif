@@ -1,0 +1,57 @@
+/*
+ * This file is part of the Civitas software distribution.
+ * Copyright (c) 2007-2008, Civitas project group, Cornell University.
+ * See the LICENSE file accompanying this distribution for further license
+ * and copyright information.
+ */ 
+package civitas.common;
+
+import java.io.*;
+
+/**
+ * A "finalize election" event. Like all election events, it is posted
+ * by the election supervisor to the bulletin board. It contains a final
+ * tally of the election, and a message from the supervisor (e.g., announcing
+ * who has won).
+ */
+public class ElectionEventFinalize extends ElectionEvent {
+    public final TallyStateFinal{this} tally;
+    public final String{this} message;
+    
+    public ElectionEventFinalize(ElectionID{this} electionID, int{this} sequence) {
+        this.tally = null;
+        this.message = null;
+        super(EVENT_KIND_FINALIZE, electionID, sequence);
+    }
+    public ElectionEventFinalize(ElectionID{this} electionID, int{this} sequence, TallyStateFinal{this} tally, String{this} message) {
+        this.tally = tally;
+        this.message = message;
+        super(EVENT_KIND_FINALIZE, electionID, sequence);
+    }
+    
+    protected void toXMLsub{*lbl}(label lbl, PrintWriter[lbl]{*lbl} sb)  {
+        if (sb == null) return;
+        if (this.tally != null) {
+            this.tally.toXML(lbl, sb);
+        }
+        if (this.message != null) {
+            sb.print("<message>");
+            sb.print(this.message);
+            sb.print("</message>");
+        }
+    }
+    
+    public static ElectionEvent{*lbl} fromXMLsub{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r, ElectionID{*lbl} electionID, int{*lbl} seq) throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
+        TallyStateFinal tally = null;
+        String message = null;
+        
+        if (Util.isNextTag(lbl, r, TallyStateFinal.OPENING_TAG)) {
+            tally = TallyStateFinal.fromXML(lbl, r);
+        }
+        if (Util.isNextTag(lbl, r, "message")) {
+            message = Util.readSimpleTag(lbl, r, "message");
+        }
+        return new ElectionEventFinalize(electionID, seq, tally, message);
+    }
+
+}

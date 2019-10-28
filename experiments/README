@@ -1,0 +1,43 @@
+Civitas experiments
+===================
+
+This directory contains scripts to run performance tests for Civitas.
+
+There are Perl scripts to automate the starting of services, the creation of
+keys, and the elections phases, in the subdirectory src. There are experiment 
+files that provide parameters for the experiment.
+
+This distribution contains sample experiment description files, with
+the suffice ".exp". For example, see the file "sample1.exp" for a
+sample experiment, with 5 voters, designed to run all services
+(tellers, bulletin boards, ballot boxes, etc.) on localhost. The file
+explains the syntax of experiment description files. The file
+"sample2.exp" provides a similar experiment, but with 100 voters.
+  
+Try running the experiment "sample1.exp". Make sure that your current directory
+is the Civitas installation directory. Then execute the following command:
+
+ $ experiments/src/coordinator.pl experiments/sample1.exp
+
+   (On non-Windows system, the requirement to be in the Civitas
+    installation directory can be removed. However, the file
+    sample1.exp must be edited to do so. See sample1.exp for more
+    information.)
+
+The Perl script coordinator.pl uses an experiment description file to
+generate appropriate keys, start up appropriate services (bulletin
+board, tellers, ballot boxes) on appropriate machines, and simulate an
+election, by simulating the actions of the election supervisor,
+election registrar, and voters. Upon successful completion of an
+experiment, results are reported, and stored in a directory specified
+by the experiment description file.
+
+Notes:
+-----
+- Prior to running the experiments, you must have correctly configured
+  Civitas and the software components it depends upon. Please see the
+  README file in the root directory of this distribution.
+
+- The scripts use ps to determine which processes to kill at the end of an
+  experiment. On Windows/Cygwin machines, ps may not provide enough 
+  information, in which case some processes will be left running. 

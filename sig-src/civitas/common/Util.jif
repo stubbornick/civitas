@@ -1,0 +1,370 @@
+package civitas.common;
+
+import java.io.*;
+
+/**
+ * Some utility functions.
+ */
+public class Util {
+    public static String{*<-*} currentVersion() {
+        return "Civitas-v0.01";
+    }
+
+    public static String stripLeadingWhitespace(String s) {
+        if (s == null) return s;
+        try {
+            int i = 0;
+            while (Character.isWhitespace(s.charAt(i))) {
+                i++;
+            }
+            if (i == 0) return s;
+            return s.substring(i);
+        }
+        catch (StringIndexOutOfBoundsException e) {
+            // it's all white space!
+            return "";
+        }
+    }
+
+    public static String stripTrailingWhitespace(String s) {
+        if (s == null) return s;
+        try {
+            int i = s.length();
+            while (Character.isWhitespace(s.charAt(i-1))) {
+                i--;
+            }
+            if (i == s.length()) return s;
+            return s.substring(0,i);
+        }
+        catch (StringIndexOutOfBoundsException e) {
+            // it's all white space!
+            return "";
+        }
+    }
+    
+    /**
+     * Escape the characters:
+     *  & (&amp;)
+     *  < (&lt;) 
+     *  > (&gt;)
+     *  , (&apos;)
+     *  " (&quot;)
+     */
+    public static String escapeString(String s) {
+        if (s == null) return s;
+        String t = ""; 
+        for (int i = 0; i < s.length(); i++) {
+            char c = 0;
+            try {
+                c = s.charAt(i);
+            }
+            catch (StringIndexOutOfBoundsException imposs) { }
+
+            switch (c) {
+            case '&':
+                t += "&amp;";
+                break;
+            case '<':
+                t += "&lt;";
+                break;
+            case '>':
+                t += "&gt;";
+                break;
+            case '\'':
+                t += "&apos;";
+                break;
+            case '"':
+                t += "&quot;";
+                break;
+            default:
+                t += c;
+            }
+        }
+        return t;
+    }
+    public static native void escapeString(String{*lbl} s, label lbl, PrintWriter[lbl]{*lbl} sb);
+    
+    public static String unescapeString(String s) {
+        if (s == null) return s;
+        String t = ""; 
+        for (int i = 0; i < s.length(); i++) {
+            try {
+                char c = s.charAt(i);
+                switch (c) {
+                case '&':
+                    // an escaped char
+                    // read in until we get to a semicolon
+                    String esc = "";
+                    i++;
+                    while (i < s.length()) {
+                        char d = s.charAt(i);
+                        if (d == ';') break;
+                        esc += d;
+                        i++;                    
+                    }
+                    if ("amp".equals(esc)) {
+                        t += '&';
+                    }
+                    else if ("lt".equals(esc)) {
+                        t += '<';                    
+                    } 
+                    else if ("gt".equals(esc)) {
+                        t += '>';                    
+                    } 
+                    else if ("apos".equals(esc)) {
+                        t += '\'';                    
+                    } 
+                    else if ("quot".equals(esc)) {
+                        t += '"';                    
+                    } 
+                    else {
+                        // unknown.
+                        t += "&"+ esc +";";
+                    }
+                    break;
+                default:
+                    t += c;
+                }
+            }
+            catch (StringIndexOutOfBoundsException imposs) { }
+
+        }
+        return t;        
+    }
+    /**
+     * Swallows initial white space, and the initial "<tag>" string
+     */
+    public static void swallowTag{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r, String{*lbl} tag) throws (IllegalArgumentException{*lbl}, IOException{*lbl}){
+        swallowString(lbl, r, "<"+tag+">");
+    }
+    /**
+     * Returns the next tag. The next thing in the stream must be of the form <cccc>
+     */
+    public static native String{*lbl} nextTag{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r):{*lbl} throws IllegalArgumentException, IOException;
+    
+    /**
+     * Returns everything upto, but not including s. Swallows s from the reader.
+     */
+    public static native String{*lbl} readUntil{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r, String{*lbl} s):{*lbl} throws IllegalArgumentException, IOException;
+    /**
+     * Skips everything up to, and including s. 
+     */
+    public static native void skipUntil{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r, String{*lbl} s):{*lbl} throws IllegalArgumentException, IOException;
+
+        /**
+     * Swallows initial white space, and the initial "</tag>" string
+     */
+    public static void swallowEndTag{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r, String{*lbl} tag) throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
+        swallowString(lbl, r, "</"+tag+">");        
+    }
+    private static void swallowString{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r, String{*lbl} s) throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
+        if (r == null || s == null) {
+            throw new IllegalArgumentException("Null arguments");            
+        }
+        
+        int ch = r.read();
+
+        // skip over white space
+        while (ch != -1 && Character.isWhitespace((char)ch)) ch = r.read();
+        
+        // now go through and swallow the string s
+        for (int i = 0; i < s.length(); i++) {
+            if (ch == -1) {
+                throw new IOException("Unexpected end of file: expecting " + s);
+            }
+            try {
+                if (((char)ch) != s.charAt(i)) {               
+                    // try finding some more context, for a better error message...
+                    String received = s.substring(0,i) + ((char)ch);
+                    try {
+                        int count = 10;
+                        while (count-- > 0) {
+                            ch = r.read();
+                            received += ((char)ch);
+                            if (ch == '>') break;
+                        }
+                    }
+                    finally {
+                        throw new IOException("Expecting " + s + " got " + received);                
+                    }
+                }
+            }
+            catch (StringIndexOutOfBoundsException imposs) { }
+            
+            if (i+1 < s.length()) ch = r.read();
+        }
+    }
+
+    /**
+     * Returns everything in s up to the next '<' char
+     */
+    public static String readSimpleTag{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r, String{*lbl} tag) throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
+        if (r == null || tag == null) {
+            throw new IllegalArgumentException("Null arguments");            
+        }
+        
+        if (isNextTag(lbl, r, tag+"/")) {
+            // it's an empty tag, e.g. <applause/>
+            swallowTag(lbl, r, tag+"/");
+            return "";
+        }
+        
+        swallowTag(lbl, r, tag);
+        String s = "";
+        int ch;
+        
+        do {
+            r.mark(1);
+            ch = r.read();
+            if (ch != -1 && ch != '<') s += (char)ch;
+        } while (ch != -1 && ch != '<');
+        
+        if (ch == -1) {
+            throw new IOException("Unexpected end of file");
+        }
+        r.reset();
+        swallowEndTag(lbl, r, tag);
+        return stripTrailingWhitespace(stripLeadingWhitespace(s));
+    }
+
+    /**
+     * Returns the value of the next simple tag, interpreted as an integer.
+     */
+    public static int readSimpleIntTag{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r, String{*lbl} tag) throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
+        String s = readSimpleTag(lbl, r, tag);
+        try {
+            return Integer.parseInt(s);
+        }
+        catch (NumberFormatException e) { 
+            throw new IllegalArgumentException("Expected an int: '" + s + "'");
+        }
+    }
+
+    /**
+     * Returns the value of the next simple tag, interpreted as a long.
+     */
+    public static long readSimpleLongTag{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r, String{*lbl} tag) throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
+        String s = readSimpleTag(lbl, r, tag);
+        try {
+            return Long.parseLong(s);
+        }
+        catch (NumberFormatException e) { 
+            throw new IllegalArgumentException("Expected a long: '" + s + "'");
+        }
+    }
+
+    /**
+     * Returns the value of the next simple tag, interpreted as a boolean.
+     */
+    public static boolean readSimpleBooleanTag{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r, String{*lbl} tag) throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
+        return stringToBoolean(readSimpleTag(lbl, r, tag));
+    }
+    
+    public static boolean stringToBoolean(String s) {
+        return "true".equalsIgnoreCase(s) || "yes".equalsIgnoreCase(s) || "y".equalsIgnoreCase(s);        
+    }
+
+    /**
+     * returns true if the next tag is "<tag>". does not consume any characters except whitespace
+     */
+    public static boolean isNextTag{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r, String{*lbl} tag) throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
+        if (r == null || tag == null) {
+            throw new IllegalArgumentException("Null arguments");            
+        }
+        r.mark(tag.length() + 3);
+        String s = "";
+        int i = 0;
+        while (i < tag.length() + 2) {
+            int ch = r.read();
+            if (ch == -1) {
+                r.reset();
+                return false;
+            }
+            if (i == 0 && Character.isWhitespace((char)ch)) {
+                // ignore the leading whitespace
+                r.mark(tag.length() + 3);
+            }
+            else {
+                s += ((char)ch);
+                i++;
+            }
+        }
+        r.reset();
+        return ("<"+tag+">").equals(s);
+    }
+    
+    public static native int{*lbl}const[]{*lbl2} invertPermutation{*lbl}(label lbl, label lbl2, int{*lbl}const[]{*lbl2} p) where {*lbl2} <= {*lbl};
+    
+    /**
+     * Convert a byte array into a string suitable for an xml message.
+     * For the moment, we'll just use a base 16 encoding for simplicity 
+     */
+    public static String{*lbl;bs} bytesToString(label lbl, byte{*lbl}[] bs) {
+        if (bs == null) return null;
+
+        String s = "";
+        for (int i = 0; i < bs.length; i++) {
+            try {
+                byte b = bs[i];
+                // append the first four bits;
+                int h =  (b & 0xF0) >> 4;
+                s += Character.forDigit(h, 16);
+                int l =  b & 0x0F;
+                s += Character.forDigit(l, 16);
+            }
+            catch (ArrayIndexOutOfBoundsException imposs) { }
+        }
+        return s;
+    }
+
+    public static String{*lbl;bs} constBytesToString(label lbl, byte{*lbl} const [] bs) {
+        if (bs == null) return null;
+
+        String s = "";
+        for (int i = 0; i < bs.length; i++) {
+            try {
+                byte b = bs[i];
+                // append the first four bits;
+                int h =  (b & 0xF0) >> 4;
+                s += Character.forDigit(h, 16);
+                int l =  b & 0x0F;
+                s += Character.forDigit(l, 16);
+            }
+            catch (ArrayIndexOutOfBoundsException imposs) { }
+        }
+        return s;
+    }
+
+    /**
+     * Convert string produced by bytesToString back into a byte array. 
+     */
+    public static native byte{*lbl}[] stringToBytes{*lbl}(label lbl, String{*lbl} s);    
+    /**
+     * Convert string produced by bytesToString back into a byte array. 
+     */
+    public static native byte{*lbl}const[] stringToConstBytes{*lbl}(label lbl, String{*lbl} s);
+    public static boolean{*lbl; a; b} equals(label{*lbl} lbl, byte{*lbl}[] a, byte{*lbl}[] b) {
+        if (a == b) return true;
+        if (a == null || b == null) return false;
+        if (a.length != b.length) return false;
+        for (int i = 0; i < a.length; i++) {
+            try {
+                if (a[i] != b[i]) return false;
+            }
+            catch (ArrayIndexOutOfBoundsException imposs) { }
+        }
+        return true;
+    }
+    public static boolean{*lbl; a; b} equals(label{*lbl} lbl, byte{*lbl}const[] a, byte{*lbl}const[] b, boolean constArrays) {
+        if (a == b) return true;
+        if (a == null || b == null) return false;
+        if (a.length != b.length) return false;
+        for (int i = 0; i < a.length; i++) {
+            try {
+                if (a[i] != b[i]) return false;
+            }
+            catch (ArrayIndexOutOfBoundsException imposs) { }
+        }
+        return true;
+    }
+}

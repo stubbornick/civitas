@@ -1,0 +1,106 @@
+/*
+ * This file is part of the Civitas software distribution.
+ * Copyright (c) 2007-2008, Civitas project group, Cornell University.
+ * See the LICENSE file accompanying this distribution for further license
+ * and copyright information.
+ */ 
+package civitas.common;
+
+import civitas.crypto.*;
+import java.io.*;
+
+/**
+ * This class represents a mesasge posted by a voter ballot box
+ * to commit to the contents of the ballot box at the end of the voting phase.
+ * (Note: Voter ballot boxes were previously known as voter bulletin boards,
+ * hence the name of this class.) 
+ */
+public class BoardClosedContentCommitment implements XMLSerializable {
+    public final static String{*<-*} META = "boardContents";
+    public final static String{*<-*} OPENING_TAG = "boardContents";
+
+    public final ElectionID{this} electionID; 
+    public final int{this} boardIndex; 
+    public final String{this} const[]{this} voterBlockContentHash; // hashes of the board, per voter block.
+    
+
+    
+    public BoardClosedContentCommitment(label{*lbl} lbl,
+            ElectionID{*lbl} electionID, 
+            int{*lbl} boardIndex, 
+            String{*lbl}[]{*lbl} voterBlockContentHash) where {*lbl} <= {this} {
+        this.electionID = electionID;
+        this.boardIndex = boardIndex;
+        String{this} const[]{this} ch;
+        if (voterBlockContentHash != null) {
+            ch = voterBlockContentHash.clone();
+        }
+        else {
+            ch = new String[0];
+        }
+        this.voterBlockContentHash = ch;
+    }
+
+    public String contentHash(int voterBlock) {
+        try {
+            return  voterBlockContentHash[voterBlock];
+        }
+        catch (NullPointerException ignore) { }
+        catch (ArrayIndexOutOfBoundsException ignore) { }
+        return null;
+    }
+    public void toXML{}(PrintWriter[{}]{} sb) {
+        toXML(new label {}, sb);
+    }
+    public void toXML{*lbl}(label lbl, PrintWriter[lbl]{*lbl} sb) where {this} <= lbl  {
+        if (sb == null) return;
+        sb.print("<" + OPENING_TAG + ">");
+        if (this.electionID != null) {
+            this.electionID.toXML(lbl, sb);
+        }
+        
+        sb.print("<index>" + boardIndex + "</index>");
+        if (this.voterBlockContentHash != null) {
+            sb.print("<size>");
+            sb.print(this.voterBlockContentHash.length);
+            sb.print("</size>");
+        }
+        else {
+            sb.print("<size>0</size>");            
+        }
+        sb.print("<hashes>");
+        try {
+            for (int i = 0; i < voterBlockContentHash.length; i++) {
+                sb.print("<hash>");
+                Util.escapeString(voterBlockContentHash[i], lbl, sb);
+                sb.print("</hash>");
+            }        
+        }
+        catch (NullPointerException imposs) { }
+        catch (ArrayIndexOutOfBoundsException imposs) { }
+        sb.print("</hashes>");
+
+        sb.print("</" + OPENING_TAG + ">");
+    }
+    
+    public static BoardClosedContentCommitment{*lbl} fromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r) throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
+        Util.swallowTag(lbl, r,  OPENING_TAG);
+        ElectionID electionID = ElectionID.fromXML(lbl, r);
+        int index =  Util.readSimpleIntTag(lbl, r,  "index");
+        int size = Util.readSimpleIntTag(lbl, r, "size");
+        Util.swallowTag(lbl, r, "hashes");
+        String{*lbl}[] n = new String[size<0?0:size];
+
+        for (int i = 0; i < size; i++) {
+            try {
+                n[i] = Util.unescapeString(Util.readSimpleTag(lbl, r, "hash"));
+            }
+            catch (ArrayIndexOutOfBoundsException imposs) { }
+        }
+        
+        Util.swallowEndTag(lbl, r, "hashes");
+        Util.swallowEndTag(lbl, r,  OPENING_TAG);
+
+        return new BoardClosedContentCommitment(lbl, electionID, index, n);
+    }
+}

@@ -1,0 +1,5 @@
+#!/bin/sh
+# Simple script to run the registrar client
+
+bindir=`dirname "$0"`
+$bindir/civitasrun civitas.registrar.cli.Main $@
