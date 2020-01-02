@@ -85,7 +85,7 @@ for ( my $count = 1 ; $count <= $NUM_VOTER_BBS ; $count++ ) {
 while ( my ( $pubKey, $privKey ) = each(%keysToGen) ) {
     if ( !( -e "$pubKey" ) ) {
         if ($generate) {
-            debugprint "Generating key pair $pubKey $privKey\n";
+            # debugprint "Generating key pair $pubKey $privKey\n";
             `$CIVITAS/bin/civitasrun civitas.GenerateTestFiles keys $publicKeyLength $pubKey $privKey`;
         }
         else {
@@ -104,7 +104,7 @@ for ( my $count = 1 ; $count <= $NUM_VOTERS ; $count++ ) {
 while ( my ( $pubKey, $privKey ) = each(%keysToGen) ) {
     if ( !( -e "$pubKey" ) || -z "$pubKey" ) {
         if ($generate) {
-            debugprint "Generating key pair $pubKey $privKey\n";
+            # debugprint "Generating key pair $pubKey $privKey\n";
             `$CIVITAS/bin/civitasrun civitas.GenerateTestFiles egkeys $elGamalVoterKeyParams_file $pubKey $privKey`;
         }
         else {
@@ -123,7 +123,7 @@ for ( my $count = 1 ; $count <= $NUM_VOTERS ; $count++ ) {
 while ( my ( $pubKey, $privKey ) = each(%keysToGen) ) {
     if ( !( -e "$pubKey" ) || -z "$pubKey" ) {
         if ($generate) {
-            debugprint "Generating key pair $pubKey $privKey\n";
+            # debugprint "Generating key pair $pubKey $privKey\n";
             `$CIVITAS/bin/civitasrun civitas.GenerateTestFiles keys $publicKeyLength $pubKey $privKey`;
         }
         else {

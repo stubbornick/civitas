@@ -12,10 +12,25 @@ use warnings;
 
     print "And the civitas dir is $CIVITAS\n";
 
+my $timing = 0;
+
+sub startTiming {
+    $timing = time;
+}
+
+sub writeTiming {
+    my $tmpdir = experimentTempResultsDir();
+    open(FH, '>>', "$tmpdir/timings.txt") or die $!;
+    my $elapsedTime = time-$timing;
+    $timing = time;
+    print FH "Time of $_[0]: ${elapsedTime} s\n";
+    close(FH);
+}
+
 if ( $#ARGV < 0 ) {
     print <<USAGE;
 usage: coordinater.pl experimentDescFile [experimentDescFile ...]
-    Takes one or more experiment description files as arguments, and 
+    Takes one or more experiment description files as arguments, and
     coordinates each experiment in turn, by (re)starting tellers, and
     starting the supervisor, registrar, voter scripts, etc.
 USAGE
@@ -76,7 +91,9 @@ EOF
     civitasExec( "perl", "-I$CIVITAS/experiments/src", "$CIVITAS/experiments/src/killServers.pl", $expDesc );
 
     # generate test data if needed
+    startTiming();
     civitasExec( "perl", "-I$CIVITAS/experiments/src", "$CIVITAS/experiments/src/generateKeys.pl", $expDesc, "-generate" );
+    writeTiming("Keys generation");
 
     # start up the tellers and boards
     civitasExec( "perl", "-I$CIVITAS/experiments/src", "$CIVITAS/experiments/src/startServer.pl",
@@ -115,18 +132,23 @@ EOF
 
     # perform the supervisor's election start script
     civitasExec( "perl", "-I$CIVITAS/experiments/src", "$CIVITAS/experiments/src/startElection.pl", $expDesc );
+    writeTiming("Election starting");
 
     # perform the voters script
     civitasExec( "perl", "-I$CIVITAS/experiments/src", "$CIVITAS/experiments/src/vote.pl", $expDesc );
+    writeTiming("Voting");
 
     # perform the supervisor's election stop script.
     civitasExec( "perl", "-I$CIVITAS/experiments/src", "$CIVITAS/experiments/src/stopElection.pl", $expDesc );
+    writeTiming("Election stopping");
 
     # wait until the election is tabulated
     civitasExec( "perl", "-I$CIVITAS/experiments/src", "$CIVITAS/experiments/src/waitForElection.pl", $expDesc );
+    writeTiming("Tabulation");
 
     # finalize the election
     civitasExec( "perl", "-I$CIVITAS/experiments/src", "$CIVITAS/experiments/src/finalizeElection.pl", $expDesc );
+    writeTiming("Finalization");
 
     # gather results from servers before killing them
     my $expResults = experimentResultsDir("adminBB");
@@ -151,7 +173,7 @@ EOF
     civitasExec( "perl", "-I$CIVITAS/experiments/src", "$CIVITAS/experiments/src/killServers.pl", $expDesc );
 
     # gather some more results
-    
+
     # get disk usage for the bboards
     $expResults = experimentResultsDir("adminBB");
     my $storageResults = experimentResultsDir( "storage", "adminBB" );
@@ -169,7 +191,7 @@ EOF
         }
     }
 
-    # copy results from local machines over 
+    # copy results from local machines over
     my $expResultsDir     = experimentResultsDir();
     my $expTempResultsDir = experimentTempResultsDir();
     sleep 10; # wait a little, for the time commands, and logs, to finish writing their output.
