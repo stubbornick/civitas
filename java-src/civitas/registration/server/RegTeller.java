@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.registration.server;
 
 import java.io.*;
@@ -88,10 +88,10 @@ public class RegTeller {
 
         // serve connections
         SocketUtil.acceptConnections(LabelUtil.singleton().noComponents(),
-                                     ss, 
+                                     ss,
                                      new RTSocketAcceptor(pubKey, privKey, rtstore));
 
-    }            
+    }
     static class AdminSocketListener implements Runnable {
         ServerSocket ass;
         public AdminSocketListener(ServerSocket ass) {
@@ -100,7 +100,7 @@ public class RegTeller {
         public void run() {
             while (true) {
                 try {
-                    Socket s = ass.accept();  
+                    Socket s = ass.accept();
 
                     BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
                     PrintStream out = new PrintStream(s.getOutputStream());
@@ -117,7 +117,7 @@ public class RegTeller {
                         out.println("numSharedKeyEncs : " + CryptoFactoryC.numSharedKeyEncs());
                         out.println("numSharedKeyDecs : " + CryptoFactoryC.numSharedKeyDecs());
                         out.println("numPublicKeyEncs : " + CryptoFactoryC.numPublicKeyEncs());
-                        out.println("numPublicKeyDecs : " + CryptoFactoryC.numPublicKeyDecs());                        
+                        out.println("numPublicKeyDecs : " + CryptoFactoryC.numPublicKeyDecs());
                         out.println("numPublicKeySign : " + CryptoFactoryC.numPublicKeySign());
                         out.println("numPublicKeyVerifySig : " + CryptoFactoryC.numPublicKeyVerifySig());
                         out.println("<END>");
@@ -132,7 +132,7 @@ public class RegTeller {
                 catch (Exception e) {
                     // recover silently
                 }
-            }            
+            }
         }
 
     }
@@ -150,8 +150,8 @@ public class RegTeller {
             this.rtstore = rtstore;
         }
         public void accept(InputStream input, OutputStream output) throws IOException {
-            final RTProtocol rtt = new RTProtocol(pubKey).civitas$registration$server$RTProtocol$(privKey, 
-                                                                                               input, 
+            final RTProtocol rtt = new RTProtocol(pubKey).civitas$registration$server$RTProtocol$(privKey,
+                                                                                               input,
                                                                                                output,
                                                                                                rtstore);
             try {

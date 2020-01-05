@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import java.io.*;
@@ -20,18 +20,18 @@ public abstract class Mix implements XMLSerializable {
      * Which mix is this? Each teller performs a single mix. The first mix is number 1.
      */
     public final int{this} number;
-    
+
     /**
      * A commitment to a nonce for the mix. May be null if not needed.
      */
-    public final byte{} const[]{this} mixNonceHash;   
+    public final byte{} const[]{this} mixNonceHash;
 
     /**
      * One commitment for each element of the mix. Each commitment is a byte array.
      */
-    public byte{}[][]{} commitments;   
+    public byte{}[][]{} commitments;
 
-    
+
     public Mix(int{this} number, byte{}const[]{this} mixNonceHash) {
         this.number = number;
         this.mixNonceHash = mixNonceHash;
@@ -41,7 +41,7 @@ public abstract class Mix implements XMLSerializable {
     public abstract int{} size();
     public abstract void add{}(Object{} o, byte{}const[]{} commitment) throws (ClassCastException{});
     public abstract Object{} get(int{} i) throws (IndexOutOfBoundsException{});
-    
+
     protected void addCommitment{}(byte{}const[]{} commitment) {
         try {
             byte{}[][] n = new byte[commitments.length + 1][];
@@ -49,7 +49,7 @@ public abstract class Mix implements XMLSerializable {
                 try {
                     n[i] = commitments[i];
                 }
-                catch (NullPointerException ignore) { }                
+                catch (NullPointerException ignore) { }
                 catch (ArrayIndexOutOfBoundsException ignore) { }
             }
             n[commitments.length] = commitment.clone();
@@ -58,7 +58,7 @@ public abstract class Mix implements XMLSerializable {
         catch (NullPointerException imposs) { }
         catch (ArrayIndexOutOfBoundsException imposs) { }
     }
-    
+
 
     public void toXML{}(PrintWriter[{}]{} sb) {
         toXML(new label {}, sb);

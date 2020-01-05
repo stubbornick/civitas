@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.tabulation.server;
 
 import java.io.*;
@@ -23,7 +23,7 @@ import civitas.crypto.PETShare;
 import civitas.crypto.PublicKey;
 
 /**
- * Implementation of tabulation teller storage, using the file system. 
+ * Implementation of tabulation teller storage, using the file system.
  */
 public class FileTTStore implements TTStore {
     private final PublicKey publicKey;
@@ -50,7 +50,7 @@ public class FileTTStore implements TTStore {
         else {
             // the root exists. Pre-populate boardNames
 
-        }            
+        }
     }
 
     static String cleanForFilename(String s) {
@@ -60,12 +60,12 @@ public class FileTTStore implements TTStore {
             char c = s.charAt(i);
             if (Character.isLetterOrDigit(c)) {
                 sb.append(c);
-            }            
+            }
             else {
-                sb.append('_');                
+                sb.append('_');
             }
         }
-        return sb.toString();        
+        return sb.toString();
     }
     PrintStream getFilePrintStream(String filename) {
         if (root == null) return null;
@@ -189,11 +189,11 @@ public class FileTTStore implements TTStore {
 
 
     public boolean retrieveTellerMixOK(ElectionID electionID, int tellerIndex, boolean isVoteMix, int block) {
-        String key = electionID.toString() + ":" + tellerIndex + ":" + isVoteMix + ":" + block; 
+        String key = electionID.toString() + ":" + tellerIndex + ":" + isVoteMix + ":" + block;
         return tellerMixOK.contains(key);
     }
     public void storeTellerMixOK(ElectionID electionID, int tellerIndex, boolean isVoteMix, int block) {
-        String key = electionID.toString() + ":" + tellerIndex + ":" + isVoteMix + ":" + block; 
+        String key = electionID.toString() + ":" + tellerIndex + ":" + isVoteMix + ":" + block;
         tellerMixOK.add(key);
 
     }
@@ -208,7 +208,7 @@ public class FileTTStore implements TTStore {
         for (int i = 0; i < shares.length; i++) {
             sb = new StringWriter();
             shares[i].toXML(LabelUtil.singleton().noComponents(), new PrintWriter(sb));
-            out.println(sb.toString());            
+            out.println(sb.toString());
         }
         out.close();
     }
@@ -219,14 +219,14 @@ public class FileTTStore implements TTStore {
             try {
                 int length = Integer.parseInt(reader.readLine());
                 PETShare[] ret = new PETShare[length];
-                for (int i = 0; i < length; i++) {                
+                for (int i = 0; i < length; i++) {
                     try {
                         ret[i] = CryptoUtil.factory().petShareFromXML(LabelUtil.singleton().noComponents(), reader);
                     }
-                    catch (IOException e) { 
+                    catch (IOException e) {
                         e.printStackTrace();
                     }
-                    catch (IllegalArgumentException e) { 
+                    catch (IllegalArgumentException e) {
                         e.printStackTrace();
                     }
                 }
@@ -268,7 +268,7 @@ public class FileTTStore implements TTStore {
         String key = "electoralRollmix" + election.toString() + block;
         MixInfoHolder h = erMixInfoStore.get(key);
         if (h == null) return null;
-        return (ElectoralRollMixInfo)(rightPerm?h.right:h.left);        
+        return (ElectoralRollMixInfo)(rightPerm?h.right:h.left);
     }
 
     public void storeVoteVotePETShares(ElectionID election, int block, int ballotIndex, PETShare[] shares) {
@@ -280,7 +280,7 @@ public class FileTTStore implements TTStore {
         for (int i = 0; i < shares.length; i++) {
             sb = new StringWriter();
             shares[i].toXML(LabelUtil.singleton().noComponents(), new PrintWriter(sb));
-            out.println(sb.toString());            
+            out.println(sb.toString());
         }
         out.close();
     }
@@ -291,17 +291,17 @@ public class FileTTStore implements TTStore {
             try {
                 int length = Integer.parseInt(reader.readLine());
                 PETShare[] ret = new PETShare[length];
-                for (int i = 0; i < length; i++) {                
+                for (int i = 0; i < length; i++) {
                     try {
                         ret[i] = CryptoUtil.factory().petShareFromXML(LabelUtil.singleton().noComponents(), reader);
                     }
-                    catch (IOException e) { 
+                    catch (IOException e) {
                         e.printStackTrace();
                     }
-                    catch (IllegalArgumentException e) { 
+                    catch (IllegalArgumentException e) {
                         e.printStackTrace();
                     }
-                }            
+                }
                 return ret;
             }
             catch (IOException e) {

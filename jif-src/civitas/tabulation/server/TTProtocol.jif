@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.tabulation.server;
 
 import java.io.*;
@@ -26,9 +26,9 @@ public class TTProtocol[principal tellerPubKey] extends Protocol implements Clos
     private final TTStore[tellerPubKey]{this} ttstore;
     private final TabulationCoordinator{this} coordinator;
     private final PrintStream[{*->*}]{this} debugLog;
-    
+
     TTProtocol(PrivateKey{this} tellerPrivKey,
-               InputStream[{}]{this} input, 
+               InputStream[{}]{this} input,
                OutputStream[{}]{this} output,
                TTStore[tellerPubKey]{this} ttstore,
                TabulationCoordinator{this} coordinator,
@@ -37,11 +37,11 @@ public class TTProtocol[principal tellerPubKey] extends Protocol implements Clos
         this.input = new BufferedReader[{}](new InputStreamReader[{}](input));
         this.output = new PrintStream[{}](output);
         this.ttstore = ttstore;
-        this.coordinator = coordinator; 
+        this.coordinator = coordinator;
         this.debugLog = debugLog;
         super();
     }
-    
+
     public Object{} invoke{}() where caller(tellerPubKey) {
         try {
             run();
@@ -55,11 +55,11 @@ public class TTProtocol[principal tellerPubKey] extends Protocol implements Clos
         BufferedReader[{}] input = this.input;
         PrintStream[{}] output = this.output;
         if (input == null || output == null || ttstore == null) return;
-                
+
         String kind = input.readLine();
         if (kind == null) kind = "";
-        
-        if (kind.equalsIgnoreCase("REQUEST_PARTICIPATION")) {            
+
+        if (kind.equalsIgnoreCase("REQUEST_PARTICIPATION")) {
             ElectionDetails elecDetails = readInElectionDetails();
             TellerDetails tellerDetails = readInTellerDetails();
             int tellerIndex = -1;
@@ -84,7 +84,7 @@ public class TTProtocol[principal tellerPubKey] extends Protocol implements Clos
             try {
                 index = Integer.parseInt(input.readLine());
             }
-            catch (NumberFormatException e) { 
+            catch (NumberFormatException e) {
                 throw new IOException(e.getMessage());
             }
 
@@ -93,19 +93,19 @@ public class TTProtocol[principal tellerPubKey] extends Protocol implements Clos
                 // store the needed information about election and teller details.
                 // store the election key, and the index of this tellers place in it.
                 storeIndex(elecDetails, index);
-                
-                output.println(true);                
+
+                output.println(true);
             }
             else {
-                output.println(false);                                
+                output.println(false);
             }
-            
+
             output.flush();
         }
         else if (kind.equalsIgnoreCase("GEN_TABULATION_KEY")) {
-            // start the protocol to form a shared public/private key pair 
-            // with the other tellers            
-            
+            // start the protocol to form a shared public/private key pair
+            // with the other tellers
+
             ElectionID electionID = readInElectionID();
             if (isAcceptedElection(electionID) && electionID != null) {
                 if (coordinator != null) {
@@ -119,7 +119,7 @@ public class TTProtocol[principal tellerPubKey] extends Protocol implements Clos
                 TellerDetails tellerDetails = ElectionUtil.retrieveTellerDetails(electionDetails, electionCache);
                 int numTabTellers = numTabTellers(tellerDetails);
                 genSharedKey(electionDetails, numTabTellers);
-            }            
+            }
         }
         else if (kind.equalsIgnoreCase("TABULATE")) {
             ElectionID electionID = readInElectionID();
@@ -150,12 +150,12 @@ public class TTProtocol[principal tellerPubKey] extends Protocol implements Clos
                 if (coordinator != null) {
                     coordinator.debugNotification(electionID);
                 }
-            }            
+            }
         }
 
     }
-        
-    private void storeIndex{}(final ElectionDetails{} elecDetails_, int{} index_) 
+
+    private void storeIndex{}(final ElectionDetails{} elecDetails_, int{} index_)
     where caller (tellerPubKey), endorse({tellerPubKey<-tellerPubKey}) {
         ElectionDetails elecDetails = endorse(elecDetails_, {tellerPubKey<-tellerPubKey});
         int index = endorse(index_, {tellerPubKey<-tellerPubKey});
@@ -163,22 +163,22 @@ public class TTProtocol[principal tellerPubKey] extends Protocol implements Clos
 
         ttstore.storeIndex(elecDetails.electionID, index);
     }
-    private int{tellerPubKey<-tellerPubKey} retrieveIndex{}(ElectionID{} id_) 
+    private int{tellerPubKey<-tellerPubKey} retrieveIndex{}(ElectionID{} id_)
     where caller (tellerPubKey), endorse({tellerPubKey<-tellerPubKey}) {
         ElectionID id = endorse(id_, {tellerPubKey<-tellerPubKey});
         if (id == null || ttstore == null) return -1;
 
         return ttstore.retrieveIndex(id);
     }
-    private boolean{tellerPubKey<-tellerPubKey} isAcceptedElection{}(ElectionID{} id_) 
+    private boolean{tellerPubKey<-tellerPubKey} isAcceptedElection{}(ElectionID{} id_)
     where caller (tellerPubKey), endorse({tellerPubKey<-tellerPubKey}) {
         ElectionID id = endorse(id_, {tellerPubKey<-tellerPubKey});
         if (id == null || ttstore == null) return false;
 
         return ttstore.isAcceptedElection(id);
     }
-    
-    private void genSharedKey{}(final ElectionDetails{} electionDetails_, int{} numTabTellers_) 
+
+    private void genSharedKey{}(final ElectionDetails{} electionDetails_, int{} numTabTellers_)
     throws (IOException{tellerPubKey<-tellerPubKey}) where caller(tellerPubKey), endorse({tellerPubKey<-tellerPubKey}) {
         IOException ioex = null;
         try {
@@ -188,15 +188,15 @@ public class TTProtocol[principal tellerPubKey] extends Protocol implements Clos
                 genSharedKey_(electionDetails, numTabTellers, ttstore.retrieveIndex(electionDetails.electionID));
             }
         }
-        catch (IOException e) { 
+        catch (IOException e) {
             ioex = e;
         }
         IOException dioex = declassify(ioex, {tellerPubKey<-tellerPubKey});
         if (dioex != null) throw dioex;
     }
-    private void genSharedKey_{tellerPubKey<-tellerPubKey}(final ElectionDetails{tellerPubKey<-tellerPubKey} electionDetails, 
+    private void genSharedKey_{tellerPubKey<-tellerPubKey}(final ElectionDetails{tellerPubKey<-tellerPubKey} electionDetails,
             int{tellerPubKey<-tellerPubKey} numTabTellers,
-            int{tellerPubKey<-tellerPubKey} tellerIndex):{tellerPubKey<-tellerPubKey;tellerPubKey->tellerPubKey} 
+            int{tellerPubKey<-tellerPubKey} tellerIndex):{tellerPubKey<-tellerPubKey;tellerPubKey->tellerPubKey}
     throws IOException where caller(tellerPubKey) {
         if (electionDetails == null) return;
         ElectionID electionID = electionDetails.electionID;
@@ -206,13 +206,13 @@ public class TTProtocol[principal tellerPubKey] extends Protocol implements Clos
         ElectionCache electionCache = electionCache(electionID, index);
 
         // all we need to do is generate a public/private key pair,
-        // post a commitment, wait until everyone has posted commitments, 
+        // post a commitment, wait until everyone has posted commitments,
         // and post the public key.
         IOException eioex = null;
         IOException ioex = null;
-        
-//      prepared to declassify whether or not the keyshare has been generated yet. 
-        if (declassify(keyshare == null, {tellerPubKey<-tellerPubKey})) { 
+
+//      prepared to declassify whether or not the keyshare has been generated yet.
+        if (declassify(keyshare == null, {tellerPubKey<-tellerPubKey})) {
             try {
                 ElGamalParameters params = electionDetails.elGamalParameters;
                 keyshare = CryptoUtil.factory().generateKeyPairShare(params);
@@ -222,7 +222,7 @@ public class TTProtocol[principal tellerPubKey] extends Protocol implements Clos
             // store the private key
             ttstore.storeKeyShare(electionID, keyshare);
         }
-        
+
         final principal p = (Principal)null;
 
         if (declassify(keyshare != null, {tellerPubKey<-tellerPubKey}) && electionID != null) {
@@ -244,9 +244,9 @@ public class TTProtocol[principal tellerPubKey] extends Protocol implements Clos
                         bb.post(TabTellerKeyShareCommitment.META, com, tellerPrivKey);
                         TTTabulationUtil[p,p,p].broadcast(electionDetails, electionCache, tellerIndex);
                     }
-                    catch (IllegalArgumentException e) { 
+                    catch (IllegalArgumentException e) {
                         throw new IOException(e.getMessage());
-                    }        
+                    }
                     catch (NullPointerException imposs) { }
                 }
                 catch (IOException e) {
@@ -255,8 +255,8 @@ public class TTProtocol[principal tellerPubKey] extends Protocol implements Clos
                 eioex = endorse(ioex, {tellerPubKey<-tellerPubKey});
                 if (eioex != null) throw eioex;
             }
-            
-            
+
+
             // wait until all commitments are posted
             declassify({tellerPubKey<-tellerPubKey}) {
                 boolean allCommitmentsPosted = false;
@@ -277,20 +277,20 @@ public class TTProtocol[principal tellerPubKey] extends Protocol implements Clos
                 eioex = endorse(ioex, {tellerPubKey<-tellerPubKey});
                 if (eioex != null) throw eioex;
 
-                allCommitmentsPostedC = endorse(allCommitmentsPosted, {tellerPubKey<-tellerPubKey}); 
-                if (allCommitmentsPostedC) {                    
+                allCommitmentsPostedC = endorse(allCommitmentsPosted, {tellerPubKey<-tellerPubKey});
+                if (allCommitmentsPostedC) {
                     // post the public key (and proof)
                     try {
-                        TabTellerKeyShare tabTellShareD = declassify(tabTellShare, 
+                        TabTellerKeyShare tabTellShareD = declassify(tabTellShare,
                                 {tellerPubKey->tellerPubKey allCommitmentsPostedC->_;tellerPubKey<-tellerPubKey} to {} using allCommitmentsPostedC);
                         try {
                             BBClientUtil bb = new BBClientUtil(electionID);
                             bb.post(TabTellerKeyShare.META, tabTellShareD, tellerPrivKey);
                             TTTabulationUtil[p,p,p].broadcast(electionDetails, electionCache, tellerIndex);
                         }
-                        catch (IllegalArgumentException e) { 
+                        catch (IllegalArgumentException e) {
                             throw new IOException(e.getMessage());
-                        }        
+                        }
                     }
                     catch (IOException e) {
                         ioex = e;
@@ -301,7 +301,7 @@ public class TTProtocol[principal tellerPubKey] extends Protocol implements Clos
                     if (eioex != null) throw eioex;
                 }
             }
-        }        
+        }
     }
     static int numTabTellers(TellerDetails tellerDetails) {
         if (tellerDetails != null && tellerDetails.tabulationTellers != null) {
@@ -310,7 +310,7 @@ public class TTProtocol[principal tellerPubKey] extends Protocol implements Clos
         return 0;
     }
 
-    private boolean allTabTellerKeyShareCommitmentsPosted{}(ElectionID{} electionID, ElectionCache{} electionCache, int{} numTabTellers) 
+    private boolean allTabTellerKeyShareCommitmentsPosted{}(ElectionID{} electionID, ElectionCache{} electionCache, int{} numTabTellers)
     throws (IOException{}) where caller(tellerPubKey) {
         for (int i = 0; i < numTabTellers; i++) {
             if (ElectionUtil.retrieveTabTellerSharedPublicKeyCommitment(electionID, electionCache, i+1) == null) {
@@ -319,29 +319,29 @@ public class TTProtocol[principal tellerPubKey] extends Protocol implements Clos
         }
         return true;
     }
-    
+
     /**
      * Because the tabulation code is idempotent, and robust to being
      * called multiple times, the tabulation teller is ok with auto-endorsing
      * the method.
      */
-    private void tabulate{}(final ElectionDetails{} electionDetails_, 
-                            BBClientUtil{} bb_) 
+    private void tabulate{}(final ElectionDetails{} electionDetails_,
+                            BBClientUtil{} bb_)
     throws (IOException{}) where caller(tellerPubKey), endorse({tellerPubKey<-tellerPubKey}) {
         // prepared to endorse the election details since we will only run the
         // tabulation if the integrity is sufficiently high.
         BBClientUtil bb = endorse(bb_, {tellerPubKey<-tellerPubKey});
         final ElectionDetails electionDetails = endorse(electionDetails_, {tellerPubKey<-tellerPubKey});
         if (electionDetails == null) return;
-        // TODO: The tellers principal should be a principal 
+        // TODO: The tellers principal should be a principal
         // that all and only the tabulation tellers can act for.
         // This is still to be implemented. Instead we conservatively use
         // the bottom principal, null, who all the tellers can act for.
-        final principal tellers = null; 
+        final principal tellers = null;
         final TTTabulation[tellerPubKey, electionDetails.supervisor, tellers] ttt = new TTTabulation[tellerPubKey, electionDetails.supervisor, tellers](tellerPrivKey, ttstore, bb, debugLog);
         ttt.tabulate(electionDetails);
     }
-    
+
     private ElectionDetails{} readInElectionDetails{}() throws (IOException{}) {
         try {
             return ElectionDetails.fromXML(new label {}, input);
@@ -364,13 +364,13 @@ public class TTProtocol[principal tellerPubKey] extends Protocol implements Clos
         }
         catch (IllegalArgumentException e) {
             throw new IOException(e.getMessage());
-        }        
+        }
     }
 
     /**
      * Decide whether or not teller p will participate in an election
      */
-    protected boolean{} decideParticipation{}(final ElectionDetails{} elecDetails_, TellerDetails{} tellers_, int{} tellerIndex_) 
+    protected boolean{} decideParticipation{}(final ElectionDetails{} elecDetails_, TellerDetails{} tellers_, int{} tellerIndex_)
     where caller (tellerPubKey), endorse({tellerPubKey<-tellerPubKey}) {
         ElectionDetails elecDetails = endorse(elecDetails_, {tellerPubKey<-tellerPubKey});
         TellerDetails tellers = endorse(tellers_, {tellerPubKey<-tellerPubKey});
@@ -381,7 +381,7 @@ public class TTProtocol[principal tellerPubKey] extends Protocol implements Clos
         boolean decision = true;
         try {
             ElectionCache electionCache = electionCache(elecDetails.electionID, tellerIndex);
-            if (ElectionUtil.retrieveElectionStatus(tellerPubKey, elecDetails.electionID, electionCache) != ElectionUtil.STATUS_DEFINED) { 
+            if (ElectionUtil.retrieveElectionStatus(tellerPubKey, elecDetails.electionID, electionCache) != ElectionUtil.STATUS_DEFINED) {
                 decision = false;
             }
         }
@@ -389,20 +389,20 @@ public class TTProtocol[principal tellerPubKey] extends Protocol implements Clos
             // couldn't contact the BB server. Seems like a bad deal...
             decision = false;
         }
-                
-        
+
+
         if (endorse(decision, {tellerPubKey<-tellerPubKey}) && ttstore != null) {
             ttstore.storeAcceptance(elecDetails.electionID);
         }
         return decision;
     }
-    
-    private ElectionCache{tellerPubKey<-tellerPubKey} electionCache{}(ElectionID{} id_) 
+
+    private ElectionCache{tellerPubKey<-tellerPubKey} electionCache{}(ElectionID{} id_)
     where caller (tellerPubKey), endorse({tellerPubKey<-tellerPubKey}) {
-        return electionCache(id_, retrieveIndex(id_)); 
+        return electionCache(id_, retrieveIndex(id_));
     }
 
-    private ElectionCache{tellerPubKey<-tellerPubKey} electionCache{}(ElectionID{} id_, int{} tellerIndex_) 
+    private ElectionCache{tellerPubKey<-tellerPubKey} electionCache{}(ElectionID{} id_, int{} tellerIndex_)
     where caller (tellerPubKey), endorse({tellerPubKey<-tellerPubKey}) {
         ElectionID id = endorse(id_, {tellerPubKey<-tellerPubKey});
         int tellerIndex = endorse(tellerIndex_, {tellerPubKey<-tellerPubKey});

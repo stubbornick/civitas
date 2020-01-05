@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import java.io.*;
@@ -19,13 +19,13 @@ public class ElectionAbandonment implements XMLSerializable {
     public final boolean{this} isTabulationTeller;
 
     public final String{this} reason;
-    
+
     public ElectionAbandonment(int{this} tellerIndex, boolean{this} isTabulationTeller, String{this} reason) {
         this.tellerIndex = tellerIndex;
         this.isTabulationTeller = isTabulationTeller;
         this.reason = reason;
     }
-    
+
     public String{} reporter() {
         if (isTabulationTeller) {
             return "tabulation teller " + tellerIndex;
@@ -51,15 +51,15 @@ public class ElectionAbandonment implements XMLSerializable {
 
         sb.print("</electionAbandonment>");
     }
-    
+
     public static ElectionAbandonment{} fromXML{}(Reader[{}]{} r)  throws (IllegalArgumentException{}, IOException{}) {
         final label lbl = new label {};
         Util.swallowTag(lbl, r,  "electionAbandonment");
         int ti = Util.readSimpleIntTag(lbl, r,  "tellerIndex");
         boolean isTab = Util.readSimpleBooleanTag(lbl, r,  "isTabulationTeller");
-        String reason = Util.unescapeString(Util.readSimpleTag(lbl, r,  "reason"));        
+        String reason = Util.unescapeString(Util.readSimpleTag(lbl, r,  "reason"));
         Util.swallowEndTag(lbl, r,  "electionAbandonment");
-        
+
         return new ElectionAbandonment(ti, isTab, reason);
     }
 }

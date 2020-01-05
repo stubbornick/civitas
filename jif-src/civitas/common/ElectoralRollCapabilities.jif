@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import civitas.crypto.*;
@@ -11,22 +11,22 @@ import java.io.*;
 
 /**
  * The encrypted capabilities of all voters. This data structure is produced
- * by combining the encrypted capability shares posted by each registration 
- * teller, and is used as input to the electoral roll capability renecryption 
+ * by combining the encrypted capability shares posted by each registration
+ * teller, and is used as input to the electoral roll capability renecryption
  * mix.
  */
 public class ElectoralRollCapabilities implements XMLSerializable {
     public static final String{*<-*} OPENING_TAG = "electoralRollCapabilities";
-    
+
 
     // an array of voter capabilities
     public final VoterEncCapabilities{}[]{this} roll;
-    
+
 
     public ElectoralRollCapabilities(VoterEncCapabilities{}[]{this} roll) {
         this.roll = roll;
     }
-    
+
     public void toXML{}(PrintWriter[{}]{} sb) {
         if (sb == null) return;
         sb.print("<" + OPENING_TAG + ">");
@@ -45,12 +45,12 @@ public class ElectoralRollCapabilities implements XMLSerializable {
             }
         }
         else {
-            sb.print("<size>0</size>");                        
+            sb.print("<size>0</size>");
         }
-        
+
         sb.print("</" + OPENING_TAG + ">");
     }
-    
+
     public static ElectoralRollCapabilities fromXML{}(Reader[{}]{} r) throws (IllegalArgumentException{}, IOException{}) {
         final label lbl = new label {};
         Util.swallowTag(lbl, r, OPENING_TAG);
@@ -64,8 +64,8 @@ public class ElectoralRollCapabilities implements XMLSerializable {
             catch (ArrayIndexOutOfBoundsException imposs) { }
         }
 
-                
+
         Util.swallowEndTag(lbl, r, OPENING_TAG);
         return new ElectoralRollCapabilities(roll);
-    }    
+    }
 }

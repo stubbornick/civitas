@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas;
 
 import java.io.*;
@@ -20,9 +20,9 @@ import civitas.crypto.*;
 import civitas.voter.Voter;
 
 /**
- * Automated voting client, used in experiments to generate ballots and 
+ * Automated voting client, used in experiments to generate ballots and
  * submit votes for many voters.
- * 
+ *
  */
 public class AutomatedVotingClient {
     private static void usage() {
@@ -47,7 +47,7 @@ public class AutomatedVotingClient {
         System.err.println("    finishFile         : file to create when finished voting, as a simple mechanism to indicate completion");
         System.err.println("    cacheDir           : directory to use for caching data");
         System.err.println("    logfile            : file to log information to.");
-        System.exit(0);        
+        System.exit(0);
     }
     public static void main(String[] args) {
         if (args.length != 16) usage();
@@ -69,14 +69,14 @@ public class AutomatedVotingClient {
         String finishFile = args[i++];
         String cacheDir = args[i++];
         String logfile  = args[i++];
-        
+
         boolean clientCaching = cacheClient.startsWith("y") || cacheClient.equals("true") || cacheClient.equals("1");
         try {
             new AutomatedVotingClient(new PrintWriter(logfile)).submitBallot(cacheDir,
                                                      electionDetails, tellerDetails, indexmarker,
-                                                     voterNameFormat, 
-                                                     voterEGPrivKeyFormat, voterEGPubKeyFormat, 
-                                                     voterPrivKeyFormat, voterPubKeyFormat, 
+                                                     voterNameFormat,
+                                                     voterEGPrivKeyFormat, voterEGPubKeyFormat,
+                                                     voterPrivKeyFormat, voterPubKeyFormat,
                                                      startIndex, count, dupCount, invCount,
                                                      clientCaching);
         }
@@ -111,19 +111,19 @@ public class AutomatedVotingClient {
             String voterPrivKeyFormat_, String voterPubKeyFormat_,
             int voterStartIndex, int count, int dupCount, int invCount,
             boolean cacheClient) throws IllegalArgumentException, IOException {
-        ElectionDetails electionDetails = ElectionDetails.fromXML(LabelUntilUtil.singleton().noComponents(), 
+        ElectionDetails electionDetails = ElectionDetails.fromXML(LabelUntilUtil.singleton().noComponents(),
                                                                   new BufferedReader(new FileReader(electionDetailsFile)));
 
         ElectionCache electionCache = null;
         if (cacheClient) {
             electionCache = new FileBasedElectionCache(cacheDir, electionDetails.electionID.id);
         }
-        TellerDetails tellerDetails = TellerDetails.fromXML(LabelUntilUtil.singleton().noComponents(), 
+        TellerDetails tellerDetails = TellerDetails.fromXML(LabelUntilUtil.singleton().noComponents(),
                                                             new BufferedReader(new FileReader(tellerDetailsFile)));
         electionCache.setElectionDetails(electionDetails);
         electionCache.setTellerDetails(tellerDetails);
-        
-        
+
+
         int numVoterBlocks = ElectionUtil.numberVoterBlocks(electionDetails, electionCache);
 
         int voterEndIndex = voterStartIndex + count;
@@ -138,10 +138,10 @@ public class AutomatedVotingClient {
                 dupVoters.put(ind, dupVoters.get(ind)+1);
             }
             else {
-                dupVoters.put(ind, 1);                
+                dupVoters.put(ind, 1);
             }
         }
-        
+
         long startTime = System.currentTimeMillis();
         long totalRetrieveCaps = 0;
         long totalSubmissionTime = 0;
@@ -170,19 +170,19 @@ public class AutomatedVotingClient {
                                                                   voterEGPrivKey,
                                                                   voterPubKey,
                                                                   voterPrivKey);
-                
+
                 long afterRetrieveCaps = System.currentTimeMillis();
                 totalRetrieveCaps += (afterRetrieveCaps - beforeRetrieveCaps);
-                
+
                 Ballot ballot = GenerateTestFiles.generateBallot(null, electionDetails.ballotDesign, voterName.getBytes());
 
                 // System.err.println("gen  "  + (start2 - start));
                 long beforeSubmission = System.currentTimeMillis();
                 Voter.vote(PrincipalUtil.bottomPrincipal(), GenerateTestFiles.voterBlockForVoter(i, numVoterBlocks), electionDetails, electionCache, ballot, vc.capabilities);
                 long afterSubmission = System.currentTimeMillis();
-                
+
                 totalSubmissionTime += (afterSubmission - beforeSubmission);
-                
+
                 // do we need to submit duplicate votes for the voter?
                 int dupSubs = 0;
                 if (dupVoters.containsKey(i)) {
@@ -190,9 +190,9 @@ public class AutomatedVotingClient {
                 }
                 for (int j = 0; j < dupSubs; j++) {
                     Ballot dupBallot = GenerateTestFiles.generateBallot(null, electionDetails.ballotDesign, (voterName+"dup").getBytes());
-                    
+
                     long beforeDupSubmission = System.currentTimeMillis();
-                    Voter.vote(PrincipalUtil.bottomPrincipal(), voterName, electionDetails, electionCache, dupBallot, vc.capabilities);                    
+                    Voter.vote(PrincipalUtil.bottomPrincipal(), voterName, electionDetails, electionCache, dupBallot, vc.capabilities);
                     long afterDupSubmission = System.currentTimeMillis();
                     totalDupSubmissionTime += (afterDupSubmission - beforeDupSubmission);
                 }
@@ -202,7 +202,7 @@ public class AutomatedVotingClient {
             }
 
         }
-        
+
         // now submit the invalid ballots
         for (int i = 0; i < invCount; i++) {
             int voterBlock = rand.nextInt(ElectionUtil.numberVoterBlocks(electionDetails, electionCache));
@@ -210,7 +210,7 @@ public class AutomatedVotingClient {
             VoterCapabilities vc = GenerateTestFiles.generateFakeCapabilities(electionDetails, voterBlock);
             Ballot ballot = GenerateTestFiles.generateBallot(null, electionDetails.ballotDesign);
             long beforeInvSubmission = System.currentTimeMillis();
-            Voter.vote(null, voterBlock, electionDetails, electionCache, ballot, vc.capabilities);                         
+            Voter.vote(null, voterBlock, electionDetails, electionCache, ballot, vc.capabilities);
             long afterInvSubmission = System.currentTimeMillis();
             totalInvSubmissionTime += (afterInvSubmission - beforeInvSubmission);
         }

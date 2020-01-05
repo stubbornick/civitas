@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import civitas.crypto.*;
@@ -13,18 +13,18 @@ import java.io.*;
  * Encrypted capability shares for all voters. This data structure is produced
  * by each registration teller at the start of registration. Each registration
  * teller produces capability shares for each voter, and posts encryptions
- * of these shares to the bulletin board. 
+ * of these shares to the bulletin board.
  */
 public class ElectoralRollCapabilityShares implements XMLSerializable {
     private final static String{*<-*} META = "electoralRollCapShares";
     public static final String{*<-*} OPENING_TAG = "electoralRollCapShares";
-    
+
     public static String meta(int tellerIndex, int voterBlock) {
         return META+":teller:"+tellerIndex+":voterBlock:"+voterBlock;
     }
     // an array of voter capabilities
     public final VoterEncCapabilityShares{}[]{this} roll;
-    
+
     /**
      * Which registration teller created these capabilities
      */
@@ -40,7 +40,7 @@ public class ElectoralRollCapabilityShares implements XMLSerializable {
         this.tellerIndex = tellerIndex;
         this.voterBlock = voterBlock;
     }
-    
+
     public void toXML{}(PrintWriter[{}]{} sb) {
         if (sb == null) return;
         sb.print("<" + OPENING_TAG + ">");
@@ -66,16 +66,16 @@ public class ElectoralRollCapabilityShares implements XMLSerializable {
             }
         }
         else {
-            sb.print("<size>0</size>");                        
+            sb.print("<size>0</size>");
         }
-        
+
         sb.print("</" + OPENING_TAG + ">");
     }
-    
+
     public static ElectoralRollCapabilityShares fromXML{}(Reader[{}]{} r) throws (IllegalArgumentException{}, IOException{}) {
         final label lbl = new label {};
         Util.swallowTag(lbl, r, OPENING_TAG);
-        
+
         int tellerIndex = Util.readSimpleIntTag(lbl, r, "teller");
         int voterBlock = Util.readSimpleIntTag(lbl, r, "voterBlock");
         int size = Util.readSimpleIntTag(lbl, r, "size");
@@ -88,8 +88,8 @@ public class ElectoralRollCapabilityShares implements XMLSerializable {
             catch (ArrayIndexOutOfBoundsException imposs) { }
         }
 
-                
+
         Util.swallowEndTag(lbl, r, OPENING_TAG);
         return new ElectoralRollCapabilityShares(roll, tellerIndex, voterBlock);
-    }    
+    }
 }

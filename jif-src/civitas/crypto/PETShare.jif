@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.crypto;
 
 import java.io.*;
@@ -12,13 +12,13 @@ import java.io.*;
  * A server's share of the info needed for a distrubted Plaintext Eqiuvalence Test.
  */
 public interface PETShare {
-    
+
     ElGamalCiphertext{this} ciphertext1();
     ElGamalCiphertext{this} ciphertext2();
 
     PETCommitment{this} commitment(ElGamalParameters{this} params);
     PETDecommitment{this} decommitment(ElGamalParameters{this} params);
-    
+
     public void toXML{*lbl}(label lbl, PrintWriter[lbl]{*lbl} sb);
-  
+
 }

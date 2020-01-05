@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import java.util.*;
@@ -12,16 +12,16 @@ import java.io.*;
 /**
  * TallyState for a CondorcetBallotDesign.
  */
-public class CondorcetTallyState[label L] extends TallyState[L] {        
+public class CondorcetTallyState[label L] extends TallyState[L] {
     private final int{L}[][]{this} matrix;
     private final int{this} size;
-    
-    CondorcetTallyState(int{this} size) {        
+
+    CondorcetTallyState(int{this} size) {
         this.matrix = new int[size<0?0:size][size<0?0:size];
         this.size = size;
         super();
     }
-    
+
     void record{L}(int{L} i, int{L} j) throws (IndexOutOfBoundsException{L}) {
         if (matrix != null &&  i >= 0 && i < size &&  j >= 0 && j < size) {
             try {
@@ -33,7 +33,7 @@ public class CondorcetTallyState[label L] extends TallyState[L] {
         }
         throw new IndexOutOfBoundsException();
     }
-    
+
     public TallyStateFinal{L} finalTally{L}() {
         return new CondorcetTallyStateFinal(L, matrix, size);
     }

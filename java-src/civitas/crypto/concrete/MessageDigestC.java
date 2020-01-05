@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.crypto.concrete;
 
 import java.io.UnsupportedEncodingException;
@@ -20,12 +20,12 @@ public class MessageDigestC implements MessageDigest {
 
     private final java.security.MessageDigest md;
     private final Label civitas_crypto_MessageDigest_L;
-    
+
     MessageDigestC(Label L, java.security.MessageDigest md) {
         this.md = md;
         this.civitas_crypto_MessageDigest_L = L;
     }
-    
+
     public byte[] digest() {
         return md.digest();
     }
@@ -52,7 +52,7 @@ public class MessageDigestC implements MessageDigest {
         dword[3] = (byte) ((i >> 24) & 0x000000FF);
         md.update(dword);
     }
-    
+
     public void update(long i) {
         byte[] dword = new byte[8];
         dword[0] = (byte) (i & 0x00FF);
@@ -73,7 +73,7 @@ public class MessageDigestC implements MessageDigest {
 //        }
         try {
             update(s.getBytes(CHARSET));
-        } 
+        }
         catch (UnsupportedEncodingException e) {
             // Note: UTF-8 is required to be supported by all VMs by the Java API spec.
             throw new CryptoError("Character set " + CHARSET + " is not supported by this VM");

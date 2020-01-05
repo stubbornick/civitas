@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import java.io.*;
@@ -21,7 +21,7 @@ public class VoterSubmission implements JifObject[{}], XMLSerializable {
      * for the purposes of blocking, voters are divided into blocks, according
      * to the security parameters of the election details.
      */
-    public final int{this} voterBlock; 
+    public final int{this} voterBlock;
 
     /**
      * Verifiable votes, which are the decomposition of the voter's ballot.
@@ -37,14 +37,14 @@ public class VoterSubmission implements JifObject[{}], XMLSerializable {
         this.votes = vs;
         this.voterBlock = voterBlock;
     }
-    
+
     public int size() {
         return votes == null ? 0 : votes.length;
     }
-    
+
     public String{} toString() {
         return "voter-submission";
-//        StringBuffer[{}] sb = new StringBuffer[{}](); 
+//        StringBuffer[{}] sb = new StringBuffer[{}]();
 //        this.toXML(new label {}, sb);
 //        return sb.toString();
     }
@@ -78,12 +78,12 @@ public class VoterSubmission implements JifObject[{}], XMLSerializable {
                         catch (NullPointerException imposs) { return false; }
                     }
                 }
-                return true;    
+                return true;
             }
         }
         return false;
     }
-    
+
     public void toXML{}(PrintWriter[{}]{} sb) {
         toXML(new label {}, sb);
     }
@@ -99,23 +99,23 @@ public class VoterSubmission implements JifObject[{}], XMLSerializable {
             sb.print("</size>");
         }
         else {
-            sb.print("<size>0</size>");            
+            sb.print("<size>0</size>");
         }
         sb.print("<votes>");
         try {
             for (int i = 0; i < votes.length; i++) {
                 votes[i].toXML(lbl, sb);
-            }        
+            }
         }
         catch (NullPointerException imposs) { }
         catch (ArrayIndexOutOfBoundsException imposs) { }
         sb.print("</votes>");
         sb.print("</voterSubmission>");
     }
-    
+
     public static VoterSubmission{*lbl} fromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r)  throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
         Util.swallowTag(lbl, r, "voterSubmission");
-        
+
         int voterBlock = Util.readSimpleIntTag(lbl, r, "voterBlock");
         int size = Util.readSimpleIntTag(lbl, r, "size");
 
@@ -126,11 +126,11 @@ public class VoterSubmission implements JifObject[{}], XMLSerializable {
             try {
                 n[i] = VerifiableVote.fromXML(lbl, r);
             }
-            catch (ArrayIndexOutOfBoundsException e) { 
+            catch (ArrayIndexOutOfBoundsException e) {
                 throw new IOException("Too many verifiable votes");
             }
         }
-        
+
         Util.swallowEndTag(lbl, r, "votes");
         Util.swallowEndTag(lbl, r, "voterSubmission");
         VoterSubmission vs = new VoterSubmission(lbl, voterBlock, n);

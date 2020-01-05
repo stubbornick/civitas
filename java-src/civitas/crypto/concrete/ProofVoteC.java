@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.crypto.concrete;
 
 import java.io.*;
@@ -19,11 +19,11 @@ import civitas.crypto.ProofVote;
 import civitas.util.CivitasBigInteger;
 
 /**
- * This is a "non-malleable" (in some informal sense), NIZK proof of 
- * knowledge of the voter's vote, including its capability, choice, and 
- * context. The prover here is the voter, and the verifier is any auditor 
- * (including tabulation teller) of the BB. The core of it is a conjunction 
- * of two Schnorr signatures. The basic design is due to [Jan Camenisch 
+ * This is a "non-malleable" (in some informal sense), NIZK proof of
+ * knowledge of the voter's vote, including its capability, choice, and
+ * context. The prover here is the voter, and the verifier is any auditor
+ * (including tabulation teller) of the BB. The core of it is a conjunction
+ * of two Schnorr signatures. The basic design is due to [Jan Camenisch
  * and Markus Stadler. Efficient Group Signatures for Large Groups.]
  */
 class ProofVoteC implements ProofVote {
@@ -33,18 +33,18 @@ class ProofVoteC implements ProofVote {
           o Encrypted capability = (a1,b1)
           o Encrypted choice = (a2,b2)
           o Vote context ctx
-          o Let proof environment E = (g,a1,b1,a2,b2,ctx) 
+          o Let proof environment E = (g,a1,b1,a2,b2,ctx)
      * Prover private inputs:
-          o alpha1, alpha2 s.t. ai = g^{alphai} 
+          o alpha1, alpha2 s.t. ai = g^{alphai}
      * Prover:
           o Select r1,r2 at random from Z_q
           o Compute:
                 + c = hash(E,g^r1,g^r2)
                 + s1 = r1 - c*alpha1 mod p
-                + s2 = r2 - c*alpha2 mod p 
+                + s2 = r2 - c*alpha2 mod p
      * Prover -> Verifier: (c,s1,s2)
      * Verifier:
-          o Check c = hash(E, g^s1 * a1^c, g^s2 * a2^c) 
+          o Check c = hash(E, g^s1 * a1^c, g^s2 * a2^c)
 
      */
 
@@ -58,9 +58,9 @@ class ProofVoteC implements ProofVote {
         this.s2 = s2;
     }
 
-    ProofVoteC(ElGamalParametersC params, 
-               ElGamalCiphertextC encCapability, ElGamalCiphertextC encChoice, 
-               String context, 
+    ProofVoteC(ElGamalParametersC params,
+               ElGamalCiphertextC encCapability, ElGamalCiphertextC encChoice,
+               String context,
                ElGamalReencryptFactorC alpha1, ElGamalReencryptFactorC alpha2)
                {
         CryptoFactoryC factory = CryptoFactoryC.singleton();
@@ -74,7 +74,7 @@ class ProofVoteC implements ProofVote {
 //      System.err.println("Adding more");
 //      System.err.println("   " + params.g.modPow(r1, params.p));
 //      System.err.println("   " + params.g.modPow(r2, params.p));
-        
+
         c = factory.hashToBigInt(factory.hash(E)).mod(params.q);
         s1 = r1.modSubtract(c.modMultiply(alpha1.r, params.q), params.q);
         s2 = r2.modSubtract(c.modMultiply(alpha2.r, params.q), params.q);
@@ -83,9 +83,9 @@ class ProofVoteC implements ProofVote {
 //      System.err.println(" s2=  " + s2);
                }
 
-    List<CivitasBigInteger> proofEnv(ElGamalParametersC params, 
-                                  ElGamalCiphertextC encCapability, ElGamalCiphertextC encChoice, 
-                                  String context) 
+    List<CivitasBigInteger> proofEnv(ElGamalParametersC params,
+                                  ElGamalCiphertextC encCapability, ElGamalCiphertextC encChoice,
+                                  String context)
                                   {
         CryptoFactoryC factory = CryptoFactoryC.singleton();
         List<CivitasBigInteger> E = new LinkedList<CivitasBigInteger>();
@@ -106,9 +106,9 @@ class ProofVoteC implements ProofVote {
         return E;
                                   }
 
-    public boolean verify(ElGamalParameters params, 
-            ElGamalCiphertext encCapability, ElGamalCiphertext encChoice, 
-            String context) 
+    public boolean verify(ElGamalParameters params,
+            ElGamalCiphertext encCapability, ElGamalCiphertext encChoice,
+            String context)
     {
         try {
             CryptoFactoryC factory = CryptoFactoryC.singleton();
@@ -179,8 +179,8 @@ class ProofVoteC implements ProofVote {
         String s2 = Util.unescapeString(Util.readSimpleTag(lbl, r, "s2"));
 
         Util.swallowEndTag(lbl, r, "elGamalProofVote");
-        return new ProofVoteC(CryptoFactoryC.stringToBigInt(c), 
+        return new ProofVoteC(CryptoFactoryC.stringToBigInt(c),
                               CryptoFactoryC.stringToBigInt(s1),
                               CryptoFactoryC.stringToBigInt(s2));
-    }	
+    }
 }

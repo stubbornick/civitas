@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.crypto.concrete;
 
 import java.io.IOException;
@@ -21,15 +21,15 @@ import civitas.util.CivitasBigInteger;
 
 public class VoteCapabilityShareC extends ElGamalMsgC implements VoteCapabilityShare, JifObject {
 
-    
+
     public VoteCapabilityShareC(CivitasBigInteger c, ElGamalParametersC params) throws CryptoException {
         super(c, params);
     }
-    
+
     public VoteCapabilityShareC(String c, ElGamalParametersC params) throws CryptoException {
         super(c, params);
     }
-    
+
     public VoteCapabilityShareC(CivitasBigInteger c) {
 		super(c);
 	}
@@ -43,7 +43,7 @@ public class VoteCapabilityShareC extends ElGamalMsgC implements VoteCapabilityS
             VoteCapabilityShareC that = (VoteCapabilityShareC)obj;
             return super.equals(that);
         }
-        return false;        
+        return false;
     }
 
     public Label jif$getjif_lang_JifObject_L() {
@@ -77,5 +77,5 @@ public class VoteCapabilityShareC extends ElGamalMsgC implements VoteCapabilityS
     public int intValue() throws NumberFormatException {
         return m.intValue();
     }
-    
+
 }

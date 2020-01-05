@@ -3,48 +3,48 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import civitas.crypto.*;
 import java.io.*;
 
 /**
- * Details of an individual voter. Details include the voter's name (a 
+ * Details of an individual voter. Details include the voter's name (a
  * string uniquely identifying the voter), an ElGamal public key,
  * an RSA public key, and the block the voter belongs in.
  */
 public class VoterDetails implements XMLSerializable {
     public static final String{*<-*} OPENING_TAG = "voterDetails";
-    
+
     /**
      * The name of the voter, which must be unique.
      */
     public final String{this} name;
-    
+
     /**
      * The voter's El Gamal public key
      */
     public final ElGamalPublicKey{this} egPublicKey;
-    
+
     /**
      * The voter's other public key
      */
     public final PublicKey{this} publicKey;
-    
+
     /**
      * The voter's block.
      *
      */
     public final int{this} voterBlock;
-    
+
     public VoterDetails(String{this} name, ElGamalPublicKey{this} egPublicKey, PublicKey{this} publicKey, int{this} voterBlock) {
         this.name = name;
         this.egPublicKey = egPublicKey;
         this.publicKey = publicKey;
         this.voterBlock = voterBlock;
     }
-            
+
     public void toXML{}(PrintWriter[{}]{} sb) {
         toXML(new label {}, sb);
     }
@@ -62,7 +62,7 @@ public class VoterDetails implements XMLSerializable {
         sb.print("</block>");
         sb.print("</" + OPENING_TAG + ">");
     }
-    
+
     public static VoterDetails fromXML{}(Reader[{}]{} r) throws (IllegalArgumentException{}, IOException{}) {
         final label lbl = new label {};
         Util.swallowTag(lbl, r, OPENING_TAG);
@@ -81,9 +81,9 @@ public class VoterDetails implements XMLSerializable {
             }
             catch (NullPointerException imposs) { }
         }
-        
+
         int voterBlock = Util.readSimpleIntTag(lbl, r, "block");
         Util.swallowEndTag(lbl, r, OPENING_TAG);
         return new VoterDetails(name, egPublicKey, publicKey, voterBlock);
-    }    
+    }
 }

@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import civitas.crypto.*;
@@ -16,17 +16,17 @@ public class TabTellerDistributedDecryptions implements XMLSerializable {
     public final static String{*<-*} META_PREFIX = "ttDistDecrypt:";
 
     public final int{this} tellerIndex;
-    
+
     // an array of the decrypts
     public final ElGamalDecryptionShare{this} const[]{this} decrypts;
-    
+
     // an array of the proofs
     public final ElGamalProofDiscLogEquality{this} const[]{this} proofs;
 
     public void toXML{}(PrintWriter[{}]{} sb) {
         toXML(new label {}, sb);
     }
-    public TabTellerDistributedDecryptions(label{*lbl} lbl, int{this} tellerIndex, ElGamalDecryptionShare{*lbl}[]{this} decrypts, ElGamalProofDiscLogEquality{*lbl}[]{this} proofs) 
+    public TabTellerDistributedDecryptions(label{*lbl} lbl, int{this} tellerIndex, ElGamalDecryptionShare{*lbl}[]{this} decrypts, ElGamalProofDiscLogEquality{*lbl}[]{this} proofs)
     where {*lbl} <= {this} {
         this.tellerIndex = tellerIndex;
 
@@ -35,14 +35,14 @@ public class TabTellerDistributedDecryptions implements XMLSerializable {
             ds = decrypts.clone();
         }
         this.decrypts = ds;
-        
+
         ElGamalProofDiscLogEquality{this} const[]{this} ps = null;
         if (proofs != null) {
             ps = proofs.clone();
         }
-        this.proofs = ps;        
+        this.proofs = ps;
     }
-    
+
     public void toXML{*lbl}(label lbl, PrintWriter[lbl]{*lbl} sb) where {this} <= lbl  {
         if (sb == null) return;
         sb.print("<tabTellerDistributedDecryptions>");
@@ -65,9 +65,9 @@ public class TabTellerDistributedDecryptions implements XMLSerializable {
             }
         }
         else {
-            sb.print("<size>0</size>");            
+            sb.print("<size>0</size>");
         }
-        
+
         if (this.proofs != null) {
             for (int i = 0; i < proofs.length; i++) {
                 try {
@@ -82,7 +82,7 @@ public class TabTellerDistributedDecryptions implements XMLSerializable {
 
         sb.print("</tabTellerDistributedDecryptions>");
     }
-    
+
     public static TabTellerDistributedDecryptions{*lbl} fromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r):{*lbl} throws IllegalArgumentException, IOException {
         Util.swallowTag(lbl, r, "tabTellerDistributedDecryptions");
         int index = Util.readSimpleIntTag(lbl, r, "index");
@@ -109,8 +109,8 @@ public class TabTellerDistributedDecryptions implements XMLSerializable {
             catch (NullPointerException imposs) { }
             catch (ArrayIndexOutOfBoundsException imposs) { }
         }
-        
+
         Util.swallowEndTag(lbl, r, "tabTellerDistributedDecryptions");
         return new TabTellerDistributedDecryptions(lbl, index, decrypts, proofs);
-    }    
+    }
 }

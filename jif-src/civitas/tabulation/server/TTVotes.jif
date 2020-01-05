@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.tabulation.server;
 
 import java.io.*;
@@ -19,7 +19,7 @@ import civitas.crypto.*;
 
 /**
  * Utility class to help with the gathering and filetering
- * of votes for the tabulation protocol. 
+ * of votes for the tabulation protocol.
  * The principal TT should be the tab teller's public key.
  * The principal SUP is the election supervisor.
  * The principal TELLS represents all of the tabulation tellers, i.e., it is a principal that
@@ -41,8 +41,8 @@ public class TTVotes[principal TT, principal SUP, principal TELLS] {
           this.tttUtil = tttUtil;
       }
 
-    VerifiableVote{}[]{TT<-SUP} retrieveValidVerifiableVotes{TT<-SUP}(final ElectionDetails{TT<-SUP} electionDetails, 
-            ElectionCache{TT<-SUP} electionCache, ElGamalPublicKey{TT<-SUP} tabTellerSharedKey, int{TT<-SUP} block) 
+    VerifiableVote{}[]{TT<-SUP} retrieveValidVerifiableVotes{TT<-SUP}(final ElectionDetails{TT<-SUP} electionDetails,
+            ElectionCache{TT<-SUP} electionCache, ElGamalPublicKey{TT<-SUP} tabTellerSharedKey, int{TT<-SUP} block)
     throws (IOException{TT<-SUP}) where caller(TT), SUP equiv electionDetails.supervisor {
         VerifiableVote{}[] ret = null;
         IOException exio = null;
@@ -57,10 +57,10 @@ public class TTVotes[principal TT, principal SUP, principal TELLS] {
         return endorse(ret, {TT<-SUP});
     }
 
-    private VerifiableVote{}[]{} retrieveValidVerifiableVotes_{TT<-SUP}(final ElectionDetails{TT<-SUP} electionDetails, 
-                                                                        ElectionCache{TT<-SUP} electionCache, 
-                                                                        ElGamalPublicKey{TT<-SUP} tabTellerSharedKey, 
-                                                                        int{TT<-SUP} block) 
+    private VerifiableVote{}[]{} retrieveValidVerifiableVotes_{TT<-SUP}(final ElectionDetails{TT<-SUP} electionDetails,
+                                                                        ElectionCache{TT<-SUP} electionCache,
+                                                                        ElGamalPublicKey{TT<-SUP} tabTellerSharedKey,
+                                                                        int{TT<-SUP} block)
     throws (IOException{}) where caller (TT), SUP equiv electionDetails.supervisor {
         if (electionDetails == null || bb == null) return null;
         BallotDesign ballotDesign = electionDetails.ballotDesign;
@@ -70,7 +70,7 @@ public class TTVotes[principal TT, principal SUP, principal TELLS] {
         ElGamalParameters params = electionDetails.elGamalParameters;
         TellerDetails tellerDetails = ElectionUtil.retrieveTellerDetails(electionDetails, electionCache);
         if (tellerDetails == null || tellerDetails.voterBBs == null) return null;
-        
+
         if (electionCache != null) {
             VerifiableVote{}[] vv = electionCache.getValidVerifiableVotesForBlock(block);
             if (vv != null) return vv;
@@ -86,8 +86,8 @@ public class TTVotes[principal TT, principal SUP, principal TELLS] {
         }
         return vv;
     }
-    int{TT<-SUP} retrieveValidVerifiableVoteSize{TT<-SUP}(final ElectionDetails{TT<-SUP} electionDetails, 
-            ElectionCache{TT<-SUP} electionCache, ElGamalPublicKey{TT<-SUP} tabTellerSharedKey, int{TT<-SUP} block) 
+    int{TT<-SUP} retrieveValidVerifiableVoteSize{TT<-SUP}(final ElectionDetails{TT<-SUP} electionDetails,
+            ElectionCache{TT<-SUP} electionCache, ElGamalPublicKey{TT<-SUP} tabTellerSharedKey, int{TT<-SUP} block)
     throws (IOException{TT<-SUP}) where caller(TT), SUP equiv electionDetails.supervisor {
         int ret = -1;
         IOException exio = null;
@@ -101,12 +101,12 @@ public class TTVotes[principal TT, principal SUP, principal TELLS] {
         if (eexio != null) throw eexio;
         return endorse(ret, {TT<-SUP});
     }
-    private int{} retrieveValidVerifiableVoteSize_{TT<-SUP}(final ElectionDetails{TT<-SUP} electionDetails, 
-            ElectionCache{TT<-SUP} electionCache, 
-            ElGamalPublicKey{TT<-SUP} tabTellerSharedKey, 
-            int{TT<-SUP} block) 
+    private int{} retrieveValidVerifiableVoteSize_{TT<-SUP}(final ElectionDetails{TT<-SUP} electionDetails,
+            ElectionCache{TT<-SUP} electionCache,
+            ElGamalPublicKey{TT<-SUP} tabTellerSharedKey,
+            int{TT<-SUP} block)
      throws (IOException{}) where caller (TT), SUP equiv electionDetails.supervisor {
-        
+
         if (electionCache != null) {
             int size = electionCache.getValidVerifiableVoteSizeForBlock(block);
             if (endorse(size >= 0, {TT<-SUP})) return endorse(size, {TT<-SUP});
@@ -115,13 +115,13 @@ public class TTVotes[principal TT, principal SUP, principal TELLS] {
         VerifiableVote{}[] vv = retrieveValidVerifiableVotes_(electionDetails, electionCache, tabTellerSharedKey, block);
         return vv == null ? -1 : vv.length;
     }
-    
+
 
     /**
      * Check the boards for tabulations posted by the supervisor
      * against the commitments posted by the voter BBs.
      */
-    private BoardsForTabulation{} retrieveAndCheckBoardsForTabulation{}(final ElectionDetails{} electionDetails, 
+    private BoardsForTabulation{} retrieveAndCheckBoardsForTabulation{}(final ElectionDetails{} electionDetails,
             ElectionCache{} electionCache):{} throws IOException where caller(TT) {
         if (electionCache != null) {
             BoardsForTabulation bft = electionCache.getBoardsForTabulation();
@@ -130,20 +130,20 @@ public class TTVotes[principal TT, principal SUP, principal TELLS] {
         if (electionDetails == null || ttstore == null || tttUtil == null) return null;
         TellerDetails tellerDetails = ElectionUtil.retrieveTellerDetails(electionDetails, electionCache);
         if (tellerDetails == null || tellerDetails.voterBBs == null) return null;
-                
-        
+
+
         BoardsForTabulation supBoardContents = ElectionUtil.retrieveBoardsForTabulation(electionDetails);
         if (supBoardContents == null) return null;
         BoardsForTabulation bbBoardContents = ElectionUtil.retrieveVoterBBContentCommitments(electionDetails, electionCache);
         if (bbBoardContents == null)return null;
-        
+
         int numVoterBlocks = ElectionUtil.numberVoterBlocks(electionDetails, electionCache);
-        
+
         // check each one
         for (int i = 0; i < tellerDetails.voterBBs.length; i++) {
             int boardIndex = i+1;
             // check that what the supervisor posted agrees with what
-            // the bb posted 
+            // the bb posted
             BoardClosedContentCommitment scc = supBoardContents.contentCommitmentForBoard(boardIndex);
             if (scc == null) {
                 // the supervisor said to ignore this board
@@ -152,28 +152,28 @@ public class TTVotes[principal TT, principal SUP, principal TELLS] {
             BoardClosedContentCommitment bcc = bbBoardContents.contentCommitmentForBoard(boardIndex);
             for (int voterBlock = 0; voterBlock < numVoterBlocks; voterBlock++) {
                 String requiredHash = scc.contentHash(voterBlock);
-                if (bcc == null || requiredHash == null || 
+                if (bcc == null || requiredHash == null ||
                         !requiredHash.equals(bcc.contentHash(voterBlock))) {
                     // nope, what the supervisor posted doesn't agree
                     // with what the voter BB posted.
                     int tellerIndex = retrieveIndex(electionDetails.electionID);
-                    tttUtil.abandonElection(electionDetails.electionID, 
-                                    "Supervisors content hash for voter BB " + 
-                                    boardIndex + ", voter block " + 
-                                    voterBlock + " disagrees with what the voter BB posted.", 
-                                    tellerIndex); 
+                    tttUtil.abandonElection(electionDetails.electionID,
+                                    "Supervisors content hash for voter BB " +
+                                    boardIndex + ", voter block " +
+                                    voterBlock + " disagrees with what the voter BB posted.",
+                                    tellerIndex);
                 }
-            }            
+            }
         }
-        
-        
+
+
         if (electionCache != null) {
             electionCache.setBoardsForTabulation(supBoardContents);
         }
-        return supBoardContents;   
+        return supBoardContents;
     }
 
-    private int{TT<-TT} retrieveIndex{}(ElectionID{} id_) 
+    private int{TT<-TT} retrieveIndex{}(ElectionID{} id_)
     where caller (TT), endorse({TT<-TT}) {
         ElectionID id = endorse(id_, {TT<-TT});
         if (id == null || ttstore == null) return -1;
@@ -184,19 +184,19 @@ public class TTVotes[principal TT, principal SUP, principal TELLS] {
     /**
      * Retrieve the voter submissions for the given voterBlock.
      */
-    public List[{}]{} retrieveVoterSubmissions{}(final ElectionDetails{} electionDetails, 
-            ElectionCache{} electionCache, 
-            ElGamalPublicKey{} tabTellerSharedKey, 
-            int{} voterBlock) 
+    public List[{}]{} retrieveVoterSubmissions{}(final ElectionDetails{} electionDetails,
+            ElectionCache{} electionCache,
+            ElGamalPublicKey{} tabTellerSharedKey,
+            int{} voterBlock)
     throws (IOException{}) where caller (TT), SUP equiv electionDetails.supervisor {
         List[{}] voterSubmissions = null;
         if (electionCache != null) {
             voterSubmissions = electionCache.getVoterSubmissionsForVoterBlock(voterBlock);
             if (voterSubmissions != null) return voterSubmissions;
         }
-        
+
         TellerDetails tellerDetails = ElectionUtil.retrieveTellerDetails(electionDetails, electionCache);
-        if (electionDetails == null || tellerDetails == null || 
+        if (electionDetails == null || tellerDetails == null ||
                 tellerDetails.voterBBs == null || tttUtil == null) return null;
 
         BoardsForTabulation bft = retrieveAndCheckBoardsForTabulation(electionDetails, electionCache);
@@ -204,12 +204,12 @@ public class TTVotes[principal TT, principal SUP, principal TELLS] {
             // not yet ready for tabulation
             return null;
         }
-                
+
         voterSubmissions = new ArrayList[{}]();
         HashSet[{}] voterSubmissionSet = new HashSet[{}]();
 
-        // go to each BB and get the submitted votes. use the set to 
-        // detect duplicates efficiently (i.e., votes submitted to more 
+        // go to each BB and get the submitted votes. use the set to
+        // detect duplicates efficiently (i.e., votes submitted to more
         // than one voter BB)
         for (int i = 0; i < tellerDetails.voterBBs.length; i++) {
             int boardIndex = i+1;
@@ -242,39 +242,39 @@ public class TTVotes[principal TT, principal SUP, principal TELLS] {
                 }
             }
             else {
-                // failed to retrieve voter submissions. 
+                // failed to retrieve voter submissions.
                 // this is not good, we cannot continue.
                 int tellerIndex = retrieveIndex(electionDetails.electionID);
                 tttUtil.abandonElection(electionDetails.electionID,
-                                        "Tabulation teller " + tellerIndex + " unable to retrieve votes from voter bulletin board " + boardIndex, 
+                                        "Tabulation teller " + tellerIndex + " unable to retrieve votes from voter bulletin board " + boardIndex,
                                         tellerIndex);
             }
         }
-        
+
         if (electionCache != null) {
-            electionCache.setVoterSubmissionsForVoterBlock(voterBlock, voterSubmissions);            
+            electionCache.setVoterSubmissionsForVoterBlock(voterBlock, voterSubmissions);
         }
-           
+
         return voterSubmissions;
     }
-    
+
     /**
      * Go to the bulletin board boardIndex and get all their valid results for the given block.
      * Some of the array elements may be null.
      */
-    private VoterSubmission{}[]{} retrieveVoterSubmissions{}(final ElectionDetails{} electionDetails, 
-            ElectionCache{} electionCache, 
-            ElGamalPublicKey{} tabTellerSharedKey, 
+    private VoterSubmission{}[]{} retrieveVoterSubmissions{}(final ElectionDetails{} electionDetails,
+            ElectionCache{} electionCache,
+            ElGamalPublicKey{} tabTellerSharedKey,
             int{} voterBlock,
-            int{} boardIndex) 
+            int{} boardIndex)
     throws (IOException{}) where caller (TT), SUP equiv electionDetails.supervisor {
         if (electionDetails == null || bb == null) return null;
         BallotDesign ballotDesign = electionDetails.ballotDesign;
         if (ballotDesign == null) return null;
         ElectionID electionID = electionDetails.electionID;
         if (electionID == null) return null;
-        
-        ElGamalParameters params = electionDetails.elGamalParameters;        
+
+        ElGamalParameters params = electionDetails.elGamalParameters;
         TellerDetails tellerDetails = ElectionUtil.retrieveTellerDetails(electionDetails, electionCache);
         if (tellerDetails == null || tellerDetails.voterBBs == null) return null;
         CiphertextList ciphertexts = ElectionUtil.retrieveCiphertextList(TT, electionDetails, electionCache);
@@ -285,7 +285,7 @@ public class TTVotes[principal TT, principal SUP, principal TELLS] {
         }
         catch (ArrayIndexOutOfBoundsException ignore) { }
         if (h == null) return null;
-        
+
         BBClientUtil bbcu = new BBClientUtil(h, electionID.id);
 
         BoardsForTabulation bft = retrieveAndCheckBoardsForTabulation(electionDetails, electionCache);
@@ -297,15 +297,15 @@ public class TTVotes[principal TT, principal SUP, principal TELLS] {
         if (cc == null) return null;
         String requiredHash = cc.contentHash(voterBlock);
         if (requiredHash == null) return null;
-        
+
         List[{}] l = null;
         try {
             l = bbcu.retrieveParams(XMLDeserializers.VoterSubmission(), h.publicKey, requiredHash, VoterSubmission.meta(voterBlock), null, null);
         }
         catch (IllegalArgumentException e) {
-            throw new IOException(e.getMessage()); 
+            throw new IOException(e.getMessage());
         }
-        if (l == null) { 
+        if (l == null) {
             // no results! Is there anything to do?
             return null;
         }
@@ -332,7 +332,7 @@ public class TTVotes[principal TT, principal SUP, principal TELLS] {
                 catch (ClassCastException ignore) { }
                 ballotDesign.checkVoterSubmission(vs, electionDetails.baseContext(voterBlock), ciphertexts, tabTellerSharedKey);
                 // the voter submission is valid
-                
+
                 // is it in the right voter block?
                 if (vs != null && voterBlock == vs.voterBlock) {
                     try {
@@ -343,7 +343,7 @@ public class TTVotes[principal TT, principal SUP, principal TELLS] {
             }
             catch (IllegalArgumentException e) {
                 // the voter submission can't be parsed, or
-                // it wasn't a valid submission. 
+                // it wasn't a valid submission.
                 // ignore it.
             }
         }
@@ -356,7 +356,7 @@ public class TTVotes[principal TT, principal SUP, principal TELLS] {
     private VerifiableVote{}[]{} voterSubmissionsToVerifiableVotes{}(final ElectionDetails{} electionDetails, List[{}]{} voterSubmissions, int{} block) {
         if (electionDetails == null || voterSubmissions == null) return null;
         int size = voterSubmissions.size();
-        VerifiableVote{}[] vv = new VerifiableVote[size < 0 ? 0 : size]; 
+        VerifiableVote{}[] vv = new VerifiableVote[size < 0 ? 0 : size];
         int vvCount = 0;
         Iterator[{}] iter = voterSubmissions.iterator();
         while (iter != null && iter.hasNext()) {
@@ -366,7 +366,7 @@ public class TTVotes[principal TT, principal SUP, principal TELLS] {
             }
             catch (ClassCastException imposs) { }
             catch (NoSuchElementException imposs) { }
-            
+
             if (v == null || v.votes == null) continue;
             if (!electionDetails.inBlock(v, block)) continue;
             for (int j = 0; j < v.votes.length; j++) {
@@ -376,7 +376,7 @@ public class TTVotes[principal TT, principal SUP, principal TELLS] {
                     if (verfV == null || !electionDetails.inBlock(v, verfV.context, block)) continue;
                     if (vvCount >= vv.length) {
                         // extend vv
-                        VerifiableVote{}[] newvv = new VerifiableVote[2*vv.length]; 
+                        VerifiableVote{}[] newvv = new VerifiableVote[2*vv.length];
                         for (int z = 0; z < vv.length; z++) {
                             newvv[z] = vv[z];
                         }
@@ -384,12 +384,12 @@ public class TTVotes[principal TT, principal SUP, principal TELLS] {
                     }
                     vv[vvCount++] = verfV;
                 }
-                catch (ArrayIndexOutOfBoundsException imposs) { }                    
+                catch (ArrayIndexOutOfBoundsException imposs) { }
             }
         }
         if (vvCount != vv.length) {
             // shrink vv.
-            VerifiableVote{}[] newvv = new VerifiableVote[vvCount]; 
+            VerifiableVote{}[] newvv = new VerifiableVote[vvCount];
             for (int z = 0; z < vvCount; z++) {
                 try {
                     newvv[z] = vv[z];
@@ -400,34 +400,34 @@ public class TTVotes[principal TT, principal SUP, principal TELLS] {
         }
         return vv;
     }
-    
+
     /**
-     * Goto the the BB and get the voter block conects for voterBlock, as 
+     * Goto the the BB and get the voter block conects for voterBlock, as
      * posted by tabulation teller tellerIndex
      */
-    TabTellerVoterBlockContents{} retrieveVoterBlockContents{}(final ElectionDetails{} electionDetails, 
-            ElectionCache{} electionCache, 
-            int{} voterBlock, 
+    TabTellerVoterBlockContents{} retrieveVoterBlockContents{}(final ElectionDetails{} electionDetails,
+            ElectionCache{} electionCache,
+            int{} voterBlock,
             int{} tellerIndex):{} throws IOException {
-        if (bb == null) return null;        
+        if (bb == null) return null;
         TellerDetails tellerDetails = ElectionUtil.retrieveTellerDetails(electionDetails, electionCache);
-        
+
         if (electionCache != null) {
             TabTellerVoterBlockContents ttvbc = electionCache.getTabTellerVoterBlockContents(voterBlock, tellerIndex);
             if (ttvbc != null) return ttvbc;
         }
-        
+
         List[{}] results = null;
-        
+
         try {
             results = bb.retrieveParams(XMLDeserializers.TabTellerVoterBlockContents(), TabTellerVoterBlockContents.meta(tellerIndex, voterBlock), null, null);
         }
         catch (IllegalArgumentException e) {
             throw new IOException(e.getMessage());
         }
-        
+
         if (results == null) return null;
-        // parse and verify the posts. 
+        // parse and verify the posts.
         for (int i = 0; i < results.size(); i++) {
             BBPost post = null;
             try {
@@ -447,9 +447,9 @@ public class TTVotes[principal TT, principal SUP, principal TELLS] {
                     return c;
                 }
             }
-            catch (ClassCastException ignore) {  } 
+            catch (ClassCastException ignore) {  }
         }
-        return null;  
-        
+        return null;
+
     }
 }

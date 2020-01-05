@@ -3,35 +3,35 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import civitas.crypto.*;
 import java.io.*;
 
 /**
- * A revelation of a single element of a vote mix. 
+ * A revelation of a single element of a vote mix.
  */
 public class MixCapabilityElementRevelation extends MixElementRevelation {
     public static final String{*<-*} OPENING_TAG = "capRev";
-    
+
     public final ElGamalReencryptFactor{this} reencryptFactor;
-    
+
     public MixCapabilityElementRevelation(int{this} mapping, byte{}const[]{this} nonce, ElGamalReencryptFactor{this} reencryptFactor) {
         this.reencryptFactor = reencryptFactor;
         super(mapping, nonce);
     }
-    
+
     boolean{} verify{}(ElGamalPublicKey{} key, int{} fromIndex, int{} toIndex, Mix{} fromMix, Mix{} toMix) {
         if (!(fromMix instanceof CapabilityMix && toMix instanceof CapabilityMix)) {
             return false;
         }
         CapabilityMix fromCMix = (CapabilityMix)fromMix;
         CapabilityMix toCMix = (CapabilityMix)toMix;
-        
+
         try {
             ElGamalCiphertext fromCipher = fromCMix.capabilities[fromIndex];
-        
+
             ElGamalCiphertext toCipher = toCMix.capabilities[toIndex];
 
             // check that toCipher is a reencryption of fromCipher using reencryptFactor
@@ -59,7 +59,7 @@ public class MixCapabilityElementRevelation extends MixElementRevelation {
         sb.print("</r>");
         sb.print("</");
         sb.print(OPENING_TAG);
-        sb.print(">");        
+        sb.print(">");
     }
     public static MixCapabilityElementRevelation fromXMLsub{}(Reader[{}]{} r)  throws (IllegalArgumentException{}, IOException{}) {
         final label lbl = new label {};
@@ -76,7 +76,7 @@ public class MixCapabilityElementRevelation extends MixElementRevelation {
         Util.swallowEndTag(lbl, r, "r");
 
         Util.swallowEndTag(lbl, r, OPENING_TAG);
-        
+
         return new MixCapabilityElementRevelation(mapping, nonce, reencryptFactor);
     }
 }

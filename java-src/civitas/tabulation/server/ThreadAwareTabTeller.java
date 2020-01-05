@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.tabulation.server;
 
 import java.io.*;
@@ -64,7 +64,7 @@ public class ThreadAwareTabTeller {
         }
         catch (ArrayIndexOutOfBoundsException imposs) { }
         catch (NumberFormatException e) {
-            usage();            
+            usage();
         }
 
         // get the tabulation teller keys from the files specified
@@ -76,13 +76,13 @@ public class ThreadAwareTabTeller {
         }
         catch (NullPointerException imposs) { }
         catch (FileNotFoundException ignore) { }
-        catch (IOException e) { 
+        catch (IOException e) {
             e.printStackTrace();
         }
 
         final PublicKey pubKey = pubKey_;
         // get the ttStore
-        TTStore ttstore = new FileTTStore(pubKey, rootDir, cacheRootDir); 
+        TTStore ttstore = new FileTTStore(pubKey, rootDir, cacheRootDir);
 
         if (adminPort > 0) {
             // open a admin port
@@ -105,18 +105,18 @@ public class ThreadAwareTabTeller {
             if (DEBUG_LOGGING) debugLog = new TimestampingPrintStream(new File(rootDir, "debugLog-" + port));
             // serve connections
             SocketUtil.acceptConnections(LabelUtil.singleton().noComponents(),
-                                         ss, 
+                                         ss,
                                          new TTSocketAcceptor(pubKey, privKey, ttstore, port, debugLog));
         }
         catch (IOException e) {
             e.printStackTrace();
-        }        
+        }
     }
 
     private static void usage() {
         System.err.println("Usage: TabTeller rootDir cacheRootDir port pubKeyFile privKeyFile [adminPort]");
         System.exit(1);
-    }        
+    }
 
     /**
      * Listener for administration requests.
@@ -130,7 +130,7 @@ public class ThreadAwareTabTeller {
             while (true) {
                 try {
                     if (DEBUG) System.out.println("Listening on admin port " + ass.getLocalPort());
-                    Socket s = ass.accept();  
+                    Socket s = ass.accept();
                     if (DEBUG) System.out.println("Got admin socket: " + s.getPort());
 
                     BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
@@ -148,7 +148,7 @@ public class ThreadAwareTabTeller {
                         out.println("numSharedKeyEncs : " + CryptoFactoryC.numSharedKeyEncs());
                         out.println("numSharedKeyDecs : " + CryptoFactoryC.numSharedKeyDecs());
                         out.println("numPublicKeyEncs : " + CryptoFactoryC.numPublicKeyEncs());
-                        out.println("numPublicKeyDecs : " + CryptoFactoryC.numPublicKeyDecs());                        
+                        out.println("numPublicKeyDecs : " + CryptoFactoryC.numPublicKeyDecs());
                         out.println("numPublicKeySign : " + CryptoFactoryC.numPublicKeySign());
                         out.println("numPublicKeyVerifySig : " + CryptoFactoryC.numPublicKeyVerifySig());
 
@@ -165,7 +165,7 @@ public class ThreadAwareTabTeller {
                     // recover silently
                     if (DEBUG) e.printStackTrace();
                 }
-            }            
+            }
         }
 
     }
@@ -197,20 +197,20 @@ public class ThreadAwareTabTeller {
 
         public boolean tabulationNotification(ElectionID electionID) {
             if (DEBUG) {
-                System.err.println(Thread.currentThread().toString() + " on port " + port + " notified for " + electionID);                
+                System.err.println(Thread.currentThread().toString() + " on port " + port + " notified for " + electionID);
             }
             StringWriter sb = new StringWriter();
             electionID.toXML(LabelUtil.singleton().noComponents(), new PrintWriter(sb));
             String id = sb.toString();
             Thread otherThread = electionIDsInProcess.get(id);
             if (otherThread != null) {
-                // a thread is already processing the election, so 
-                // we don't need to process this request 
+                // a thread is already processing the election, so
+                // we don't need to process this request
 
                 // notify the other thread, in case it is sleeping
                 try {
                     if (DEBUG) {
-                        System.err.println(Thread.currentThread().toString() + " on port " + port + " is interrupting " + otherThread);                
+                        System.err.println(Thread.currentThread().toString() + " on port " + port + " is interrupting " + otherThread);
                     }
 //                    if (debugLog != null) {
 //                        StackTraceElement[] stack = otherThread.getStackTrace();
@@ -235,7 +235,7 @@ public class ThreadAwareTabTeller {
                 return false;
             }
             if (DEBUG) {
-                System.err.println(Thread.currentThread().toString() + " on port " + port + " is becoming the active thread for election " + electionID);                
+                System.err.println(Thread.currentThread().toString() + " on port " + port + " is becoming the active thread for election " + electionID);
             }
 
             electionIDsInProcess.put(id, Thread.currentThread());
@@ -245,11 +245,11 @@ public class ThreadAwareTabTeller {
 
         public void debugNotification(ElectionID electionID) {
             if (debugLog != null) {
-                
+
                 debugLog.println("Total memory: " + Runtime.getRuntime().totalMemory());
                 debugLog.println("Free memory " + Runtime.getRuntime().freeMemory());
                 debugLog.println("Max memory " + Runtime.getRuntime().maxMemory());
-                
+
                 StringWriter sb = new StringWriter();
                 electionID.toXML(LabelUtil.singleton().noComponents(), new PrintWriter(sb));
                 String id = sb.toString();
@@ -277,13 +277,13 @@ public class ThreadAwareTabTeller {
         }
 
         public void accept(InputStream input, OutputStream output) throws IOException {
-            final TTProtocol ttt = new TTProtocol(pubKey).civitas$tabulation$server$TTProtocol$(privKey, 
-                                                                                             input, 
+            final TTProtocol ttt = new TTProtocol(pubKey).civitas$tabulation$server$TTProtocol$(privKey,
+                                                                                             input,
                                                                                              output,
                                                                                              ttstore,
                                                                                              this, // this object is the coordinator
-                                                                                             debugLog); 
-            
+                                                                                             debugLog);
+
             try {
                 Object o = ttt.invoke();
                 if (o != null && o instanceof Exception) {
@@ -293,16 +293,16 @@ public class ThreadAwareTabTeller {
                 }
             }
             finally {
-                String id = electionId.get();                
-                if (id != null && electionIDsInProcess.get(id).equals(Thread.currentThread())) { 
+                String id = electionId.get();
+                if (id != null && electionIDsInProcess.get(id).equals(Thread.currentThread())) {
                     // this thread was handling the election, so clean up the
                     // electionIDsInProcess map.
                     electionIDsInProcess.remove(id);
                 }
                 if (DEBUG) {
-                    System.err.println(Thread.currentThread().toString() + " on port " + port + " finished (election id: " + id + ")");                
+                    System.err.println(Thread.currentThread().toString() + " on port " + port + " finished (election id: " + id + ")");
                 }
-                electionId.set(null);                
+                electionId.set(null);
             }
         }
     }
@@ -329,5 +329,5 @@ public class ThreadAwareTabTeller {
         }
 
     }
-    
+
 }

@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import java.io.*;
@@ -18,7 +18,7 @@ public class MultiBallot[label L] extends Ballot[L] {
         ballots = new Ballot[L][0];
         super();
     }
-    
+
     public void addBallot{L}(Ballot[L]{L} bd) {
         try {
             Ballot[L]{L}[] n = new Ballot[L][ballots.length + 1];
@@ -42,23 +42,23 @@ public class MultiBallot[label L] extends Ballot[L] {
         try {
             for (int i = 0; i < ballots.length; i++) {
                 ballots[i].toXML(sb);
-            }        
+            }
         }
         catch (NullPointerException imposs) { }
         catch (ArrayIndexOutOfBoundsException imposs) { }
         sb.print("</ballots>");
         sb.print("</" + OPENING_TAG + ">");
     }
-    
+
     public static Ballot[lbl]{*lbl} fromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r)  throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
         MultiBallot[lbl] b = new MultiBallot[lbl]();
-        
+
         Util.swallowTag(lbl, r, "ballots");
-        
+
         while (Util.isNextTag(lbl, r, Ballot[lbl].OPENING_TAG)) {
             b.addBallot(Ballot[lbl].fromXML(lbl, r));
         }
-        
+
         Util.swallowEndTag(lbl, r, "ballots");
         return b;
     }

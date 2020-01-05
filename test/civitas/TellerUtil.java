@@ -3,17 +3,17 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas;
 
 import java.io.*;
 import java.net.Socket;
 
 /**
- * Some utility methods for checking the status of 
+ * Some utility methods for checking the status of
  * tabulation tellers, and retrieving statistics from
  * a tabulation teller.
- * 
+ *
  */
 public class TellerUtil {
     public static void main(String[] args) {

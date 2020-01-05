@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.bboard.server;
 
 import java.io.IOException;
@@ -28,9 +28,9 @@ interface BBStorage {
 
     /**
      * Stores the index of this bulletin board within the election id.
-     * An election may have multiple bulletin boards (for example, for use as 
+     * An election may have multiple bulletin boards (for example, for use as
      * ballot boxes), and each bulletin board has a unique index within the
-     * election. 
+     * election.
      * @param id
      * @param index
      * @throws IOException
@@ -44,11 +44,11 @@ interface BBStorage {
      * @throws IOException
      */
     int retrieveIndex(String bbid) throws IOException;
-    
+
     /**
      * Record that this service has agreed to store posts
      * for bulletin board bbid, owned by ownerPublicKey.
-     * 
+     *
      * @param bbid
      * @param ownerPublicKey
      * @throws IOException

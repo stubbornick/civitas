@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.bboard.server;
 
 import java.io.*;
@@ -32,21 +32,21 @@ public class GenericBBS extends Protocol {
      * uniformly at random.
      */
     public static final int ELECTION_ID_LENGTH = 32;
-    
+
     private final Collection<String> boardNames = new HashSet<String>();
     private final short port;
     private final Map<String, Long> createdBoards = new HashMap<String, Long>();
 
     private final PrivateKey bbPrivateKey;
     private final PublicKey bbPublicKey;
-    
+
     final boolean log;
     private String logfilename;
     PrintWriter logoutput = null;
-    
+
     private final BBStorage store;
-    
-    
+
+
     public static void main(String[] args) {
         if(args.length != 4 && args.length != 6) usage();
 
@@ -57,7 +57,7 @@ public class GenericBBS extends Protocol {
         PrintWriter logoutput = null;
         String logfilename = null;
         try {
-            
+
             for (int ind = 0; ind < args.length; ind++) {
                 String arg = args[ind];
                 if (arg.equalsIgnoreCase("-log")) {
@@ -80,7 +80,7 @@ public class GenericBBS extends Protocol {
         }
         catch (NumberFormatException e) {
             usage();
-        }        
+        }
         try {
             PublicKey pubKey = CryptoUtil.factory().publicKeyFromFile(pubKeyFile);
             PrivateKey privKey = CryptoUtil.factory().privateKeyFromFile(privKeyFile);
@@ -89,7 +89,7 @@ public class GenericBBS extends Protocol {
             for(;;) {
                 try {
                     new Thread(f.new ServiceHandle(v.accept())).start();
-                } catch (IOException e) { e.printStackTrace(); } 
+                } catch (IOException e) { e.printStackTrace(); }
             }
         }
         catch (IOException e) {
@@ -98,9 +98,9 @@ public class GenericBBS extends Protocol {
     }
     private static void usage() {
         System.out.println("Usage: java GenericBBS [-log logfile] rootdir port publicKeyFile privateKeyFile");
-        System.exit(1);        
+        System.exit(1);
     }
-        
+
     void reopenLogoutput() {
         if (logoutput != null) {
             logoutput.close();
@@ -120,9 +120,9 @@ public class GenericBBS extends Protocol {
         }
 
     }
-    public GenericBBS(File root, short port, PublicKey pubKey, PrivateKey privKey, PrintWriter log, String logfilename) throws IOException {  
-        this.store = new FileBBStorage(root, this); 
-//        this.store = new TransientBBStorage(); 
+    public GenericBBS(File root, short port, PublicKey pubKey, PrivateKey privKey, PrintWriter log, String logfilename) throws IOException {
+        this.store = new FileBBStorage(root, this);
+//        this.store = new TransientBBStorage();
         this.port = port;
         this.bbPublicKey = pubKey;
         this.bbPrivateKey = privKey;
@@ -130,27 +130,27 @@ public class GenericBBS extends Protocol {
         this.logfilename = logfilename;
         this.log = (log != null);
     }
-    
+
     void addBoardName(String bbid) {
         this.boardNames.add(bbid);
     }
-        
+
     // add the board name to our list
     // and create a place for it in the file structure
     private void newBoard(BufferedReader in, PrintWriter out) throws IOException {
         // read in the public key
-        PublicKey publicKey = null; 
+        PublicKey publicKey = null;
         try {
             publicKey = CryptoUtil.factory().publicKeyFromXML(LabelUtil.singleton().noComponents(), in);
         }
-        catch (IllegalArgumentException e) { 
+        catch (IllegalArgumentException e) {
             throw new IOException(e.getMessage());
         }
 
         // get a new board name
         String newBoardName;
         do {
-            byte[] bs = CryptoUtil.factory().freshNonce(LabelUtil.singleton().noComponents(), ELECTION_ID_LENGTH);  
+            byte[] bs = CryptoUtil.factory().freshNonce(LabelUtil.singleton().noComponents(), ELECTION_ID_LENGTH);
             newBoardName = new BigInteger(bs).abs().toString(16);
         }
         while (boardNames.contains(newBoardName));
@@ -158,14 +158,14 @@ public class GenericBBS extends Protocol {
         boardNames.add(newBoardName);
         createdBoards.put(newBoardName, System.currentTimeMillis());
         out.println(newBoardName);
-        out.flush();        
+        out.flush();
     }
-    
+
     // close a board for posting
     private void closeBoard(BufferedReader in, PrintWriter out) throws IOException {
         Label lbl = LabelUtil.singleton().noComponents();
         String bbid = in.readLine();
-        
+
         // read in the bulletinboardid to post hash to, if it exists
         ElectionID postHashTo = null;
         int numVoterBlocks = 0;
@@ -173,38 +173,38 @@ public class GenericBBS extends Protocol {
             postHashTo = ElectionID.fromXML(lbl, in);
             numVoterBlocks = Integer.parseInt(in.readLine());
         }
-        
+
         // read in the signature
         Signature sig = null;
         try {
             sig = CryptoUtil.factory().signatureFromXML(lbl, in);
         }
-        catch (IllegalArgumentException e) { 
+        catch (IllegalArgumentException e) {
             throw new IOException(e.getMessage());
         }
-        
+
         PublicKey owner = store.retrieveOwnerPublicKey(bbid);
-        
+
         boolean res = false;
         if (owner != null) {
             try {
                 PublicKeyMsg msg = CryptoUtil.factory().publicKeyMsg(bbid);
                 res = CryptoUtil.factory().publicKeyVerifySignature(owner, sig, msg);
             }
-            catch (CryptoException e) { 
+            catch (CryptoException e) {
                 throw new IOException(e.getMessage());
             }
         }
         if (res) {
             // close the board.
             store.closeBoard(bbid);
-            
+
             // post hash to the other board
             if (postHashTo != null) {
                 BBClientUtil bbcu = new BBClientUtil().civitas$bboard$client$BBClientUtil$(postHashTo);
                 String[] hashes = new String[numVoterBlocks];
                 for (int i = 0; i < numVoterBlocks; i++) {
-                    hashes[i] = computeHash(bbid, VoterSubmission.meta(i), null, null);                    
+                    hashes[i] = computeHash(bbid, VoterSubmission.meta(i), null, null);
                 }
                 BoardClosedContentCommitment bccc = new BoardClosedContentCommitment().civitas$common$BoardClosedContentCommitment$(lbl, postHashTo, store.retrieveIndex(bbid), hashes);
                 bbcu.post(BoardClosedContentCommitment.META, bccc, bbPrivateKey);
@@ -213,31 +213,31 @@ public class GenericBBS extends Protocol {
         out.println(Boolean.toString(res));
         out.flush();
     }
-        
+
     // create a file under the boardName's directory
     // whose name is generated based on the hash and timestamp
     // containing the body of the message
-    private void post(BufferedReader in, PrintWriter out) throws IOException {                
+    private void post(BufferedReader in, PrintWriter out) throws IOException {
         // read boardname
         String bbName = in.readLine();
         // read data, get timestamp
         String meta = protocolInputString(in);
-        
+
         // read in the message
-        // The message is currently stored in memory, in a string; 
+        // The message is currently stored in memory, in a string;
         // a performance improvement could be to write the message (or
         // the post part of it) directly to at file, perhaps saving
         // some memory resources.
         StringWriter sw = new StringWriter();
-        protocolInputToSentinal(in, new PrintWriter(sw));        
+        protocolInputToSentinal(in, new PrintWriter(sw));
         String mesg = sw.toString();
         sw = new StringWriter();
-        protocolInputToSentinal(in, new PrintWriter(sw));        
+        protocolInputToSentinal(in, new PrintWriter(sw));
         String sign = sw.toString();
-        
+
         if (!this.boardNames.contains(bbName)) return;
 
-        
+
         long t = -1;
         if (!store.isBoardClosed(bbName)) {
             t = store.post(bbName, meta, mesg, sign);
@@ -253,10 +253,10 @@ public class GenericBBS extends Protocol {
         else {
             System.err.println("Post attempted for closed board " + bbName);
         }
-        
+
         // send timestamp back to client
         out.println(t);
-        out.flush();    
+        out.flush();
     }
     private class RetrieveProcessor implements BBStorage.PostProcessor {
         final PrintWriter out;
@@ -275,29 +275,29 @@ public class GenericBBS extends Protocol {
                 out.print("<EOP>");
             }
             if (md != null) {
-                md.update(post.timestamp); 
+                md.update(post.timestamp);
                 md.update(post.meta);
                 md.update(post.msg);
                 md.update(post.sig);
-            }            
-        }        
+            }
+        }
     }
     // concatenate the contents of all files under the board's directory
     private void retrieve(BufferedReader in, PrintWriter out, boolean signed) throws IOException {
         // read board name and gather all posts on it
         String bbName = in.readLine();
-        
-        if (!this.boardNames.contains(bbName)) return;        
+
+        if (!this.boardNames.contains(bbName)) return;
         Label lbl = LabelUtil.singleton().noComponents();
         MessageDigest md = null;
         if (signed) {
             md = CryptoUtil.factory().messageDigest(lbl);
         }
-        
+
         // send the name
         out.println(bbName);
 
-        RetrieveProcessor pp = new RetrieveProcessor(out, md);        
+        RetrieveProcessor pp = new RetrieveProcessor(out, md);
         store.processPosts(pp, bbName, null, null, null);
 
         // let the client know the list has finished.
@@ -311,24 +311,24 @@ public class GenericBBS extends Protocol {
                 CryptoUtil.factory().signature(bbPrivateKey, hashMsg).toXML(LabelUtil.singleton().noComponents(), out);
             }
             catch (NullPointerException imposs) { }
-            catch (CryptoException e) { 
+            catch (CryptoException e) {
                 throw new IOException(e.getMessage());
             }
         }
         out.flush();
-                
+
     }
-    
+
     private void retrieve_params(BufferedReader in, PrintWriter out, boolean signed) throws IOException {
         // read board name and gather all posts on it
 //        long start = System.currentTimeMillis(), end;
         String bbName = in.readLine();
         if (!this.boardNames.contains(bbName)) return;
-        
+
         String metaCriteria = protocolInputString(in);
         String fromTime = in.readLine();
         String toTime = in.readLine();
-        
+
 
         Label lbl = LabelUtil.singleton().noComponents();
         MessageDigest md = null;
@@ -349,7 +349,7 @@ public class GenericBBS extends Protocol {
             }
         }
 
-        RetrieveProcessor pp = new RetrieveProcessor(out, md);        
+        RetrieveProcessor pp = new RetrieveProcessor(out, md);
         store.processPosts(pp, bbName, metaCriteria, fromTime, toTime);
 //        System.err.println("BBS process posts " + ((end = System.currentTimeMillis()) - start)); start = end;
 
@@ -366,14 +366,14 @@ public class GenericBBS extends Protocol {
 //                System.err.println("BBS hash " + ((end = System.currentTimeMillis()) - start)); start = end;
             }
             catch (NullPointerException imposs) { }
-            catch (CryptoException e) { 
+            catch (CryptoException e) {
                 throw new IOException(e.getMessage());
             }
         }
         out.flush();
 //        System.err.println("BBS finished" + ((end = System.currentTimeMillis()) - start)); start = end;
     }
-    
+
     private void retrieve_hash(BufferedReader in, PrintWriter out) throws IOException {
         // read board name and gather all posts on it
         String bbName = in.readLine();
@@ -389,7 +389,7 @@ public class GenericBBS extends Protocol {
             CryptoUtil.factory().signature(bbPrivateKey, hashMsg).toXML(LabelUtil.singleton().noComponents(), out);
         }
         catch (NullPointerException imposs) { }
-        catch (CryptoException e) { 
+        catch (CryptoException e) {
             throw new IOException(e.getMessage());
         }
         out.flush();
@@ -398,32 +398,32 @@ public class GenericBBS extends Protocol {
     private String computeHash(String bbName, String metaCriteria, String fromTime, String toTime) throws IOException {
         Label lbl = LabelUtil.singleton().noComponents();
         MessageDigest md = CryptoUtil.factory().messageDigest(lbl);
-        RetrieveProcessor pp = new RetrieveProcessor(null, md);        
+        RetrieveProcessor pp = new RetrieveProcessor(null, md);
         store.processPosts(pp, bbName, metaCriteria, fromTime, toTime);
 
-        String hash = Util.constBytesToString(lbl, md.digest());   
-        
+        String hash = Util.constBytesToString(lbl, md.digest());
+
         return hash;
     }
     private void requestParticipation(BufferedReader in, PrintWriter out) throws IOException {
         Label lbl = LabelUtil.singleton().noComponents();
         ElectionDetails elecDetails = ElectionDetails.fromXML(lbl, in);
         TellerDetails tellerDetails = TellerDetails.fromXML(lbl, in);
-        
+
         // decide whether to participate
         boolean result = false;
         if (elecDetails != null && tellerDetails != null) {
             result = decideParticipation(elecDetails, tellerDetails);
         }
         out.println(result?"yes":"no");
-        out.flush();        
+        out.flush();
     }
     private void confirmParticipation(BufferedReader in, PrintWriter out) throws IOException {
         Label lbl = LabelUtil.singleton().noComponents();
         ElectionDetails elecDetails = ElectionDetails.fromXML(lbl, in);
         @SuppressWarnings("unused")
 		TellerDetails tellerDetails = TellerDetails.fromXML(lbl, in);
-        
+
         int index = -1;
         try {
             index = Integer.parseInt(in.readLine());
@@ -436,13 +436,13 @@ public class GenericBBS extends Protocol {
         if (elecDetails != null && elecDetails.electionID != null && isAcceptedElection(elecDetails.electionID.id)) {
             // store the needed information about election and teller details.
             store.storeIndex(elecDetails.electionID.id, index);
-            out.println(true);                
+            out.println(true);
         }
         else {
-            out.println(false);                                
+            out.println(false);
         }
-        
-        out.flush();        
+
+        out.flush();
     }
     /**
      * Decide whether or not this BB will participate in an election
@@ -454,7 +454,7 @@ public class GenericBBS extends Protocol {
         boolean decision = true;
         try {
             ElectionCache electionCache = new ElectionCache().civitas$common$ElectionCache$();
-            if (ElectionUtil.retrieveElectionStatus(bbPublicKey, elecDetails.electionID, electionCache) != ElectionUtil.STATUS_DEFINED) { 
+            if (ElectionUtil.retrieveElectionStatus(bbPublicKey, elecDetails.electionID, electionCache) != ElectionUtil.STATUS_DEFINED) {
                 decision = false;
             }
         }
@@ -462,8 +462,8 @@ public class GenericBBS extends Protocol {
             // couldn't contact the admin BB server. Seems like a bad deal...
             decision = false;
         }
-                
-        
+
+
         if (decision) {
             try {
                 store.storeAcceptance(elecDetails.electionID.id, elecDetails.supervisor);
@@ -480,15 +480,15 @@ public class GenericBBS extends Protocol {
     private boolean isAcceptedElection(String id) {
         return boardNames.contains(id);
     }
-    
+
     /**
      * Just indicate if this bulletin board is alive
      */
     private void heartbeat(BufferedReader in, PrintWriter out) throws IOException {
-        out.println(true);                        
-        out.flush();        
+        out.println(true);
+        out.flush();
     }
-    
+
     private class ExperimentResultsProcessor implements BBStorage.PostProcessor {
         long finalizeTime = 0, startTime = 0, stopTime = 0, creationTime = 0;
         long tellerResultsTime = 0;
@@ -503,7 +503,7 @@ public class GenericBBS extends Protocol {
                     ElectionEventFinalize fe = (ElectionEventFinalize)e;
                     StringWriter sb = new StringWriter();
                     fe.tally.toXML(LabelUtil.singleton().noComponents(), new PrintWriter(sb));
-                    electionResults = sb.toString();                    
+                    electionResults = sb.toString();
                 }
                 else if (ElectionEvent.EVENT_KIND_START.equals(e.kind)) {
                     startTime = post.timestamp;
@@ -515,7 +515,7 @@ public class GenericBBS extends Protocol {
             else {
                 if (post.timestamp > tellerResultsTime) {
                     tellerResultsTime = post.timestamp;
-                }                    
+                }
             }
 
         }
@@ -547,15 +547,15 @@ public class GenericBBS extends Protocol {
             out.println("lastTellerResultTime : " + erp.tellerResultsTime);
             out.println("electionFinalize : " + erp.finalizeTime);
             out.println("elapsedCreationToStop : " + (erp.stopTime - erp.creationTime));
-            out.println("elapsedStopToResults : " + (erp.tellerResultsTime - erp.stopTime));            
-            out.println();            
-            out.println("electionResults : " + erp.electionResults);            
+            out.println("elapsedStopToResults : " + (erp.tellerResultsTime - erp.stopTime));
+            out.println();
+            out.println("electionResults : " + erp.electionResults);
         }
         out.println("<END>");
         out.flush();
-        
+
     }
-        
+
     private class ServiceHandle implements Runnable {
         private Socket s;
         public ServiceHandle(Socket s) { this.s = s; }
@@ -575,7 +575,7 @@ public class GenericBBS extends Protocol {
                     else if(action.equals("RETRIEVE_PARAMS_UNSIGNED")) retrieve_params(in,out,false);
                     else if(action.equals("RETRIEVE_PARAMS_SIGNED"))   retrieve_params(in,out,true);
                     else if(action.equals("RETRIEVE_HASH"))            retrieve_hash(in,out);
-                    else if(action.equals("REQUEST_PARTICIPATION"))    requestParticipation(in,out);                    
+                    else if(action.equals("REQUEST_PARTICIPATION"))    requestParticipation(in,out);
                     else if(action.equals("CONFIRM_PARTICIPATION"))    confirmParticipation(in,out);
                     else if(action.equals("HEARTBEAT"))                heartbeat(in,out);
                     else if(action.equals("EXPERIMENT_RESULTS"))       experimentResults(in,out);
@@ -587,23 +587,23 @@ public class GenericBBS extends Protocol {
                     s.close();
                 }
             }
-            catch (RuntimeException e) { 
-                e.printStackTrace(); 
+            catch (RuntimeException e) {
+                e.printStackTrace();
                 if (log) {
                     logoutput.println("error: " + e.getMessage());
                     e.printStackTrace(logoutput);
                 }
                 throw e;
             }
-            catch (IOException e) { 
-                e.printStackTrace(); 
+            catch (IOException e) {
+                e.printStackTrace();
                 if (log) {
                     logoutput.println("error: " + e.getMessage());
                     e.printStackTrace(logoutput);
                 }
             }
         }
-    }    
+    }
 }
 
 class BBStoragePost {

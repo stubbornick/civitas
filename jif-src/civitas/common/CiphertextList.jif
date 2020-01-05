@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import civitas.crypto.*;
@@ -11,7 +11,7 @@ import civitas.crypto.*;
 import java.io.*;
 
 /**
- * A ciphertext list is just a list of ciphertexts. 
+ * A ciphertext list is just a list of ciphertexts.
  */
 public class CiphertextList implements XMLSerializable {
     public final static String{*<-*} META = "ciphertextList";
@@ -55,29 +55,29 @@ public class CiphertextList implements XMLSerializable {
         try {
             for (int i = 0; i < ciphertexts.length; i++) {
                 ciphertexts[i].toXML(lbl, sb);
-            }        
+            }
         }
         catch (NullPointerException imposs) { }
         catch (ArrayIndexOutOfBoundsException imposs) { }
         sb.print("</ciphertextList>");
     }
-    
+
     public static CiphertextList{*lbl} fromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r)  throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
-        
+
         Util.swallowTag(lbl, r, "ciphertextList");
         int size =Util.readSimpleIntTag(lbl, r, "size");
         ElGamalCiphertext{*lbl}[] ciphertexts = new ElGamalCiphertext[size<0?0:size];
-        
+
         for (int i = 0; i < ciphertexts.length; i++) {
             try {
                 ciphertexts[i] = CryptoUtil.factory().elGamalCiphertextFromXML(lbl, r);
             }
             catch (NullPointerException imposs) { }
-            catch (ArrayIndexOutOfBoundsException e) { 
+            catch (ArrayIndexOutOfBoundsException e) {
                 throw new IOException("size does not agree with number of ciphertexts");
             }
         }
-        
+
         Util.swallowEndTag(lbl, r, "ciphertextList");
         CiphertextList cl = new CiphertextList(lbl, ciphertexts);
 

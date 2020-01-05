@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import civitas.crypto.*;
@@ -23,7 +23,7 @@ public class ElectoralRollEstimate implements XMLSerializable {
     public ElectoralRollEstimate(int{this} estimate) {
         this.estimate = estimate;
     }
-    
+
     public void toXML{}(PrintWriter[{}]{} sb) {
         toXML(new label {}, sb);
     }
@@ -36,11 +36,11 @@ public class ElectoralRollEstimate implements XMLSerializable {
         sb.print("</estimate>");
         sb.print("</electoralRollEstimate>");
     }
-    
+
     public static ElectoralRollEstimate fromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r) throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
         Util.swallowTag(lbl, r, "electoralRollEstimate");
-        int estimate = Util.readSimpleIntTag(lbl, r, "estimate");                
+        int estimate = Util.readSimpleIntTag(lbl, r, "estimate");
         Util.swallowEndTag(lbl, r, "electoralRollEstimate");
         return new ElectoralRollEstimate(estimate);
-    }    
+    }
 }

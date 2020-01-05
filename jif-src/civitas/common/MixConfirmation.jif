@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import civitas.crypto.*;
@@ -26,7 +26,7 @@ public class MixConfirmation implements XMLSerializable {
     public final int{this} tellerIndex;
     public final boolean{this} isVoteMix;
     public final ElectionID{this} electionID;
-    
+
 
     public MixConfirmation(ElectionID{this} electionID, int{this} speakerIndex, int{this} tellerIndex, boolean{this} isVoteMix) {
         this.electionID = electionID;
@@ -34,7 +34,7 @@ public class MixConfirmation implements XMLSerializable {
         this.speakerIndex = speakerIndex;
         this.isVoteMix = isVoteMix;
     }
-    
+
     public void toXML{}(PrintWriter[{}]{} sb) {
         toXML(new label {}, sb);
     }
@@ -55,10 +55,10 @@ public class MixConfirmation implements XMLSerializable {
         sb.print("<kind>");
         sb.print((isVoteMix?"vote":"electoralRoll"));
         sb.print("</kind>");
-        
+
         sb.print("</mixConfirmation>");
     }
-    
+
     public static MixConfirmation{*lbl} fromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r) throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
         Util.swallowTag(lbl, r, "mixConfirmation");
         ElectionID electionID = ElectionID.fromXML(lbl, r);
@@ -66,7 +66,7 @@ public class MixConfirmation implements XMLSerializable {
         int teller = Util.readSimpleIntTag(lbl, r, "teller");
         String kind = Util.readSimpleTag(lbl, r, "kind");
         Util.swallowEndTag(lbl, r, "mixConfirmation");
-        
+
         return new MixConfirmation(electionID, speaker, teller, "vote".equals(kind));
-    }    
+    }
 }

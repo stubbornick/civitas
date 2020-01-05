@@ -10,7 +10,7 @@ import java.io.Reader;
 public class CryptoUtil {
     private static int __JIF_SIG_OF_JAVA_CLASS$20030619 = 0;
     private CryptoUtil() {}
-    
+
     public static native CryptoFactory{*<-*} factory();
 
 }

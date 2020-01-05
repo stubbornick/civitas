@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.crypto.concrete;
 
 import java.io.*;
@@ -48,7 +48,7 @@ class ElGamalParametersC implements ElGamalParameters {
 	 * No implicit construction allowed.
 	 */
 	protected ElGamalParametersC() {
-		throw new UnsupportedOperationException();    	
+		throw new UnsupportedOperationException();
 	}
 
 	/**
@@ -57,7 +57,7 @@ class ElGamalParametersC implements ElGamalParameters {
 	 * @param keyLength The number of bits of q.
 	 * @param groupLength The number of bits of p.
 	 */
-	protected ElGamalParametersC(int keyLength, int groupLength) { 
+	protected ElGamalParametersC(int keyLength, int groupLength) {
 		SchnorrPrime sp;
 		if (groupLength == keyLength + 1) {
 			sp = CryptoAlgs.safePrime(keyLength);
@@ -86,7 +86,7 @@ class ElGamalParametersC implements ElGamalParameters {
 	private void checkGroup() {
 		if (! p.subtract(CivitasBigInteger.ONE).mod(q).equals(CivitasBigInteger.ZERO)) {
 			throw new CryptoError("q does not divide p-1");
-		}    
+		}
 		if (! p.subtract(CivitasBigInteger.ONE).mod(CivitasBigInteger.TWO).equals(CivitasBigInteger.ZERO)) {
 			throw new CryptoError("2 does not divide p-1");
 		}
@@ -176,14 +176,14 @@ class ElGamalParametersC implements ElGamalParameters {
 			if (i.compareTo(q) > 0) {
 				i = p.subtract(i); // i = -i
 			}
-			return i;        	
+			return i;
 		}
 	}
 
 	public CivitasBigInteger decodeMessage(CivitasBigInteger m) throws CryptoException {
 		return this.encoder.decodeMessage(m);
 	}
-	
+
 	public CivitasBigInteger encodePlaintext(CivitasBigInteger p) throws CryptoException {
 		return this.encoder.encodePlaintext(p);
 	}
@@ -203,7 +203,7 @@ class ElGamalParametersC implements ElGamalParameters {
 		} catch (CryptoException c) {
 			// ignore and attempt brute force
 		}
-		
+
 		// now try brute force
 		CivitasBigInteger x = g;
 		for (int i = 1; i <= L; i++) {
@@ -212,7 +212,7 @@ class ElGamalParametersC implements ElGamalParameters {
 			}
 			x = x.modMultiply(g, p);
 		}
-		
+
 		throw new CryptoException("Brute force decoding failed");
 	}
 }

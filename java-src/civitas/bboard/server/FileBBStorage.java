@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.bboard.server;
 
 import java.io.*;
@@ -58,13 +58,13 @@ class FileBBStorage extends Protocol implements BBStorage {
                 File file = files[i];
                 if (file.isDirectory()) {
                     bbs.addBoardName(file.getName());
-                }                
+                }
             }
-        }            
+        }
     }
-    
+
     /**
-     * Return the appropraite directory to store posts with metadata 
+     * Return the appropraite directory to store posts with metadata
      * meta in bulletin board directory bboardDir.
      */
     private File getMetaDir(File bboardDir, String meta) {
@@ -73,12 +73,12 @@ class FileBBStorage extends Protocol implements BBStorage {
             char c = meta.charAt(i);
             if (Character.isLetterOrDigit(c)) {
                 sb.append(c);
-            }            
+            }
             else if (':' == c) {
                 sb.append(File.separatorChar);
             }
             else {
-                sb.append('_');                
+                sb.append('_');
             }
         }
 
@@ -90,20 +90,20 @@ class FileBBStorage extends Protocol implements BBStorage {
     /*
      *  return the file name of a post
      */
-    private static String filenameForPost(long time, int unique) { 
+    private static String filenameForPost(long time, int unique) {
         String timeString = Long.toString(time, TIME_STAMP_RADIX);
         if (unique == 0) {
             return timeString;
         }
         else {
-            return timeString + "_" + unique;            
+            return timeString + "_" + unique;
         }
     }
 
 
     public void closeBoard(String bbid) throws IOException {
         File closedMarker = new File(new File(root, bbid), BOARD_CLOSED_FILENAME);
-        closedMarker.createNewFile();            
+        closedMarker.createNewFile();
     }
     public boolean isBoardClosed(String bbid) {
         File bboardRoot = new File(root,bbid);
@@ -123,7 +123,7 @@ class FileBBStorage extends Protocol implements BBStorage {
         File[] posts = getPostsMatchingCriteria(bboardRoot, meta, fromTime, toTime);
 
         for(File m : posts) {
-            BBStoragePost post = readPostFromFile(bbName, m);            
+            BBStoragePost post = readPostFromFile(bbName, m);
             if (post == null) continue;
             if (metaMatches(meta, post.meta)) {
                 pp.processPost(post);
@@ -142,7 +142,7 @@ class FileBBStorage extends Protocol implements BBStorage {
         // create file at path board/meta
         // make sure that we have a unique file name by taking a hash of the meta and msg.
         long t = System.currentTimeMillis();
-        int unique = (meta==null?0:meta.hashCode()) ^ 
+        int unique = (meta==null?0:meta.hashCode()) ^
                      (mesg==null?0:mesg.hashCode()) ^
                      (sign==null?0:sign.hashCode());
         String filename = filenameForPost(t, unique);
@@ -159,14 +159,14 @@ class FileBBStorage extends Protocol implements BBStorage {
     private void writePostToFile(String bbid, File f, File tempFile, long t, String meta, String mesg, String sign) throws IOException {
         FileOutputStream fos = new FileOutputStream(tempFile);
         PrintStream fout = new PrintStream(fos);
-        fout.println(t); 
+        fout.println(t);
         protocolOutputString(fout, meta);
         protocolOutputString(fout, mesg);
         protocolOutputString(fout, sign);
         fout.println();
         fout.flush();
         fout.close();
-        
+
         tempFile.renameTo(f);
         f.setReadOnly();
     }
@@ -213,7 +213,7 @@ class FileBBStorage extends Protocol implements BBStorage {
             }
         }
         else {
-            File[] dirs = bboardRoot.listFiles();            
+            File[] dirs = bboardRoot.listFiles();
             ArrayList<File> allFiles = new ArrayList<File>();
             if (dirs != null) {
                 for (int i = 0; i < dirs.length; i++) {
@@ -230,7 +230,7 @@ class FileBBStorage extends Protocol implements BBStorage {
             else {
                 System.err.println("dirs was null for " + bboardRoot);
             }
-            posts = allFiles.toArray(new File[0]);            
+            posts = allFiles.toArray(new File[0]);
         }
 
         Arrays.sort(posts, filenameComparator);
@@ -287,9 +287,9 @@ class FileBBStorage extends Protocol implements BBStorage {
     }
     private static class TimeFileFilter implements FilenameFilter {
         private final long fromCriteria, toCriteria;
-        public TimeFileFilter(long fromCriteria, long toCriteria) { 
-            this.fromCriteria = fromCriteria; 
-            this.toCriteria = toCriteria; 
+        public TimeFileFilter(long fromCriteria, long toCriteria) {
+            this.fromCriteria = fromCriteria;
+            this.toCriteria = toCriteria;
         }
 
         public TimeFileFilter(String fromTime, String toTime) {

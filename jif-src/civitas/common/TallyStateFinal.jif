@@ -3,19 +3,19 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import java.io.*;
 
 /**
- * This class is the super class of all final tally states. A final tally state is 
- * very similar to a tally state, not it is not mutable.  
+ * This class is the super class of all final tally states. A final tally state is
+ * very similar to a tally state, not it is not mutable.
  */
-public abstract class TallyStateFinal implements XMLSerializable {        
+public abstract class TallyStateFinal implements XMLSerializable {
     public abstract void toXML{*lbl}(label lbl, PrintWriter[lbl]{*lbl} sb) where {this} <= lbl;
     public final static String{*<-*} OPENING_TAG = "tallyState";
-    
+
     public void toXML{}(PrintWriter[{}]{} sb) {
         toXML(new label {}, sb);
     }
@@ -38,7 +38,7 @@ public abstract class TallyStateFinal implements XMLSerializable {
         else if (kind.equalsIgnoreCase(MultiBallotDesign.KIND)) {
             b = MultiTallyStateFinal.fromXML(lbl, r);
         }
-        else 
+        else
             throw new IOException("Unknown ballot kind: " + kind);
         Util.swallowEndTag(lbl, r, OPENING_TAG);
         return b;

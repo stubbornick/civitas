@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import java.io.*;
@@ -19,11 +19,11 @@ public class CondorcetBallot[label L] extends Ballot[L] {
      * The number of candidates
      */
     public final int{L} k;
-    
+
     /**
      * Representation of voter's preferences. For candidates i and j,
-     * the voters choice is recorded in position 
-     * CondorcetBallotDesign.position(i,j,this.k). 
+     * the voters choice is recorded in position
+     * CondorcetBallotDesign.position(i,j,this.k).
      */
     public final byte{L}[]{L} matrix;
     public CondorcetBallot{L}(int{L} numCandidates) {
@@ -32,7 +32,7 @@ public class CondorcetBallot[label L] extends Ballot[L] {
         matrix = new byte[size < 0 ? 0 : size];
         super();
     }
-    
+
     public void record{L}(int{L} i, int{L} j, byte{L} voteChoice) {
         if (!(0 <= i && i < j && j < k)) return;
         if (matrix == null) return;
@@ -67,18 +67,18 @@ public class CondorcetBallot[label L] extends Ballot[L] {
                     sb.print("</choice>");
                     sb.print("</entry>");
                 }
-            }        
+            }
         }
         catch (NullPointerException imposs) { }
         catch (ArrayIndexOutOfBoundsException imposs) { }
         sb.print("</matrix>");
         sb.print("</" + OPENING_TAG + ">");
     }
-    
+
     public static Ballot[lbl]{*lbl} fromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r)  throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
         int k = Util.readSimpleIntTag(lbl, r,"k");
         CondorcetBallot[lbl] b = new CondorcetBallot[lbl](k);
-        
+
         Util.swallowTag(lbl, r, "matrix");
         for (int i = 0; i < k; i++) {
             for (int j = i+1; j < k; j++) {
@@ -90,8 +90,8 @@ public class CondorcetBallot[label L] extends Ballot[L] {
                 b.record(i,j,choice);
                 Util.swallowEndTag(lbl, r, "entry");
             }
-        }        
-       
+        }
+
         Util.swallowEndTag(lbl, r, "matrix");
         return b;
     }

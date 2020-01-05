@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.crypto.concrete;
 
 import java.io.PrintWriter;
@@ -17,7 +17,7 @@ import civitas.crypto.common.Base64;
 public abstract class KeyCiphertextC  {
     final byte[] encryptedBytes;
     public KeyCiphertextC(byte[] encrypted) {
-        this.encryptedBytes = encrypted;       
+        this.encryptedBytes = encrypted;
     }
 
     public byte[] toBytes() {

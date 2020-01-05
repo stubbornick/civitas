@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import civitas.crypto.*;
@@ -11,9 +11,9 @@ import civitas.crypto.*;
 import java.io.*;
 
 /**
- * A <code>Vote</code> is part of the 
+ * A <code>Vote</code> is part of the
  * decomposition of a ballot submitted by a voter. It contains a context
- * for interpreting the choice, an encrypted choice (which is a 
+ * for interpreting the choice, an encrypted choice (which is a
  * one-out-of-L encryption, where
  * L is determined in combination with the context and the ballot design
  * for the election), and an encrypted capability.
@@ -26,25 +26,25 @@ public class Vote implements XMLSerializable {
      * Indicates the election and block that this vote belongs to.
      */
     public final String{this} context;
-    
+
     /**
      * Encrypted choice
      */
     public final ElGamalCiphertext{this} encChoice;
-    
+
     /**
      * Encrypted choice
      */
     public final ElGamalCiphertext{this} encCapability;
 
-    public Vote(String{this} context, 
+    public Vote(String{this} context,
                           ElGamalCiphertext{this} encChoice,
                           ElGamalCiphertext{this} encCapability) {
         this.context = context;
         this.encChoice = encChoice;
         this.encCapability = encCapability;
     }
-    
+
     public void toXML{}(PrintWriter[{}]{} sb) {
         toXML(new label {}, sb);
     }
@@ -66,14 +66,14 @@ public class Vote implements XMLSerializable {
         sb.print("</encCapability>");
         sb.print("</" + OPENING_TAG + ">");
     }
-    
+
     public static Vote fromXML{}(Reader[{}]{} r) throws (IllegalArgumentException{}, IOException{}) {
         final label lbl = new label {};
         Util.swallowTag(lbl, r, OPENING_TAG);
         String context = Util.unescapeString(Util.readSimpleTag(lbl, r, "context"));
         Util.swallowTag(lbl, r, "encChoice");
         ElGamalCiphertext encChoice = null;
-        try { 
+        try {
             encChoice = CryptoUtil.factory().elGamalCiphertextFromXML(lbl, r);
         }
         catch (NullPointerException imposs) { }
@@ -81,7 +81,7 @@ public class Vote implements XMLSerializable {
         Util.swallowEndTag(lbl, r, "encChoice");
         Util.swallowTag(lbl, r, "encCapability");
         ElGamalCiphertext encCapability = null;
-        try {           
+        try {
             encCapability = CryptoUtil.factory().elGamalCiphertextFromXML(lbl, r);
         }
         catch (NullPointerException imposs) { }
@@ -89,5 +89,5 @@ public class Vote implements XMLSerializable {
         Util.swallowEndTag(lbl, r, "encCapability");
         Util.swallowEndTag(lbl, r, OPENING_TAG);
         return new Vote(context, encChoice, encCapability);
-    }    
+    }
 }

@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.tabulation.server;
 
 import civitas.crypto.*;
@@ -12,23 +12,23 @@ import civitas.common.*;
 import until.util.*;
 
 /**
- * Superclass for information the server must trak for 
+ * Superclass for information the server must trak for
  * vote mixes and capability mixes.
  */
 public abstract class MixInfo[principal TT] {
     public final ConditionHolder[{TT<-TT}]{this} allMixesDone;
-    
+
     protected final int{TT->TT;TT<-TT} const[]{this} permutation;
     protected final ElGamalReencryptFactor{TT->TT;TT<-TT}const[]{this} reencryptFactors;
-    protected final byte{TT->TT;TT<-TT}const[][]{this} permutationCommitmentFactors; 
-    
+    protected final byte{TT->TT;TT<-TT}const[][]{this} permutationCommitmentFactors;
+
     // DECLASSIFICATION POLICY
-    protected final byte{TT:TT allMixesDone.c->_ ; TT<-TT}const[]{this} mixNonce; 
-        
+    protected final byte{TT:TT allMixesDone.c->_ ; TT<-TT}const[]{this} mixNonce;
+
     MixInfo(final ConditionHolder[{TT<-TT}]{this} allMixesDone,
-            int{TT->TT;TT<-TT}const[]{this} permutation, 
-            ElGamalReencryptFactor{TT->TT;TT<-TT}const[]{this} reencryptFactors, 
-            byte{TT->TT;TT<-TT} const[][]{this} permutationCommitmentFactors, 
+            int{TT->TT;TT<-TT}const[]{this} permutation,
+            ElGamalReencryptFactor{TT->TT;TT<-TT}const[]{this} reencryptFactors,
+            byte{TT->TT;TT<-TT} const[][]{this} permutationCommitmentFactors,
             byte{TT->TT allMixesDone.c->_ ;TT<-TT}const []{this} mixNonce) {
         this.allMixesDone = allMixesDone;
         this.permutation = permutation;
@@ -41,9 +41,9 @@ public abstract class MixInfo[principal TT] {
         if (permutation != null) return permutation.length;
         return 0;
     }
-    
+
     abstract void permute{}(Mix{} inMix, Mix{} outMix, ElGamalPublicKey{} key) where caller(TT);
-    
+
     /**
      * if invert is false, then get the revelation what i maps to. If invert is true,
      * get the revelation for what maps to i. Require the trust of TT, since a declassification

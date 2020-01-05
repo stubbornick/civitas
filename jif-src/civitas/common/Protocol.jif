@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import java.io.*;
@@ -53,7 +53,7 @@ public abstract class Protocol {
                 }
                 catch (ArrayIndexOutOfBoundsException imposs) { }
             }
-            
+
         }
         String response = null;
         try {
@@ -69,7 +69,7 @@ public abstract class Protocol {
     protected final void protocolOutputSentinal{}(PrintWriter[{}]{} output) throws (IOException{})  {
         if (output != null) output.print(SENTINAL);
     }
-    protected final void protocolInputToSentinal{}(BufferedReader[{}]{} input, PrintWriter[{}]{} sb) throws (IOException{})  {        
+    protected final void protocolInputToSentinal{}(BufferedReader[{}]{} input, PrintWriter[{}]{} sb) throws (IOException{})  {
         try {
             int sentinalChar = SENTINAL.charAt(0);
             while (true) {
@@ -91,7 +91,7 @@ public abstract class Protocol {
                         // we've matched the sentinal
                         sb.flush();
                         return;
-                    }                
+                    }
                 }
                 else {
                     sb.append((char)ch);
@@ -101,6 +101,6 @@ public abstract class Protocol {
         catch (IndexOutOfBoundsException imposs) { }
         catch (NullPointerException imposs) { }
     }
-    
+
 
 }

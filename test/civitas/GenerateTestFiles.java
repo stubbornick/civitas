@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas;
 
 import java.io.*;
@@ -35,7 +35,7 @@ public class GenerateTestFiles {
         if (args.length == 0) {
             System.err.println("usage: cmd [options]");
             System.err.println("   cmd is one of keys, egparams, egkeys, electionDetails, tellerDetails, electoralRoll, ballot");
-            return;            
+            return;
         }
         String cmd = args[0];
         if (cmd.equalsIgnoreCase("keys")) {
@@ -50,7 +50,7 @@ public class GenerateTestFiles {
             }
             catch (RuntimeException e) {
                 System.err.println("usage: keys inKeyLength outPublicKeyFile outPrivateKeyFile");
-                return;                            
+                return;
             }
         }
         else if (cmd.equalsIgnoreCase("egparams")) {
@@ -61,7 +61,7 @@ public class GenerateTestFiles {
                     params = CryptoUtil.factory().generateElGamalParameters(Integer.parseInt(args[2]), Integer.parseInt(args[3]));
                 }
                 else {
-                    params = CryptoUtil.factory().generateElGamalParameters();                    
+                    params = CryptoUtil.factory().generateElGamalParameters();
                 }
                 Label lbl = LabelUtil.singleton().noComponents();
                 StringWriter sb = new StringWriter();
@@ -70,7 +70,7 @@ public class GenerateTestFiles {
                 paramsOut.close();
             }
             catch (RuntimeException e) {
-                return;                            
+                return;
             }
             catch (IOException e) {
                 e.printStackTrace();
@@ -85,7 +85,7 @@ public class GenerateTestFiles {
             }
             catch (RuntimeException e) {
                 System.err.println("usage: egkeys inElGamalParameters outPublicKeyFile outPrivateKeyFile");
-                return;                            
+                return;
             }
             catch (IOException e) {
                 e.printStackTrace();
@@ -104,19 +104,19 @@ public class GenerateTestFiles {
                 int nonceBitLength = Integer.parseInt(args[i++]);
                 PrintStream detailsOut = new PrintStream(new FileOutputStream(args[i++]));
                 generateElectionDetails(detailsOut, System.err, electionID, supPublicKey, regPublicKey, params, sharedKeyLength, voterAnonimity, nonceBitLength);
-                
+
             }
             catch (NumberFormatException e) {
                 System.err.println("usage: electionDetails inElectionID.xml inSupPublicKey.xml inRegPublicKey.xml inElGamalParams.xml inSharedKeyLength inVoterAnonymity inNonceBitLength outElectionDetails.xml");
-                return;                            
+                return;
             }
             catch (ArrayIndexOutOfBoundsException e) {
                 System.err.println("usage: electionDetails inElectionID.xml inSupPublicKey.xml inRegPublicKey.xml inElGamalParams.xml inVoterAnonymity inNonceBitLength outElectionDetails.xml");
-                return;                            
+                return;
             }
             catch (IOException e) {
                 e.printStackTrace();
-                return;                            
+                return;
             }
         }
         else if (cmd.equalsIgnoreCase("tellerDetails")) {
@@ -126,7 +126,7 @@ public class GenerateTestFiles {
                 List<Host> tabTellerHosts = new ArrayList<Host>();
                 List<Host> regTellerHosts = new ArrayList<Host>();
                 List<Host> voterBBHosts = new ArrayList<Host>();
-                
+
                 int ind = 1;
                 while (++ind < args.length) {
                     List<Host> hostList;
@@ -134,10 +134,10 @@ public class GenerateTestFiles {
                         hostList = regTellerHosts;
                     }
                     else if (args[ind].equals("-tab")) {
-                        hostList = tabTellerHosts;                        
+                        hostList = tabTellerHosts;
                     }
                     else if (args[ind].equals("-bb")) {
-                        hostList = voterBBHosts;                        
+                        hostList = voterBBHosts;
                     }
                     else {
                         throw new IllegalArgumentException("Unknown switch '" + args[ind] + "'");
@@ -149,17 +149,17 @@ public class GenerateTestFiles {
                     Host h = new Host().civitas$common$Host$(address, Integer.parseInt(port), key);
                     hostList.add(h);
                 }
-                                
+
                 generateTellerDetails(detailsOut, System.err, tabTellerHosts, regTellerHosts, voterBBHosts);
             }
             catch (RuntimeException e) {
                 System.err.println("usage: tellerDetails outTellerDetails.xml ([-reg|-tab|-bb] address port inPublicKeyFile.xml)*");
                 e.printStackTrace();
-                return;                            
+                return;
             }
             catch (IOException e) {
                 e.printStackTrace();
-                return;                            
+                return;
             }
         }
         else if (cmd.equalsIgnoreCase("electoralRoll")) {
@@ -171,22 +171,22 @@ public class GenerateTestFiles {
 
                 List<ElGamalPublicKey> voterEGPublicKeys = new ArrayList<ElGamalPublicKey>();
                 List<PublicKey> voterPublicKeys = new ArrayList<PublicKey>();
-                
+
                 for (int i = 3; i < args.length; ) {
                     voterEGPublicKeys.add(CryptoUtil.factory().egPubKeyFromFile(args[i++]));
                     voterPublicKeys.add(CryptoUtil.factory().publicKeyFromFile(args[i++]));
-                }                
-                ElGamalPublicKey ttSharedKey = ElectionUtil.retrieveTabTellerSharedPublicKey(electionDetails, electionCache); 
+                }
+                ElGamalPublicKey ttSharedKey = ElectionUtil.retrieveTabTellerSharedPublicKey(electionDetails, electionCache);
                 int numberVoterBlocks = ElectionUtil.numberVoterBlocks(electionDetails, electionCache);
                 generateElectoralRoll(detailsOut, System.err, voterEGPublicKeys, voterPublicKeys, numberVoterBlocks, ttSharedKey);
             }
             catch (RuntimeException e) {
                 System.err.println("usage: electoralRoll outElectoralRoll.xml inElectionDetails.xml inVoterPublicKey.xml outVoterCapabilities.txt inVoterPublicKey.xml  outVoterCapabilities.txt ...");
-                return;                            
+                return;
             }
             catch (IOException e) {
                 e.printStackTrace();
-                return;                            
+                return;
             }
         }
         else if (cmd.equalsIgnoreCase("ballot")) {
@@ -196,40 +196,40 @@ public class GenerateTestFiles {
             }
             catch (RuntimeException e) {
                 System.err.println("usage: ballot inElectionDetails.xml outBallot.xml");
-                return;                            
+                return;
             }
             catch (IOException e) {
                 e.printStackTrace();
-                return;                            
+                return;
             }
         }
         else if (cmd.equalsIgnoreCase("fakeCapabilities")) {
             try {
                 String voterName = args[1];
-                ElectionDetails electionDetails = ElectionDetails.fromXML(LabelUtil.singleton().noComponents(), 
+                ElectionDetails electionDetails = ElectionDetails.fromXML(LabelUtil.singleton().noComponents(),
                                                                           new BufferedReader(new FileReader(args[2])));
                 PrintStream capsOut = new PrintStream(new FileOutputStream(args[3]));
                 rand.setSeed(args[3].getBytes());
                 ElectionCache electionCache = new ElectionCache().civitas$common$ElectionCache$();
                 electionCache.setElectionDetails(electionDetails);
-                
+
                 generateFakeCapabilities(capsOut, System.err, electionDetails, ElectionUtil.retrieveVotersBlock(electionCache, electionDetails, voterName));
             }
             catch (RuntimeException e) {
                 System.err.println("usage: fakeCapabilities voterName inElectionDetails.xml outVoterFakeCapabilities.xml");
-                return;                            
+                return;
             }
             catch (IOException e) {
                 e.printStackTrace();
-                return;                            
+                return;
             }
         }
     }
-    
+
     public static KeyPair generateKeyPair(int keyLength, PrintStream pubKeyOutput, PrintStream privKeyOutput, PrintStream console) {
         Label lbl = LabelUtil.singleton().noComponents();
         KeyPair kp = CryptoUtil.factory().generateKeyPair(keyLength);
-        
+
         StringWriter sb = new StringWriter();
         kp.privateKey.toXML(lbl, new PrintWriter(sb));
         privKeyOutput.println(sb.toString());
@@ -238,7 +238,7 @@ public class GenerateTestFiles {
         pubKeyOutput.println(sb.toString());
 
         return kp;
-        
+
     }
     public static ElGamalKeyPair generateElGamalKeyPair(PrintStream pubKeyOutput, PrintStream privKeyOutput, PrintStream console, ElGamalParameters params) {
         ElGamalKeyPair kp = CryptoUtil.factory().generateElGamalKeyPair(params);
@@ -249,9 +249,9 @@ public class GenerateTestFiles {
         sb = new StringWriter();
         kp.publicKey().toXML(lbl, new PrintWriter(sb));
         pubKeyOutput.println(sb.toString());
-        
+
         return kp;
-        
+
     }
     public static void generateElectionDetails(PrintStream output, PrintStream console,
             ElectionID electionID,
@@ -261,37 +261,37 @@ public class GenerateTestFiles {
             int sharedKeyLength,
             int voterAnonymity,
             int nonceBitLength) {
-        String[] candidates1 = {"Fred", "Wilma", "Barney" }; 
+        String[] candidates1 = {"Fred", "Wilma", "Barney" };
         SingleChoiceBallotDesign bd1 = new SingleChoiceBallotDesign().civitas$common$SingleChoiceBallotDesign$(LabelUtil.singleton().noComponents(), candidates1);
-        
-//        String[] candidates2 = {"Homer", "Marje", "Barney" }; 
+
+//        String[] candidates2 = {"Homer", "Marje", "Barney" };
 //        ApprovalBallotDesign bd2 = new ApprovalBallotDesign().civitas$common$ApprovalBallotDesign$(LabelUtil.singleton().noComponents(), candidates2);
-//        
-//        String[] candidates3 = {"George", "Elroy", "Jane" }; 
+//
+//        String[] candidates3 = {"George", "Elroy", "Jane" };
 //        CondorcetBallotDesign bd3 = new CondorcetBallotDesign().civitas$common$CondorcetBallotDesign$(LabelUtil.singleton().noComponents(), candidates3);
-//        
-//        
+//
+//
 //        BallotDesign[] designs = {bd2, bd1};
 //        MultiBallotDesign mbd = new MultiBallotDesign().civitas$common$MultiBallotDesign$(LabelUtil.singleton().noComponents(), designs);
-        
+
         BallotDesign bd = bd1;
-        
+
         ElectionDetails ed = new ElectionDetails().civitas$common$ElectionDetails$(
-                                                                                electionID, 
-                                                                                supPubKey, 
-                                                                                regPubKey, 
+                                                                                electionID,
+                                                                                supPubKey,
+                                                                                regPubKey,
                                                                                 "name",
-                                                                                "description<>", 
-                                                                                Util.currentVersion(), 
-                                                                                bd, 
-                                                                                "noon", 
-                                                                                "1pm", 
-                                                                                "2pm", 
+                                                                                "description<>",
+                                                                                Util.currentVersion(),
+                                                                                bd,
+                                                                                "noon",
+                                                                                "1pm",
+                                                                                "2pm",
                                                                                 params,
                                                                                 sharedKeyLength,
                                                                                 (nonceBitLength/8),
                                                                                 voterAnonymity);
-        
+
         StringWriter sb = new StringWriter();
         ed.toXML(LabelUtil.singleton().noComponents(), new PrintWriter(sb));
         String s = sb.toString();
@@ -305,23 +305,23 @@ public class GenerateTestFiles {
         }
         catch (IOException e) {
             e.printStackTrace(console);
-        }         
+        }
     }
-    
+
     public static void generateTellerDetails(PrintStream output, PrintStream console,
             List<Host> tabHosts,
             List<Host> regHosts,
             List<Host> voterBBHosts) {
         Host[] tabTellers = tabHosts.toArray(new Host[0]);
-        Host[] regTellers = regHosts.toArray(new Host[0]);        
-        Host[] voterBBs = voterBBHosts.toArray(new Host[0]);        
+        Host[] regTellers = regHosts.toArray(new Host[0]);
+        Host[] voterBBs = voterBBHosts.toArray(new Host[0]);
         TellerDetails td = new TellerDetails().civitas$common$TellerDetails$(LabelUtil.singleton().noComponents(), regTellers, tabTellers, voterBBs);
-        
+
         StringWriter sb = new StringWriter();
         td.toXML(LabelUtil.singleton().noComponents(), new PrintWriter(sb));
         output.println(sb.toString());
     }
-    
+
     /**
      * Return the voter block for the given voter index. The voter index should between 1 and numVoters inclusive
      * @param voterIndex
@@ -329,7 +329,7 @@ public class GenerateTestFiles {
      * @return
      */
     public static int voterBlockForVoter(int voterIndex, int numVoterBlocks) {
-        return (voterIndex-1) % numVoterBlocks;   
+        return (voterIndex-1) % numVoterBlocks;
     }
     public static void generateElectoralRoll(PrintStream output, PrintStream console,
             List<ElGamalPublicKey> egPublicKeys,
@@ -352,13 +352,13 @@ public class GenerateTestFiles {
                                                                     key,
                                                                     voterBlock);
         }
-        
+
         ElectoralRoll er = new ElectoralRoll().civitas$common$ElectoralRoll$(vds);
         StringWriter sb = new StringWriter();
         er.toXML(new PrintWriter(sb));
         output.println(sb.toString());
     }
-    
+
     public static void generateBallot(String outputfilename, PrintStream console, String electionDetails) throws IllegalArgumentException, IOException {
         ElectionDetails d = ElectionDetails.fromXML(LabelUtil.singleton().noComponents(), new BufferedReader(new FileReader(electionDetails)));
         generateBallot(outputfilename, console, d);
@@ -391,7 +391,7 @@ public class GenerateTestFiles {
             SingleChoiceBallotDesign d = (SingleChoiceBallotDesign)bd;
             int n = d.candidates.length;
             int choiceInd = rand.nextInt(n);
-            String choice = d.candidates[choiceInd]; 
+            String choice = d.candidates[choiceInd];
             if (console != null) console.println("Creating single choice ballot:  "+ choiceInd + " " + choice);
             return new SingleChoiceBallot(LabelUtil.singleton().noComponents()).civitas$common$SingleChoiceBallot$(choice);
         }
@@ -410,23 +410,23 @@ public class GenerateTestFiles {
             CondorcetBallotDesign d = (CondorcetBallotDesign)bd;
             // assign the candidates a random rank
             if (console != null) console.println("Creating condorcet ballot");
-            int[] rank = new int[d.numberOfCandidates()]; 
+            int[] rank = new int[d.numberOfCandidates()];
             for (int i = 0; i < rank.length; i++) {
                 rank[i] = rand.nextInt(2*rank.length);
                 if (console != null) console.println("  " + i + " " + d.candidates[i] + " rank is " + rank[i]);
             }
             CondorcetBallot a = new CondorcetBallot(LabelUtil.singleton().noComponents()).civitas$common$CondorcetBallot$(d.numberOfCandidates());
-            
+
             for (int i = 0; i < d.numberOfCandidates(); i++) {
                 for (int j = i + 1; j < d.numberOfCandidates(); j++) {
                     if (rank[i] < rank[j]) {
                         a.record(i, j, CondorcetBallotDesign.VOTE_CHOICE_I_BEATS_J);
                     }
                     else if (rank[i] > rank[j]) {
-                        a.record(i, j, CondorcetBallotDesign.VOTE_CHOICE_J_BEATS_I);                        
+                        a.record(i, j, CondorcetBallotDesign.VOTE_CHOICE_J_BEATS_I);
                     }
                     else {
-                        a.record(i, j, CondorcetBallotDesign.VOTE_CHOICE_NEITHER_BEAT);                        
+                        a.record(i, j, CondorcetBallotDesign.VOTE_CHOICE_NEITHER_BEAT);
                     }
                 }
             }
@@ -442,7 +442,7 @@ public class GenerateTestFiles {
         StringWriter sb = new StringWriter();
         vc.toXML(LabelUtil.singleton().noComponents(), new PrintWriter(sb));
         output.println(sb.toString());
-    }    
+    }
     public static VoterCapabilities generateFakeCapabilities(ElectionDetails d, int voterBlock) {
         int size = d.ballotDesign.votesProducedPerBallot();
         CryptoFactory f = CryptoUtil.factory();
@@ -455,6 +455,6 @@ public class GenerateTestFiles {
                                                               d.elGamalParameters);
         VoterCapabilities vc = new VoterCapabilities().civitas$common$VoterCapabilities$(caps , voterBlock);
         return vc;
-    }    
-    
+    }
+
 }

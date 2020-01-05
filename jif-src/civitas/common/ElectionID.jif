@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import java.io.*;
@@ -16,11 +16,11 @@ public class ElectionID extends BulletinBoardID {
     public ElectionID(String{this} host, int{this} port, String{this} id) {
         super(host, port, id);
     }
-    
+
     public boolean equals(ElectionID that) {
         return this.equals((BulletinBoardID)that);
     }
-    
+
     private static final String{*<-*} TAG = "electionID";
     protected String{this} tag() {
         return TAG;
@@ -32,5 +32,5 @@ public class ElectionID extends BulletinBoardID {
         String id = Util.unescapeString(Util.readSimpleTag(lbl, r, "id"));
         Util.swallowEndTag(lbl, r, TAG);
         return new ElectionID(host, port, id);
-    }    
+    }
 }

@@ -73,7 +73,7 @@
             </not>
         </and>
     </condition>
-	
+
     <!-- the civitas classpath -->
     <path id="civitas.classpath">
         <pathelement location="${civitas.classes}" />
@@ -101,7 +101,7 @@
         <property name="configure.up-to-date" value="true" />
 
     	<chmod dir="${civitas-config.basedir}/bin" perm="a+x" includes="*"/>
-    	<chmod dir="${civitas-config.basedir}/experiments/src" perm="a+x" 
+    	<chmod dir="${civitas-config.basedir}/experiments/src" perm="a+x"
     	       includes="*.pl"/>
     </target>
 

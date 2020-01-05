@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import java.io.*;
@@ -15,14 +15,14 @@ import java.io.*;
  * to indicate to the tabulation teller what ballot boxes
  * are to be used for tabulation.
  * (Note: Voter ballot boxes were previously known as voter bulletin boards,
- * hence the name of this class.) 
+ * hence the name of this class.)
  */
 public class BoardsForTabulation implements XMLSerializable {
     public final BoardClosedContentCommitment{this} const[]{this} contentComs;
-    
+
     public static final String{*<-*} META = "boardsForTabulation";
     public static final String{*<-*} OPENING_TAG = "boardsForTabulation";
-    
+
     public BoardsForTabulation(label lbl,
             BoardClosedContentCommitment{*lbl}[]{*lbl} contentComs) where {*lbl} <= {this} {
         BoardClosedContentCommitment{this} const[]{this} cc = null;
@@ -32,7 +32,7 @@ public class BoardsForTabulation implements XMLSerializable {
 
         this.contentComs = cc;
     }
-        
+
     public BoardClosedContentCommitment contentCommitmentForBoard(int boardIndex) {
         if (contentComs == null) return null;
         for (int i = 0; i < contentComs.length; i++) {
@@ -42,7 +42,7 @@ public class BoardsForTabulation implements XMLSerializable {
                     return cc;
                 }
             }
-            catch (ArrayIndexOutOfBoundsException imposs) { }            
+            catch (ArrayIndexOutOfBoundsException imposs) { }
         }
         return null;
     }
@@ -60,24 +60,24 @@ public class BoardsForTabulation implements XMLSerializable {
             sb.print("</size>");
         }
         else {
-            sb.print("<size>0</size>");            
+            sb.print("<size>0</size>");
         }
         sb.print("<contentComs>");
         try {
             for (int i = 0; i < contentComs.length; i++) {
                 contentComs[i].toXML(lbl, sb);
-            }        
+            }
         }
         catch (NullPointerException imposs) { }
         catch (ArrayIndexOutOfBoundsException imposs) { }
         sb.print("</contentComs>");
         sb.print("</" + OPENING_TAG + ">");
     }
-    
+
 
     public static BoardsForTabulation{*lbl} fromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r) throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
         Util.swallowTag(lbl, r, OPENING_TAG);
-        
+
         int ccSize = Util.readSimpleIntTag(lbl, r, "size");
         BoardClosedContentCommitment{*lbl}[] n = new BoardClosedContentCommitment[ccSize<0?0:ccSize];
         Util.swallowTag(lbl, r, "contentComs");
@@ -88,10 +88,10 @@ public class BoardsForTabulation implements XMLSerializable {
             catch (ArrayIndexOutOfBoundsException imposs) { }
         }
         Util.swallowEndTag(lbl, r, "contentComs");
-        
+
         Util.swallowEndTag(lbl, r, OPENING_TAG);
 
-        BoardsForTabulation bt = new BoardsForTabulation(lbl, n);        
+        BoardsForTabulation bt = new BoardsForTabulation(lbl, n);
         return bt;
-    }    
+    }
 }

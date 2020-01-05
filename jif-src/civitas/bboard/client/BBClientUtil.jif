@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.bboard.client;
 
 import java.net.*;
@@ -28,7 +28,7 @@ public class BBClientUtil extends Protocol {
     public final String{this} bbhost;
     public final int{this} bbport;
     public final String{this} bbid;
-    
+
     /**
      * Instantiate a client util for the host bbhost communicating on port
      * bbport. Note that no bulletin board id is specified. This constructor
@@ -40,10 +40,10 @@ public class BBClientUtil extends Protocol {
         this.bbid = null;
         super();
     }
-    
+
     /**
-     * Instantiate a client util for the bulletin board bbid on host bbhost 
-     * communicating on port bbport. 
+     * Instantiate a client util for the bulletin board bbid on host bbhost
+     * communicating on port bbport.
      */
     public BBClientUtil(String{this} bbhost, int{this} bbport, String{this} bbid) {
         this.bbhost = bbhost;
@@ -51,14 +51,14 @@ public class BBClientUtil extends Protocol {
         this.bbid = bbid;
         super();
     }
-    
+
     /**
      * Instantiate a client util for the bulletin board bbid on the host
      */
     public BBClientUtil(Host{this} host, String{this} bbid) {
         String bbhost = null;
         int bbport = 0;
-        
+
         if (host != null) {
             bbhost = host.address;
             bbport = host.port;
@@ -68,9 +68,9 @@ public class BBClientUtil extends Protocol {
         this.bbid = bbid;
         super();
     }
-    
+
     /**
-     * Instantiate a client util for the bulletin board specified. 
+     * Instantiate a client util for the bulletin board specified.
      */
     public BBClientUtil(BulletinBoardID{this} bb) {
         String bbhost = null;
@@ -80,47 +80,47 @@ public class BBClientUtil extends Protocol {
         if (bb != null) {
             bbhost = bb.host;
             bbport = bb.port;
-            bbid = bb.id;            
+            bbid = bb.id;
         }
         this.bbhost = bbhost;
         this.bbport = bbport;
         this.bbid = bbid;
         super();
     }
-    
+
     /**
      * Create a new bulletin board. Returns the id of the bulletin board.
      */
     public String newBoard{}(final PublicKey{} owner) throws (IOException{}, IllegalArgumentException{}) {
-        if (owner == null) { 
-            throw new IllegalArgumentException("Must provide a BB owner public key"); 
+        if (owner == null) {
+            throw new IllegalArgumentException("Must provide a BB owner public key");
         }
         Socket[{}] s = new Socket[{}](bbhost, bbport);
         BufferedReader[{}] input = new BufferedReader[{}](new InputStreamReader[{}](s.getInputStream()));
-        
+
         PrintWriter[{}] output = new PrintWriter[{}](s.getOutputStream());
-        
-        
+
+
         // session key and things still to do.
-        
+
         output.println("NEWBOARD");
         owner.toXML(new label {}, output);
         output.flush();
-        
-        String bbID = input.readLine();        
+
+        String bbID = input.readLine();
         s.close();
-        
+
         return bbID;
     }
     /**
-     * Close the bulletin board. This will prevent new messages from 
+     * Close the bulletin board. This will prevent new messages from
      * being post.
      * The signature is of the BB id with the owner's private key.
      * If postHashTo is not null, the BB will post a hash of the contents to the specified bulletin board.
      */
     public boolean closeBoard{}(ElectionID{} electionID, PrivateKey{} supervisorPrivateKey, int{} numVoters) throws (IOException{}, IllegalArgumentException{}) {
         if (electionID == null) {
-            throw new IllegalArgumentException("Must provide an election ID");             
+            throw new IllegalArgumentException("Must provide an election ID");
         }
         Signature sig = null;
         try {
@@ -131,18 +131,18 @@ public class BBClientUtil extends Protocol {
         return closeBoard(sig, electionID, numVoters);
     }
     /**
-     * Close the bulletin board. This will prevent new messages from 
+     * Close the bulletin board. This will prevent new messages from
      * being post.
      * The signature is of the BB id with the owner's private key.
      * If postHashTo is not null, the BB will post a hash of the contents to the specified bulletin board.
      */
     public boolean closeBoard{}(Signature{} sig, ElectionID{} postHashTo, int{} numVoterBlocks) throws (IOException{}, IllegalArgumentException{}) {
-        if (sig == null) { 
-            throw new IllegalArgumentException("Must provide a signature of the BBID under the owner public key"); 
+        if (sig == null) {
+            throw new IllegalArgumentException("Must provide a signature of the BBID under the owner public key");
         }
         Socket[{}] s = new Socket[{}](bbhost, bbport);
         BufferedReader[{}] input = new BufferedReader[{}](new InputStreamReader[{}](s.getInputStream()));
-        
+
         PrintWriter[{}] output = new PrintWriter[{}](s.getOutputStream());
 
         output.println("CLOSEBOARD");
@@ -154,12 +154,12 @@ public class BBClientUtil extends Protocol {
         sig.toXML(new label {}, output);
         output.flush();
 
-        String response = input.readLine();        
+        String response = input.readLine();
         s.close();
 
         return Boolean.parseBoolean(response);
     }
-    
+
     /**
      * Post message to the bulletin board. Returns the timestamp of the
      * message.
@@ -168,7 +168,7 @@ public class BBClientUtil extends Protocol {
         return post(meta, msg, (PrivateKey)null);
     }
     /**
-     * Post message to the bulletin board, signing it using signingKey. 
+     * Post message to the bulletin board, signing it using signingKey.
      * Returns the timestamp of the
      * message.
      */
@@ -176,16 +176,16 @@ public class BBClientUtil extends Protocol {
         final label lbl = new label {};
         Socket[{}] s = new Socket[{}](bbhost, bbport);
         BufferedReader[{}] input = new BufferedReader[{}](new InputStreamReader[{}](s.getInputStream()));
-        
+
         PrintWriter[{}] output = new PrintWriter[{}](s.getOutputStream());
-        
-        
-        // session key and things still to do.        
-        output.println("POST");        
-        
+
+
+        // session key and things still to do.
+        output.println("POST");
+
         // send the bbid
         output.println(bbid);
-        
+
         // send the meta information, first the number of chars as an int, then the chars
         protocolOutputString(output, meta);
 
@@ -205,7 +205,7 @@ public class BBClientUtil extends Protocol {
         }
         msgOutput.flush();
         protocolOutputSentinal(output);
-        
+
         // do we need to send a signature?
         if (md != null) {
             Signature sig = null;
@@ -217,16 +217,16 @@ public class BBClientUtil extends Protocol {
                 sig.toXML(lbl, output);
             }
         }
-        
+
         protocolOutputSentinal(output);
 
-                
+
         output.flush();
 
         // get the timestamp that the server is sending back
         String stamp = input.readLine();
         s.close();
-        
+
         return stamp;
     }
 
@@ -238,74 +238,74 @@ public class BBClientUtil extends Protocol {
     public List[{}] retrieve{}(XMLDeserializer{} deserializer) throws (IOException{}, IllegalArgumentException{}) {
         return retrieve(deserializer, null);
     }
-    
+
     /**
      * Retrieve a list of all messages posted to the bulletin board.
      * Returns a List of BBPost. If bbPublicKey is non-null,
-     * a signature is requested from the BB and checked; if the check fails, a null list 
+     * a signature is requested from the BB and checked; if the check fails, a null list
      * is returned.
      */
     public List[{}] retrieve{}(XMLDeserializer{} deserializer, PublicKey{} bbPublicKey) throws (IOException{}, IllegalArgumentException{}) {
         Socket[{}] s = new Socket[{}](bbhost, bbport);
         BufferedReader[{}] input = new BufferedReader[{}](new InputStreamReader[{}](s.getInputStream()));
-        
+
         PrintWriter[{}] output = new PrintWriter[{}](s.getOutputStream());
-        
+
         // session key and things still to do.
-        
+
         if (bbPublicKey != null) {
-            output.println("RETRIEVE_SIGNED");            
+            output.println("RETRIEVE_SIGNED");
         }
         else {
-            output.println("RETRIEVE_UNSIGNED");            
+            output.println("RETRIEVE_UNSIGNED");
         }
-        
+
         // send the bbid
         output.println(bbid);
-        
+
         // that's it, now send it off to the BB server.
         output.flush();
-        
+
         // retrieve the list of things.
         List[{}] l = inputList(input, deserializer, bbPublicKey, null);
-        
+
         s.close();
-        
+
         return l;
     }
-    
+
     /**
      * Retrieve a list of all messages posted to the bulletin board matching the
      * search criteria. If the argument meta is non-null and non-empty, then all messages
      * returned will have that value in the meta field.
      * If fromTime is non-null, then all messages returned will be after
      * fromTime. If toTime is non-null then all messages return will be before
-     * toTime.     
+     * toTime.
      * If bbPublicKey is non-null,
-     * a signature is requested from the BB and checked. 
+     * a signature is requested from the BB and checked.
      * If requiredHash is not null,
      * then the hash returned from the BB is checked against this.
-     * Returns a List of BBPost.   
+     * Returns a List of BBPost.
      * */
     public List[{}] retrieveParams{}(XMLDeserializer{} deserializer, PublicKey{} bbPublicKey, String{} requiredHash, String{} meta, Long{} fromTime, Long{} toTime) throws (IOException{}, IllegalArgumentException{}) {
         Socket[{}] s = new Socket[{}](bbhost, bbport);
         BufferedReader[{}] input = new BufferedReader[{}](new InputStreamReader[{}](s.getInputStream()));
-        
+
         PrintWriter[{}] output = new PrintWriter[{}](s.getOutputStream());
-        
-        
+
+
         // session key and things still to do.
-        
+
         if (bbPublicKey != null) {
-            output.println("RETRIEVE_PARAMS_SIGNED");            
+            output.println("RETRIEVE_PARAMS_SIGNED");
         }
         else {
-            output.println("RETRIEVE_PARAMS_UNSIGNED");            
+            output.println("RETRIEVE_PARAMS_UNSIGNED");
         }
-        
+
         // send the bbid
         output.println(bbid);
-        
+
         // send the meta
         protocolOutputString(output, meta);
 
@@ -321,16 +321,16 @@ public class BBClientUtil extends Protocol {
         }
         else {
             output.println();
-        }            
-        
+        }
+
         // that's it, now send it off to the BB server.
         output.flush();
-        
+
         // retrieve the list of things.
         List[{}] l = inputList(input, deserializer, bbPublicKey, requiredHash);
-        
+
         s.close();
-        
+
         return l;
     }
 
@@ -340,8 +340,8 @@ public class BBClientUtil extends Protocol {
      * returned will have that value in the meta field.
      * If fromTime is non-null, then all messages returned will be after
      * fromTime. If toTime is non-null then all messages return will be before
-     * toTime.     
-     * Returns a List of BBPost. 
+     * toTime.
+     * Returns a List of BBPost.
      * */
     public List[{}] retrieveParams{}(XMLDeserializer{} deserializer, String{} meta, Long{} fromTime, Long{} toTime) throws (IOException{}, IllegalArgumentException{}) {
         return retrieveParams(deserializer, null, null, meta, fromTime, toTime);
@@ -354,20 +354,20 @@ public class BBClientUtil extends Protocol {
     public byte{}[] retrieveHash{}(final PublicKey{} bbPublicKey, String{} meta, Long{} fromTime, Long{} toTime) throws (IOException{}, IllegalArgumentException{}) {
         Socket[{}] s = new Socket[{}](bbhost, bbport);
         BufferedReader[{}] input = new BufferedReader[{}](new InputStreamReader[{}](s.getInputStream()));
-        
+
         PrintWriter[{}] output = new PrintWriter[{}](s.getOutputStream());
-        
-        
+
+
         // session key and things still to do.
-        
-        output.println("RETRIEVE_HASH");        
-        
+
+        output.println("RETRIEVE_HASH");
+
         // send the bbid
         output.println(bbid);
-        
+
         // send the meta
         protocolOutputString(output, meta);
-        
+
         // send the fromTime and toTime, as strings.
         if (fromTime != null) {
             output.println(fromTime.toString());
@@ -380,11 +380,11 @@ public class BBClientUtil extends Protocol {
         }
         else {
             output.println();
-        }            
-        
+        }
+
         // that's it, now send it off to the BB server.
         output.flush();
-        
+
         // retrieve the hash result.
         String hashString = null;
         try {
@@ -394,7 +394,7 @@ public class BBClientUtil extends Protocol {
             // ignore it, just let the hash fail.
         }
         s.close();
-        
+
         // convert the hash string into a byte array.
         return Util.stringToBytes(new label {}, hashString);
     }
@@ -423,7 +423,7 @@ public class BBClientUtil extends Protocol {
             throw new IOException("Non-matching bbids");
         }
         if (deserializer == null) {
-            throw new IllegalArgumentException("No deserializer");            
+            throw new IllegalArgumentException("No deserializer");
         }
         MessageDigest[{}] md = null;
         if (bbPublicKey != null) {
@@ -432,9 +432,9 @@ public class BBClientUtil extends Protocol {
             }
             catch (NullPointerException imposs) { }
         }
-        
+
         List[{}] list = new ArrayList[{}]();
-        String timestamp = input.readLine();        
+        String timestamp = input.readLine();
         while (!"<END>".equals(timestamp)) {
             // read in the next post
             long stamp = -1;
@@ -442,7 +442,7 @@ public class BBClientUtil extends Protocol {
                 stamp = Long.parseLong(timestamp);
             }
             catch (NumberFormatException e) {
-                
+
             }
             String meta = protocolInputString(input);
             boolean succesfulParse = true;
@@ -450,10 +450,10 @@ public class BBClientUtil extends Protocol {
             try {
                 msg = deserializer.fromXML(input);
             }
-            catch (IllegalArgumentException ignore) { 
+            catch (IllegalArgumentException ignore) {
                 succesfulParse = false;
             }
-            catch (IOException ignore) { 
+            catch (IOException ignore) {
                 succesfulParse = false;
             }
 
@@ -490,8 +490,8 @@ public class BBClientUtil extends Protocol {
             timestamp = input.readLine();
         }
 
-            
-        
+
+
         if (bbPublicKey != null && md != null) {
             String hash = null;
             try {
@@ -505,7 +505,7 @@ public class BBClientUtil extends Protocol {
 
             if (!(hash != null && hash.equals(computedHash))) {
                 // bad hashing! the computed hash did not match the hash
-                // sent by the BB 
+                // sent by the BB
                 return null;
             }
             if (requiredHash != null && !requiredHash.equals(computedHash)) {
@@ -513,16 +513,16 @@ public class BBClientUtil extends Protocol {
                 return null;
             }
         }
-        
+
         return list;
-    }   
-    
+    }
+
     /**
      * Request the bulletin board to participate in an election.
      */
     public boolean requestParticipation{}(final ElectionDetails{} details, TellerDetails{} tellers) throws (IOException{}, IllegalArgumentException{}) {
         return participation("REQUEST_PARTICIPATION", details, tellers, null);
-    }   
+    }
     /**
      * Confirm to the bulletin board that it is participating in an election.
      */
@@ -533,28 +533,28 @@ public class BBClientUtil extends Protocol {
     private boolean participation{}(String{} kind, ElectionDetails{} details, TellerDetails{} tellers, Integer{} index) throws (IOException{}, IllegalArgumentException{}) {
         if (details == null) throw new IllegalArgumentException("null election details");
         if (tellers == null) throw new IllegalArgumentException("null teller details");
-        
+
         Socket[{}] s = new Socket[{}](bbhost, bbport);
         BufferedReader[{}] input = new BufferedReader[{}](new InputStreamReader[{}](s.getInputStream()));
-        
+
         PrintWriter[{}] output = new PrintWriter[{}](s.getOutputStream());
-        
-        
+
+
         output.println(kind);
-        
+
         details.toXML(new label {}, output);
         tellers.toXML(new label {}, output);
-        
+
         if (index != null) {
             output.println(index.toString());
         }
-        
+
         output.flush();
-        
-        String response = input.readLine();        
+
+        String response = input.readLine();
         s.close();
-        
+
         return Util.stringToBoolean(response);
-    }   
-    
+    }
+
 }

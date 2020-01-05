@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.bboard.server;
 
 import java.io.IOException;
@@ -21,7 +21,7 @@ class TransientBBStorage  implements BBStorage {
      * Set of bbids of open bulletin boards
      */
     private Set<String> openBoards = new HashSet<String>();
-    
+
     /**
      * Map from bulletin board ids to boards.
      */
@@ -64,7 +64,7 @@ class TransientBBStorage  implements BBStorage {
             l = b.metaIndex.get(meta);
         }
         if (l == null) return;
-        
+
 
         for(BBStoragePost p : l) {
             if (from <p.timestamp && p.timestamp < to) {
@@ -79,7 +79,7 @@ class TransientBBStorage  implements BBStorage {
             boards.put(bbid, b);
         }
         b.ownerPK = ownerPublicKey;
-        openBoards.add(bbid);        
+        openBoards.add(bbid);
     }
     public void storeIndex(String bbid, int index) throws IOException {
         Board b = boards.get(bbid);
@@ -106,7 +106,7 @@ class TransientBBStorage  implements BBStorage {
     public String storageDir(String bbid) {
         return "N/A";
     }
-    
+
     /**
      * In memory representation of a bulletin board.
      * It contains a map from meta data to lists of posts
@@ -117,5 +117,5 @@ class TransientBBStorage  implements BBStorage {
         List<BBStoragePost> allPosts = new ArrayList<BBStoragePost>(1000);
         PublicKey ownerPK;
         int index;
-    }    
+    }
 }

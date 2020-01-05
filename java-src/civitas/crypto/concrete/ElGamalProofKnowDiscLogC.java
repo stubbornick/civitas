@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.crypto.concrete;
 
 import java.io.*;
@@ -19,28 +19,28 @@ import civitas.util.CivitasBigInteger;
  * Proof that an entity knows x in v = g^x.
  */
 public class ElGamalProofKnowDiscLogC implements ElGamalProofKnowDiscLog {
-    
+
     /* p,q,g are the parameters of the ElGamal (not included here).
      * z = random in Z_q
      * a = g^z mod p
      * c = hash(v,a)
-     * r = (z + cx) mod q 
-     * 
+     * r = (z + cx) mod q
+     *
      * To verify proof, check that g^r = av^c (mod p)
      */
     public final CivitasBigInteger a;
     public final CivitasBigInteger c;
     public final CivitasBigInteger r;
     public final CivitasBigInteger v;
-    
+
     public ElGamalProofKnowDiscLogC(CivitasBigInteger a, CivitasBigInteger c, CivitasBigInteger r, CivitasBigInteger v) {
         this.a = a;
         this.c = c;
         this.r = r;
         this.v = v;
     }
-    
-    public boolean verify(ElGamalParameters prms) {        
+
+    public boolean verify(ElGamalParameters prms) {
         if (!(prms instanceof ElGamalParametersC)) return false;
         ElGamalParametersC params = (ElGamalParametersC)prms;
         try {
@@ -76,10 +76,10 @@ public class ElGamalProofKnowDiscLogC implements ElGamalProofKnowDiscLog {
         s.print("<v>");
         if (this.v != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.v), lbl, s);
         s.print("</v>");
-    
+
         s.print("</elGamalProofKnowDiscLog>");
     }
-    
+
     public static ElGamalProofKnowDiscLogC fromXML(Label lbl, Reader r) throws IllegalArgumentException, IOException {
         Util.swallowTag(lbl, r, "elGamalProofKnowDiscLog");
         String a = Util.unescapeString(Util.readSimpleTag(lbl, r, "a"));
@@ -90,5 +90,5 @@ public class ElGamalProofKnowDiscLogC implements ElGamalProofKnowDiscLog {
         Util.swallowEndTag(lbl, r, "elGamalProofKnowDiscLog");
         return new ElGamalProofKnowDiscLogC(CryptoFactoryC.stringToBigInt(a), CryptoFactoryC.stringToBigInt(c),
                                             CryptoFactoryC.stringToBigInt(rr), CryptoFactoryC.stringToBigInt(v));
-    }    
+    }
 }

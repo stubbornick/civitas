@@ -13,25 +13,25 @@ use warnings;
 sub usage {
     print <<USAGE;
 usage: startServer.pl file.exp kind host port pubKey privKey log
-    Start server listening on the given port using the given public 
+    Start server listening on the given port using the given public
     and private keys.
 
     file.exp is the experiment description file, and provides details
     of where the service should store files and logs.
-    
+
     The argument 'kind' should be one of tab, reg, or bb, for
     tabulation teller, registration teller, or bulletin board (ballot box)
     respectively.
-    
+
     If host is "localhost" then the service will be started locally.
     Otherwise, the script will attempt to ssh to host, and start the
     service.
-    
+
     The service will respond to requests sent on port port.
-    
+
     pubKey and privKey are the public key file and private key file for the
     service respectively.
-    
+
     If log is defined, and kind is bb, then the bulletin board/ballot box
     will produce a log.
 USAGE

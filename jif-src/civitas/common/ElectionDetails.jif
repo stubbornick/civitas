@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import civitas.crypto.*;
@@ -20,9 +20,9 @@ public class ElectionDetails implements XMLSerializable {
     public final String{this} description;
     public final String{this} version; // the version of Civitas this election is compatible with
     public final BallotDesign{this} ballotDesign; // the ballot design
-    
+
     /*
-     * Start, stop, and finalize times are advisory only, and 
+     * Start, stop, and finalize times are advisory only, and
      * are non-binding. They indicate the supervisor's intention as
      * to when the voting/registration period will start and stop,
      * and when the final results will be announced by.
@@ -30,26 +30,26 @@ public class ElectionDetails implements XMLSerializable {
     public final String{this} startTime;
     public final String{this} stopTime;
     public final String{this} finalizeTime;
-    
+
     /*
      * Security parameters
      */
     public final ElGamalParameters{this} elGamalParameters; // the parameters used for all ElGamal encryption in this election
-    public final int{this} sharedKeyLength; // length in bits of shared keys 
+    public final int{this} sharedKeyLength; // length in bits of shared keys
     public final int{this} nonceLength; // length in bits of nonces to be used.
     public final int{this} voterAnonymityParam; // the expected number of voters that will appear in each block
 
     public final static String{*<-*} META = "electionDetails";
-    
-    public ElectionDetails(ElectionID{this} electionID, 
-            PublicKey{this} supervisor, 
-            PublicKey{this} registrar, 
-            String{this} name, 
-            String{this} description, 
-            String{this} version, 
-            BallotDesign{this} ballotDesign, 
-            String{this} startTime, 
-            String{this} stopTime, 
+
+    public ElectionDetails(ElectionID{this} electionID,
+            PublicKey{this} supervisor,
+            PublicKey{this} registrar,
+            String{this} name,
+            String{this} description,
+            String{this} version,
+            BallotDesign{this} ballotDesign,
+            String{this} startTime,
+            String{this} stopTime,
             String{this} finalizeTime,
             ElGamalParameters{this} elGamalParameters,
             int{this} sharedKeyLength,
@@ -64,13 +64,13 @@ public class ElectionDetails implements XMLSerializable {
         this.ballotDesign = ballotDesign;
         this.startTime = startTime;
         this.stopTime = stopTime;
-        this.finalizeTime = finalizeTime;        
+        this.finalizeTime = finalizeTime;
         this.elGamalParameters = elGamalParameters;
         this.sharedKeyLength = sharedKeyLength;
         this.nonceLength = nonceLength;
         this.voterAnonymityParam = voterAnonymityParam;
     }
-    
+
     public void toXML{}(PrintWriter[{}]{} sb) {
         toXML(new label {}, sb);
     }
@@ -84,7 +84,7 @@ public class ElectionDetails implements XMLSerializable {
         if (this.electionID != null) {
             this.electionID.toXML(lbl, sb);
         }
-        
+
         sb.print("<supervisorPK>");
         if (supervisor != null) {
             supervisor.toXML(lbl, sb);
@@ -116,11 +116,11 @@ public class ElectionDetails implements XMLSerializable {
         sb.print("<finalizeTime>");
         Util.escapeString(this.finalizeTime, lbl, sb);
         sb.print("</finalizeTime>");
-        
+
         if (this.elGamalParameters != null) {
             this.elGamalParameters.toXML(lbl, sb);
         }
-        
+
         sb.print("<sharedKeyLength>");
         sb.print(sharedKeyLength);
         sb.print("</sharedKeyLength>");
@@ -132,10 +132,10 @@ public class ElectionDetails implements XMLSerializable {
         sb.print("</voterAnonymityParam>");
         sb.print("</electionDetails>");
     }
-    
+
     /**
      * Convert a bulletin board message into an election details object.
-     * 
+     *
      * @throws IllegalArgumentException of the xml is not appropriate for the object.
      */
     public static ElectionDetails{*lbl} fromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r) throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
@@ -150,7 +150,7 @@ public class ElectionDetails implements XMLSerializable {
             catch (NullPointerException imposs) { }
         }
         Util.swallowEndTag(lbl, r,  "supervisorPK");
-        
+
         Util.swallowTag(lbl, r,  "registrarPK");
         PublicKey regPK = null;
         if (Util.isNextTag(lbl, r,  PublicKey.OPENING_TAG)) {
@@ -166,16 +166,16 @@ public class ElectionDetails implements XMLSerializable {
         String version = Util.unescapeString(Util.readSimpleTag(lbl, r,  "version"));
 
         BallotDesign ballotDesign = null;
-        if (Util.isNextTag(lbl, r,  "ballotDesign")) { 
+        if (Util.isNextTag(lbl, r,  "ballotDesign")) {
             ballotDesign = BallotDesign.fromXML(lbl, r);
         }
 
         String startTime = Util.unescapeString(Util.readSimpleTag(lbl, r,  "startTime"));
         String stopTime = Util.unescapeString(Util.readSimpleTag(lbl, r,  "stopTime"));
         String finalizeTime = Util.unescapeString(Util.readSimpleTag(lbl, r,  "finalizeTime"));
-        
+
         ElGamalParameters params = null;
-        if (Util.isNextTag(lbl, r,  "elGamalParameters")) { 
+        if (Util.isNextTag(lbl, r,  "elGamalParameters")) {
             try {
                 params = CryptoUtil.factory().elGamalParametersFromXML(lbl, r);
             }
@@ -189,7 +189,7 @@ public class ElectionDetails implements XMLSerializable {
 
         return new ElectionDetails(electionID, supPK, regPK, name, description, version, ballotDesign, startTime, stopTime, finalizeTime, params, sharedKeyLength, nonceLength, voterAnonymityParam);
     }
-    
+
     public int voterAnonymityParam() {
         return voterAnonymityParam;
     }
@@ -203,7 +203,7 @@ public class ElectionDetails implements XMLSerializable {
             catch (ArithmeticException unlikely) { }
         }
         return 0;
-        
+
     }
     public int contextForBlock(int block) {
         if (ballotDesign != null) {
@@ -214,7 +214,7 @@ public class ElectionDetails implements XMLSerializable {
             catch (ArithmeticException unlikely) { }
         }
         return 0;
-        
+
     }
     public String blockName(int block) {
         int voterBlock = voterBlockForBlock(block);
@@ -234,7 +234,7 @@ public class ElectionDetails implements XMLSerializable {
                 return voterBlock == voter.voterBlock;
         }
 
-        return false; 
+        return false;
     }
     /**
      * Does the voter <code>voter</code> have any votes in the block <code>block</code>?
@@ -245,7 +245,7 @@ public class ElectionDetails implements XMLSerializable {
             return voterBlock == voter.voterBlock;
         }
 
-        return false; 
+        return false;
     }
     /**
      * Is a vote with context <vode>context</code> submitted by <code>voter</code> in the block <code>block</code>?
@@ -258,7 +258,7 @@ public class ElectionDetails implements XMLSerializable {
                 context != null && context.equals(ballotDesign.nthContext(contextN));
         }
 
-        return false; 
+        return false;
     }
     /**
      * Is a vote with context <vode>context</code> submitted by <code>voter</code> in the block <code>block</code>?
@@ -273,7 +273,7 @@ public class ElectionDetails implements XMLSerializable {
 
         return false;
     }
-    
+
     /**
      * Return the initial context for the voter block given, which is simply
      * the election ID concatenated with the voter block.

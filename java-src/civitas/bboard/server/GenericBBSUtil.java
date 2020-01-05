@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.bboard.server;
 
 import java.io.BufferedReader;
@@ -29,7 +29,7 @@ public class GenericBBSUtil {
                 System.out.println("BB " + host + " " + port + " is alive");
             }
             else {
-                System.out.println("BB " + host + " " + port + " is not responding");                
+                System.out.println("BB " + host + " " + port + " is not responding");
             }
             System.exit(result?1:0);
         }

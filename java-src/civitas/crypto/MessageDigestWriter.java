@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.crypto;
 
 import java.io.IOException;
@@ -17,7 +17,7 @@ public class MessageDigestWriter extends Writer {
         this.w = w;
         this.md = md;
     }
-    
+
     public void close() throws IOException {
         if (w != null) w.close();
     }
@@ -32,11 +32,11 @@ public class MessageDigestWriter extends Writer {
             md.update(cbuf, off, len);
         }
     }
-    
-    
-    public void main(String[] args) { 
+
+
+    public void main(String[] args) {
         // test this thing
-        
+
     }
 
 }

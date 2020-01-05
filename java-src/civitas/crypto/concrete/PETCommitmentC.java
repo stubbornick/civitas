@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.crypto.concrete;
 
 import java.io.*;
@@ -16,7 +16,7 @@ import civitas.util.CivitasBigInteger;
 
 public class PETCommitmentC implements PETCommitment {
     public final CivitasBigInteger hash;
-        
+
     public PETCommitmentC(CivitasBigInteger hash) {
         this.hash = hash;
     }
@@ -27,7 +27,7 @@ public class PETCommitmentC implements PETCommitment {
     }
     public void toXML(Label lbl, PrintWriter s) {
         s.print('<'); s.print(OPENING_TAG); s.print('>');
-        
+
         if (hash != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.hash), lbl, s);
 
         s.print("</"); s.print(OPENING_TAG); s.print('>');
@@ -36,6 +36,6 @@ public class PETCommitmentC implements PETCommitment {
     public static PETCommitmentC fromXML(Label lbl, Reader r) throws IllegalArgumentException, IOException {
         String d = Util.unescapeString(Util.readSimpleTag(lbl, r, OPENING_TAG));
         return new PETCommitmentC(CryptoFactoryC.stringToBigInt(d));
-    }    
+    }
 
 }

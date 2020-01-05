@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import civitas.common.CiphertextList;
@@ -16,7 +16,7 @@ import java.io.*;
  * and there is also a proof that the choice is in fact a valid choice.
  * This is part of what a voter submits; the tabulation process will strip
  * off the proof, and change the capability to be malleable (for the
- * re-encryption mixes). 
+ * re-encryption mixes).
  */
 public class VerifiableVote implements XMLSerializable {
     public static final String{*<-*} OPENING_TAG = "verifiableVote";
@@ -25,24 +25,24 @@ public class VerifiableVote implements XMLSerializable {
      * Indicates the election and block that this vote belongs to.
      */
     public final String{this} context;
-    
+
     /**
      * Encrypted choice
      */
     public final ElGamal1OfLReencryption{this} encChoice;
-    
+
     /**
-     * Proof of knowledge of the voter's vote, including its 
+     * Proof of knowledge of the voter's vote, including its
      * capability, choice, and context.
      */
     public final ProofVote{this} proofVote;
-    
+
     /**
      * Encrypted capability
      */
     public final ElGamalCiphertext{this} encCapability;
 
-    public VerifiableVote(String{this} context, 
+    public VerifiableVote(String{this} context,
                           ElGamal1OfLReencryption{this} encChoice,
                           ElGamalCiphertext{this} encCapability,
                           ProofVote{this} proofVote) {
@@ -51,20 +51,20 @@ public class VerifiableVote implements XMLSerializable {
         this.encCapability = encCapability;
         this.proofVote = proofVote;
     }
-    
+
     public boolean{this;vv} equals(VerifiableVote vv) {
         if (this == vv) return true;
         if (vv == null) return false;
-        return (this.context == vv.context || (this.context != null && this.context.equals(vv.context))) && 
-               (this.encChoice == vv.encChoice || (this.encChoice != null && this.encChoice.equals(vv.encChoice))) && 
-               (this.encCapability == vv.encCapability || (this.encCapability != null && this.encCapability.equals(vv.encCapability))) && 
+        return (this.context == vv.context || (this.context != null && this.context.equals(vv.context))) &&
+               (this.encChoice == vv.encChoice || (this.encChoice != null && this.encChoice.equals(vv.encChoice))) &&
+               (this.encCapability == vv.encCapability || (this.encCapability != null && this.encCapability.equals(vv.encCapability))) &&
                (this.proofVote == vv.proofVote || (this.proofVote != null && this.proofVote.equals(vv.proofVote)));
     }
-    
+
     public boolean verify(ElGamalPublicKey pubKey, CiphertextList ciphertexts, int L) {
         if (proofVote == null || encChoice == null) return false;
         if (pubKey == null) return false;
-        return (encChoice.verify(pubKey, ciphertexts, L) && 
+        return (encChoice.verify(pubKey, ciphertexts, L) &&
                 proofVote.verify(pubKey.getParams(), encCapability, encChoice.getCiphertext(), context));
     }
     public void toXML{}(PrintWriter[{}]{} sb) {
@@ -93,10 +93,10 @@ public class VerifiableVote implements XMLSerializable {
             this.proofVote.toXML(lbl, sb);
         }
         sb.print("</proof>");
-        
+
         sb.print("</" + OPENING_TAG + ">");
     }
-    
+
     public static VerifiableVote{*lbl} fromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r) throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
         Util.swallowTag(lbl, r, "verifiableVote");
         String context = Util.unescapeString(Util.readSimpleTag(lbl, r, "context"));
@@ -123,8 +123,8 @@ public class VerifiableVote implements XMLSerializable {
         }
         catch (NullPointerException imposs) { }
         Util.swallowEndTag(lbl, r, "proof");
-        
+
         Util.swallowEndTag(lbl, r, "verifiableVote");
         return new VerifiableVote(context, encChoice, encCapability, proofVote);
-    }    
+    }
 }

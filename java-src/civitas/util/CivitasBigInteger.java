@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.util;
 
 import java.io.PrintStream;
@@ -16,7 +16,7 @@ public class CivitasBigInteger {
     private static boolean _nativeOk = false;
     private static final boolean USE_NATIVE = true;
     private static final boolean DEBUG = false;
-    
+
     private static long numModPows = 0;
     public static long numModPows() {
         return numModPows;
@@ -43,7 +43,7 @@ public class CivitasBigInteger {
     public CivitasBigInteger(int length, int certainty, Random random) {
         i = new BigInteger(length, certainty, random);
     }
-    
+
     /** Construct a random integer. */
     public CivitasBigInteger(int i, Random random) {
         this.i = new BigInteger(i, random);
@@ -57,7 +57,7 @@ public class CivitasBigInteger {
 
     /**
      * calculate (base ^ exponent) % modulus.
-     * 
+     *
      * @param base
      *            big-endian twos complement representation of
      *            the base (but it must be positive)
@@ -73,11 +73,11 @@ public class CivitasBigInteger {
 
     /**
      * Calculate (x * y) % modulus.
-     * 
+     *
      * @param x
-     *            big endian twos complement representation of the operand 
+     *            big endian twos complement representation of the operand
      * @param y
-     *            big endian twos complement representation of the operand 
+     *            big endian twos complement representation of the operand
      * @param modulus
      *            big endian twos complement representation of the modulus
      * @return big endian twos complement representation of (x * y) % modulus
@@ -87,11 +87,11 @@ public class CivitasBigInteger {
 
     /**
      * Calculate (x * y^(-1)) % modulus.
-     * 
+     *
      * @param x
-     *            big endian twos complement representation of the operand 
+     *            big endian twos complement representation of the operand
      * @param y
-     *            big endian twos complement representation of the operand 
+     *            big endian twos complement representation of the operand
      * @param modulus
      *            big endian twos complement representation of the modulus
      * @return big endian twos complement representation of (x * y^(-1)) % modulus
@@ -175,11 +175,11 @@ public class CivitasBigInteger {
         if (x == ZERO) return this.mod(p);
         return new CivitasBigInteger(this.i.subtract(x.i).mod(p.i));
     }
-    
+
 	public CivitasBigInteger pow(int j) {
 		return new CivitasBigInteger(this.i.pow(j));
-	} 
-    
+	}
+
     public String toString() {
         return i.toString();
     }
@@ -193,7 +193,7 @@ public class CivitasBigInteger {
         return i.hashCode();
     }
     /*
-     * Cache the byte array. Rely on no-one changing it. 
+     * Cache the byte array. Rely on no-one changing it.
      */
     private byte[] byteArray = null;
     public byte[] toByteArray() {
@@ -207,7 +207,7 @@ public class CivitasBigInteger {
         // test performance of BigInteger versus CivitasBigInteger
         // parse arguments
         // usage: [-v] [numModPows [numMults [numDivs]]]
-        
+
         int[] numTests = new int[] {100, 10000, 10000};
         boolean verbose = true;
         int baseSize = 1024;
@@ -247,7 +247,7 @@ public class CivitasBigInteger {
                 System.exit(1);
             }
         }
-                        
+
         System.out.println("civitas.util.CivitasBigInteger performance tests\n");
         if (numTests[0] > 0) runModPowTest(numTests[0], baseSize, modSize, expSize, verbose, false);
         if (numTests[1] > 0) runArithTest(numTests[1], baseSize, modSize, false, verbose);
@@ -255,19 +255,19 @@ public class CivitasBigInteger {
 
     }
     private static void usage(PrintStream out) {
-        out.println("usage: CivitasBigInteger [OPTION] [numModPows [numMults [numDivs]]]");        
-        out.println("Run performance test using the Civitas Big Integer representation.");        
-        out.println("This is useful to determine if the native library is accessible, and the performance improvement it provides");        
-        out.println("Options:");        
-        out.println("   -h , --help  display this message");        
-        out.println("   -q           be quieter");        
-        out.println("   -base n      length in bits of the base (for modExp, multiply and divide tests)");        
-        out.println("   -mod n       length in bits of the modulus (for modExp, multiply and divide tests)");        
-        out.println("   -exp n       length in bits of the exponent (for modExp tests)");        
+        out.println("usage: CivitasBigInteger [OPTION] [numModPows [numMults [numDivs]]]");
+        out.println("Run performance test using the Civitas Big Integer representation.");
+        out.println("This is useful to determine if the native library is accessible, and the performance improvement it provides");
+        out.println("Options:");
+        out.println("   -h , --help  display this message");
+        out.println("   -q           be quieter");
+        out.println("   -base n      length in bits of the base (for modExp, multiply and divide tests)");
+        out.println("   -mod n       length in bits of the modulus (for modExp, multiply and divide tests)");
+        out.println("   -exp n       length in bits of the exponent (for modExp tests)");
     }
     private static void runModPowTest(int numRuns, int baseSize, int modSize, int expSize, boolean verbose, boolean tabularOutput) {
         System.out.println("Testing modPow for CivitasBigInteger versus java.math.BigInteger");
-        if (!_nativeOk && !tabularOutput) {            
+        if (!_nativeOk && !tabularOutput) {
             System.out.println("WARNING: could not load native library, so falling back on java.math.BigInteger");
         }
         SecureRandom rand = new SecureRandom();
@@ -284,7 +284,7 @@ public class CivitasBigInteger {
 
         int runsProcessed = 0;
         for (runsProcessed = 0; runsProcessed < numRuns; runsProcessed++) {
-            BigInteger bi = new BigInteger(expSize, rand); 
+            BigInteger bi = new BigInteger(expSize, rand);
             CivitasBigInteger k = new CivitasBigInteger(1, bi.toByteArray());
             long beforeModPow = System.currentTimeMillis();
             CivitasBigInteger myValue = g.modPow(k, p);
@@ -307,7 +307,7 @@ public class CivitasBigInteger {
             }
         }
         if (verbose) System.out.println();
-        
+
         if (verbose && !tabularOutput) {
             if (numRuns == runsProcessed) {
                 System.out.println("   INFO: Testing g^k mod p");
@@ -326,7 +326,7 @@ public class CivitasBigInteger {
             System.out.println();
         }
         else if (tabularOutput) {
-            System.out.println(baseSize + "\t" + modSize + "\t" + expSize + "\t" + totalTime + "\t" + (totalTime / (runsProcessed + 1)) + "\t" + 
+            System.out.println(baseSize + "\t" + modSize + "\t" + expSize + "\t" + totalTime + "\t" + (totalTime / (runsProcessed + 1)) + "\t" +
                                                 javaTime + "\t" + (javaTime / (runsProcessed + 1)));
         }
         else {
@@ -349,9 +349,9 @@ public class CivitasBigInteger {
 
         int runsProcessed = 0;
         for (runsProcessed = 0; runsProcessed < numRuns; runsProcessed++) {
-            BigInteger jx = new BigInteger(baseSize, rand); 
+            BigInteger jx = new BigInteger(baseSize, rand);
             CivitasBigInteger x = new CivitasBigInteger(1, jx.toByteArray());
-            BigInteger jy = new BigInteger(baseSize, rand); 
+            BigInteger jy = new BigInteger(baseSize, rand);
             CivitasBigInteger y = new CivitasBigInteger(1, jy.toByteArray());
             long beforeMult, afterMult, afterJavaMult;
             CivitasBigInteger myValue;
@@ -368,7 +368,7 @@ public class CivitasBigInteger {
                 myValue = x.modMultiply(y, p);
                 afterMult = System.currentTimeMillis();
                 jval = jx.multiply(jy).mod(jp);
-                afterJavaMult = System.currentTimeMillis();                
+                afterJavaMult = System.currentTimeMillis();
             }
 
             totalTime += (afterMult - beforeMult);
@@ -410,11 +410,11 @@ public class CivitasBigInteger {
             return true;
         } catch (UnsatisfiedLinkError ule) {
             // failed to load the library
-            if (DEBUG) System.err.println("civitas.util.CivitasBigInteger: failed to load library. Falling back on java.math.BigInteger");          
+            if (DEBUG) System.err.println("civitas.util.CivitasBigInteger: failed to load library. Falling back on java.math.BigInteger");
             return false;
         }
     }
 
 
-   
+
 }

@@ -4,7 +4,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import civitas.crypto.*;
@@ -18,18 +18,18 @@ import java.io.*;
  */
 public class VoterCapabilitySharesAndProof implements XMLSerializable {
     public static final String{*<-*} OPENING_TAG = "voterCapabilitiesAndProof";
-    
+
     //  the order of these capabilities is important: the ith capability must
     // be used for the ith context, i.e., the ith produced vote.
-    public final VoteCapabilityShare{this} const[]{this} capabilities;  
+    public final VoteCapabilityShare{this} const[]{this} capabilities;
 
-    public final ElGamalReencryptFactor{this} const[]{this} rencryptFactors;  
-    public final ElGamalProofDVR{this} const[]{this} proofs;  
-    
+    public final ElGamalReencryptFactor{this} const[]{this} rencryptFactors;
+    public final ElGamalProofDVR{this} const[]{this} proofs;
+
     public final int{this} voterBlock;
 
     public VoterCapabilitySharesAndProof(VoteCapabilityShare{this} const[]{this} capabilities,
-                                     ElGamalReencryptFactor{this} const[]{this} rencryptFactors,  
+                                     ElGamalReencryptFactor{this} const[]{this} rencryptFactors,
                                      ElGamalProofDVR{this} const[]{this} proofs,
                                      int{this} voterBlock) {
         this.capabilities = capabilities;
@@ -37,22 +37,22 @@ public class VoterCapabilitySharesAndProof implements XMLSerializable {
         this.proofs = proofs;
         this.voterBlock = voterBlock;
     }
-           
-    public boolean{_<-_;_->_;postedCapabilities;voterPublicKey;tabTellerSharedPublicKey;voterName;tellerIndex} 
+
+    public boolean{_<-_;_->_;postedCapabilities;voterPublicKey;tabTellerSharedPublicKey;voterName;tellerIndex}
          verify(ElGamalSignedCiphertext{}[] postedCapabilities,
             ElGamalPublicKey voterPublicKey, ElGamalPublicKey tabTellerSharedPublicKey,
             String voterName, int tellerIndex) {
         if (capabilities == null || rencryptFactors == null || proofs == null ||
                 capabilities.length != rencryptFactors.length ||
                 capabilities.length != proofs.length ||
-                postedCapabilities == null || 
+                postedCapabilities == null ||
                 postedCapabilities.length != capabilities.length ||
-                tabTellerSharedPublicKey == null) {            
+                tabTellerSharedPublicKey == null) {
             return false;
         }
-            
+
         ElGamalParameters params = tabTellerSharedPublicKey.getParams();
-        
+
         for (int i = 0; i < capabilities.length; i++) {
             try {
                 VoteCapabilityShare vc = capabilities[i];
@@ -62,39 +62,39 @@ public class VoterCapabilitySharesAndProof implements XMLSerializable {
                 if (!p.getE().equals(postedCapabilities[i])) {
                     return false;
                 }
-                
+
                 // check that the posted capability verifies
-                if (!CryptoUtil.factory().elGamalVerify(params, postedCapabilities[i], 
+                if (!CryptoUtil.factory().elGamalVerify(params, postedCapabilities[i],
                                                         CryptoUtil.factory().messageDigest(tellerIndex + voterName))) {
                     return false;
                 }
-                
+
                 // check that p.e' equals enc(vc, ttKey r)
                 if (!CryptoUtil.factory().elGamalEncrypt(tabTellerSharedPublicKey, vc, r).equals(p.getEprime())) {
                     return false;
                 }
-                
+
                 // check the proof, i.e., that p.e is a reencryption of p.e'
                 if (!p.verify(tabTellerSharedPublicKey, voterPublicKey)) {
                     return false;
                 }
             }
             catch (ArrayIndexOutOfBoundsException imposs) { }
-            catch (NullPointerException e) { 
+            catch (NullPointerException e) {
                 return false;
             }
         }
         return true;
     }
- 
+
     public VoterCapabilityShares{this} extractShares() {
         return new VoterCapabilityShares(capabilities, voterBlock);
     }
-    
+
     public void toXML{}(PrintWriter[{}]{} s) {
         toXML(new label {}, s);
     }
-    
+
     public void toXML{*lbl}(label lbl, PrintWriter[lbl]{*lbl} sb) where {this} <= lbl  {
         if (sb == null) return;
         sb.print("<" + OPENING_TAG + ">");
@@ -120,13 +120,13 @@ public class VoterCapabilitySharesAndProof implements XMLSerializable {
         }
         else {
             sb.print("<size>0</size>");
-            
+
         }
         sb.print("<voterBlock>" + voterBlock + "</voterBlock>");
-        
+
         sb.print("</" + OPENING_TAG + ">");
     }
-    
+
     public static VoterCapabilitySharesAndProof{*lbl} fromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r)  throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
         Util.swallowTag(lbl, r, OPENING_TAG);
 
@@ -165,5 +165,5 @@ public class VoterCapabilitySharesAndProof implements XMLSerializable {
         }
         catch (NegativeArraySizeException ignore) { }
         return null;
-    }    
+    }
 }

@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import java.util.*;
@@ -12,15 +12,15 @@ import java.io.*;
 /**
  * TallyStateFinal for a MajGradingBallotDesign.
  */
-public class MajGradingTallyStateFinal extends TallyStateFinal {        
+public class MajGradingTallyStateFinal extends TallyStateFinal {
     public final String{this} const[]{this} candidates;
     public final String{this} const[]{this} grades;
     private final int{this} const[][]{this} candGrades;
-    
-    MajGradingTallyStateFinal(label lbl, 
+
+    MajGradingTallyStateFinal(label lbl,
                               String{this} const[]{this} candidates,
                               String{this} const[]{this} grades,
-                            int{*lbl}[][]{*lbl} candGrades) 
+                            int{*lbl}[][]{*lbl} candGrades)
     where {*lbl} <= {this} {
         int{this} const[][] as = null;
         if (candGrades != null) as = candGrades.clone();
@@ -29,7 +29,7 @@ public class MajGradingTallyStateFinal extends TallyStateFinal {
         this.grades = grades;
         super();
     }
-        
+
     public void toXML{*lbl}(label lbl, PrintWriter[lbl]{*lbl} sb) where {this} <= lbl  {
         if (sb == null) return;
         sb.print("<" + OPENING_TAG + ">");
@@ -60,7 +60,7 @@ public class MajGradingTallyStateFinal extends TallyStateFinal {
                     sb.print("</tally>");
                 }
                 sb.print("</candidateGrades>");
-            }        
+            }
             catch (NullPointerException imposs) { }
             catch (ArrayIndexOutOfBoundsException imposs) { }
             sb.print("</candidate>");
@@ -68,11 +68,11 @@ public class MajGradingTallyStateFinal extends TallyStateFinal {
         sb.print("</grades>");
         sb.print("</" + OPENING_TAG + ">");
     }
-    
-    public static TallyStateFinal{*lbl} fromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r)  throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {        
+
+    public static TallyStateFinal{*lbl} fromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r)  throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
         int candCount = Util.readSimpleIntTag(lbl, r, "candCount");
         int gradeCount = Util.readSimpleIntTag(lbl, r, "gradeCount");
-        
+
         String{*lbl}[] candidates = new String[candCount<0?0:candCount];
         String{*lbl}[] grades = new String[gradeCount<0?0:gradeCount];
         int{*lbl}[][] candGrades = new int[candCount<0?0:candCount][];
@@ -96,7 +96,7 @@ public class MajGradingTallyStateFinal extends TallyStateFinal {
             catch (ArrayIndexOutOfBoundsException imposs) { }
             catch (NullPointerException imposs) { }
             Util.swallowEndTag(lbl, r, "candidate");
-        }        
+        }
 
         Util.swallowEndTag(lbl, r, "grades");
         MajGradingTallyStateFinal b = new MajGradingTallyStateFinal(lbl, candidates.clone(), grades.clone(), candGrades);

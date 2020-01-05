@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import java.io.*;
@@ -29,11 +29,11 @@ public class FileBasedElectionCache extends ElectionCache {
 
     public FileBasedElectionCache(String cacheRootDir, String uniqueID) {
         super();
-        super.civitas$common$ElectionCache$();        
+        super.civitas$common$ElectionCache$();
         File cacheDir = new File(cacheRootDir, cleanForFilename(uniqueID));
         if (!cacheDir.exists()) {
             cacheDir.mkdirs();
-        }    
+        }
         if (!cacheDir.exists()) {
             // we failed
             cacheDir = null;
@@ -41,21 +41,21 @@ public class FileBasedElectionCache extends ElectionCache {
         this.lbl = LabelUtil.singleton().noComponents();
         this.cacheDir = cacheDir;
     }
-    
+
     private String cleanForFilename(String s) {
         StringWriter sb = new StringWriter(s.length());
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
             if (Character.isLetterOrDigit(c)) {
                 sb.append(c);
-            }     
+            }
             else {
-                sb.append('_');                
+                sb.append('_');
             }
         }
         return sb.toString();
     }
-    
+
     private File tempFileForName(String cachename) {
         return fileForName(cachename + "tmp");
     }
@@ -66,19 +66,19 @@ public class FileBasedElectionCache extends ElectionCache {
             char c = cachename.charAt(i);
             if (Character.isLetterOrDigit(c)) {
                 sb.append(c);
-            }     
+            }
             else if (':' == c) {
                 parentDir = sb.toString();
                 sb.append(File.separatorChar);
             }
             else {
-                sb.append('_');                
+                sb.append('_');
             }
         }
         if (parentDir != null) {
             File p = new File(cacheDir, parentDir);
             while (!p.exists()) {
-                p.mkdirs();       
+                p.mkdirs();
             }
         }
         return new File(cacheDir, sb.toString());
@@ -99,7 +99,7 @@ public class FileBasedElectionCache extends ElectionCache {
             failedCaching(f);
         }
     }
-    
+
     PrintWriter getFilePrintWriter(String filename) {
         if (cacheDir == null) return null;
         File f = fileForName(filename);
@@ -122,7 +122,7 @@ public class FileBasedElectionCache extends ElectionCache {
     void closedFilePrintStream(String filename) {
         File ftarget = fileForName(filename);
         File f = tempFileForName(filename);
-        f.renameTo(ftarget);        
+        f.renameTo(ftarget);
     }
     String getFileContentsAsString(String filename) {
         if (cacheDir == null) return null;
@@ -141,11 +141,11 @@ public class FileBasedElectionCache extends ElectionCache {
             reader.close();
         }
         catch (IOException e) {
-            e.printStackTrace();  
+            e.printStackTrace();
             failedCaching(f);
         }
 
-        return fileData.toString();    
+        return fileData.toString();
     }
 
     BufferedReader getFileContents(String filename) {
@@ -179,7 +179,7 @@ public class FileBasedElectionCache extends ElectionCache {
         File f = fileForName(filename);
         failedCaching(f);
     }
-    
+
     /* ***********
      * Factory methods
      */
@@ -191,7 +191,7 @@ public class FileBasedElectionCache extends ElectionCache {
     }
 
     /* **********************
-     * Caching methods 
+     * Caching methods
      */
 
     @Override
@@ -232,7 +232,7 @@ public class FileBasedElectionCache extends ElectionCache {
                     return time;
                 }
                 catch (NumberFormatException fail) { }
-            }            
+            }
         }
         return super.getElectionStopTime();
     }
@@ -273,7 +273,7 @@ public class FileBasedElectionCache extends ElectionCache {
                         e.printStackTrace();
                     }
                 }
-            }            
+            }
         }
         return super.getElectionDetails();
     }
@@ -315,7 +315,7 @@ public class FileBasedElectionCache extends ElectionCache {
                         e.printStackTrace();
                     }
                 }
-            }            
+            }
         }
         return super.getCiphertextList();
     }
@@ -357,7 +357,7 @@ public class FileBasedElectionCache extends ElectionCache {
                         e.printStackTrace();
                     }
                 }
-            }            
+            }
         }
         return super.getBoardsForTabulation();
     }
@@ -399,15 +399,15 @@ public class FileBasedElectionCache extends ElectionCache {
                         e.printStackTrace();
                     }
                 }
-            }            
+            }
         }
         return super.getElectoralRollEstimate();
     }
     @Override
     public void setElectoralRollEstimate(ElectoralRollEstimate electoralRollEstimate) {
         if (electoralRollEstimate != null) {
-            PrintWriter out = getFilePrintWriter("electoralRollEstimate");         
-            electoralRollEstimate.toXML(LabelUtil.singleton().noComponents(), out); 
+            PrintWriter out = getFilePrintWriter("electoralRollEstimate");
+            electoralRollEstimate.toXML(LabelUtil.singleton().noComponents(), out);
             out.close();
         }
         super.setElectoralRollEstimate(electoralRollEstimate);
@@ -442,7 +442,7 @@ public class FileBasedElectionCache extends ElectionCache {
                         e.printStackTrace();
                     }
                 }
-            }            
+            }
         }
         return super.getTabTellerSharedKey();
     }
@@ -450,8 +450,8 @@ public class FileBasedElectionCache extends ElectionCache {
     @Override
     public void setTabTellerSharedKey(ElGamalPublicKey tabTellerSharedKey) {
         if (tabTellerSharedKey != null) {
-            PrintWriter out = getFilePrintWriter("tabTellerSharedKey");     
-            tabTellerSharedKey.toXML(LabelUtil.singleton().noComponents(), out); 
+            PrintWriter out = getFilePrintWriter("tabTellerSharedKey");
+            tabTellerSharedKey.toXML(LabelUtil.singleton().noComponents(), out);
             out.close();
         }
         super.setTabTellerSharedKey(tabTellerSharedKey);
@@ -485,7 +485,7 @@ public class FileBasedElectionCache extends ElectionCache {
                         e.printStackTrace();
                     }
                 }
-            }            
+            }
         }
         return super.getTellerDetails();
     }
@@ -493,8 +493,8 @@ public class FileBasedElectionCache extends ElectionCache {
     @Override
     public void setTellerDetails(TellerDetails tellerDetails) {
         if (tellerDetails != null) {
-            PrintWriter out = getFilePrintWriter("tellerDetails");  
-            tellerDetails.toXML(LabelUtil.singleton().noComponents(), out); 
+            PrintWriter out = getFilePrintWriter("tellerDetails");
+            tellerDetails.toXML(LabelUtil.singleton().noComponents(), out);
             out.close();
         }
         super.setTellerDetails(tellerDetails);
@@ -509,7 +509,7 @@ public class FileBasedElectionCache extends ElectionCache {
             if (reader != null) {
                 try {
                     int length = Integer.parseInt(reader.readLine());
-                    ElectionEvent[] events = new ElectionEvent[length];                   
+                    ElectionEvent[] events = new ElectionEvent[length];
                     for (int i = 0; i < length; i++) {
                         events[i] = ElectionEvent.fromXML(lbl, reader);
 
@@ -533,7 +533,7 @@ public class FileBasedElectionCache extends ElectionCache {
                         e.printStackTrace();
                     }
                 }
-            }            
+            }
         }
         return super.getElectionEvents();
     }
@@ -548,14 +548,14 @@ public class FileBasedElectionCache extends ElectionCache {
                     electionEvents[i].toXML(LabelUtil.singleton().noComponents(), fout);
                 }
                 fout.close();
-                closedFilePrintStream("electionEvents");                
+                closedFilePrintStream("electionEvents");
             }
         }
         super.setElectionEvents(electionEvents);
     }
 
     private Map<Integer, Integer> blockVerifiableVoteSize = new HashMap<Integer, Integer>();
-    
+
     public int getValidVerifiableVoteSizeForBlock(int block) {
         if (blockVerifiableVoteSize.containsKey(block)) {
             return blockVerifiableVoteSize.get(block);
@@ -571,7 +571,7 @@ public class FileBasedElectionCache extends ElectionCache {
             if (reader != null) {
                 try {
                     int length = Integer.parseInt(reader.readLine());
-                    VerifiableVote[] vv = new VerifiableVote[length];                   
+                    VerifiableVote[] vv = new VerifiableVote[length];
                     for (int i = 0; i < length; i++) {
                         vv[i] = VerifiableVote.fromXML(lbl, reader);
 
@@ -596,7 +596,7 @@ public class FileBasedElectionCache extends ElectionCache {
                         e.printStackTrace();
                     }
                 }
-            }            
+            }
         }
         return super.getValidVerifiableVotesForBlock(block);
     }
@@ -612,7 +612,7 @@ public class FileBasedElectionCache extends ElectionCache {
                     vv[i].toXML(LabelUtil.singleton().noComponents(), fout);
                 }
                 fout.close();
-                closedFilePrintStream("validVerifiableVotesForBlock"+block);                
+                closedFilePrintStream("validVerifiableVotesForBlock"+block);
             }
         }
         super.setValidVerifiableVotesForBlock(block, vv);
@@ -627,7 +627,7 @@ public class FileBasedElectionCache extends ElectionCache {
             if (reader != null) {
                 try {
                     int length = Integer.parseInt(reader.readLine());
-                    List voterSubmissions = new ArrayList(lbl).jif$util$ArrayList$();                   
+                    List voterSubmissions = new ArrayList(lbl).jif$util$ArrayList$();
                     for (int i = 0; i < length; i++) {
                         voterSubmissions.add(VoterSubmission.fromXML(lbl, reader));
 
@@ -651,7 +651,7 @@ public class FileBasedElectionCache extends ElectionCache {
                         e.printStackTrace();
                     }
                 }
-            }            
+            }
         }
         return super.getVoterSubmissionsForVoterBlock(voterBlock);
     }
@@ -668,7 +668,7 @@ public class FileBasedElectionCache extends ElectionCache {
                     v.toXML(LabelUtil.singleton().noComponents(), fout);
                 }
                 fout.close();
-                closedFilePrintStream("voterSubmissionsForVoterBlock"+voterBlock);                
+                closedFilePrintStream("voterSubmissionsForVoterBlock"+voterBlock);
             }
         }
         super.setVoterSubmissionsForVoterBlock(voterBlock, voterSubmissions);
@@ -677,8 +677,8 @@ public class FileBasedElectionCache extends ElectionCache {
     @Override
     public void setInitialCapabilityMix(int block, CapabilityMix mix) {
         if (mix != null) {
-            PrintWriter out = getFilePrintWriter("initCapabilityMix"+block);   
-            mix.toXML(LabelUtil.singleton().noComponents(), out); 
+            PrintWriter out = getFilePrintWriter("initCapabilityMix"+block);
+            mix.toXML(LabelUtil.singleton().noComponents(), out);
             out.close();
             initialCapabilityMixSize.put(block, mix.size());
         }
@@ -716,7 +716,7 @@ public class FileBasedElectionCache extends ElectionCache {
                         e.printStackTrace();
                     }
                 }
-            }            
+            }
         }
         return super.getInitialCapabilityMix(block);
     }
@@ -724,9 +724,9 @@ public class FileBasedElectionCache extends ElectionCache {
     @Override
     public void setInitialVoteMix(int block, VoteMix mix) {
         if (mix != null) {
-            PrintWriter out = getFilePrintWriter("initVoteMix"+block);   
+            PrintWriter out = getFilePrintWriter("initVoteMix"+block);
             mix.toXML(LabelUtil.singleton().noComponents(), out);
-            out.close();            
+            out.close();
             initialVoteMixSize.put(block, mix.size());
         }
         super.setInitialVoteMix(block, mix);
@@ -743,7 +743,7 @@ public class FileBasedElectionCache extends ElectionCache {
                     VoteMix d = VoteMix.fromXML(reader);
                     super.setInitialVoteMix(block, d);
                     if (d != null) {
-                        initialVoteMixSize.put(block, d.size());                        
+                        initialVoteMixSize.put(block, d.size());
                     }
                     return d;
                 }
@@ -763,7 +763,7 @@ public class FileBasedElectionCache extends ElectionCache {
                         e.printStackTrace();
                     }
                 }
-            }            
+            }
         }
         return super.getInitialVoteMix(block);
     }
@@ -774,9 +774,9 @@ public class FileBasedElectionCache extends ElectionCache {
         if (initialVoteMixSize.containsKey(block)) {
             return initialVoteMixSize.get(block);
         }
-        return -1;        
+        return -1;
     }
-    public int getInitialCapabilityMixSize(int block) { 
+    public int getInitialCapabilityMixSize(int block) {
         if (initialCapabilityMixSize.containsKey(block)) {
             return initialCapabilityMixSize.get(block);
         }
@@ -817,15 +817,15 @@ public class FileBasedElectionCache extends ElectionCache {
                         e.printStackTrace();
                     }
                 }
-            }            
+            }
         }
-        
+
         return super.getMix(block, n, isRightMix, isVoteMix);
     }
 
 
 
-    private static String mixCacheName(int block, int n, boolean isRightMix, boolean isVoteMix) {        
+    private static String mixCacheName(int block, int n, boolean isRightMix, boolean isVoteMix) {
         StringBuffer sb = new StringBuffer();
         sb.append(isVoteMix?"voteMix":"capabilityMix");
         sb.append(isRightMix?"R":"L");
@@ -837,20 +837,20 @@ public class FileBasedElectionCache extends ElectionCache {
     @Override
     public void setMix(int block, int n, boolean isRightMix, boolean isVoteMix, Mix mix) {
         if (mix != null) {
-            PrintWriter out = getFilePrintWriter(mixCacheName(block, n, isRightMix, isVoteMix));    
+            PrintWriter out = getFilePrintWriter(mixCacheName(block, n, isRightMix, isVoteMix));
             mix.toXML(LabelUtil.singleton().noComponents(), out);
-            out.close();            
+            out.close();
         }
         super.setMix(block, n, isRightMix, isVoteMix, mix);
     }
-        
+
     public void setElectoralRollCapabilities(int block, ElectoralRollCapabilities erc) {
         if (erc != null) {
-            PrintWriter out = getFilePrintWriter("electoralRollCapabilities_block"+block);    
-            erc.toXML(out); 
+            PrintWriter out = getFilePrintWriter("electoralRollCapabilities_block"+block);
+            erc.toXML(out);
             out.close();
         }
-        super.setElectoralRollCapabilities(block, erc);        
+        super.setElectoralRollCapabilities(block, erc);
     }
     public ElectoralRollCapabilities getElectoralRollCapabilities(int block) {
         if (super.getElectoralRollCapabilities(block) == null) {
@@ -879,18 +879,18 @@ public class FileBasedElectionCache extends ElectionCache {
                         e.printStackTrace();
                     }
                 }
-            }            
+            }
         }
         return super.getElectoralRollCapabilities(block);
     }
     public void setElectoralRollCapabilitySharesForVoterBlock(int voterBlock, int tellerIndex, ElectoralRollCapabilityShares erc) {
         if (erc != null) {
             String cachename = electoralRollCapabilitySharesForVoterBlockCacheName(voterBlock, tellerIndex);
-            PrintWriter out = getFilePrintWriter(cachename); 
-            erc.toXML(out); 
+            PrintWriter out = getFilePrintWriter(cachename);
+            erc.toXML(out);
             out.close();
         }
-        super.setElectoralRollCapabilitySharesForVoterBlock(voterBlock, tellerIndex, erc);        
+        super.setElectoralRollCapabilitySharesForVoterBlock(voterBlock, tellerIndex, erc);
     }
     public ElectoralRollCapabilityShares getElectoralRollCapabilitySharesForVoterBlock(int voterBlock, int tellerIndex) {
         if (super.getElectoralRollCapabilitiesForVoterBlock(voterBlock) == null) {
@@ -919,7 +919,7 @@ public class FileBasedElectionCache extends ElectionCache {
                         e.printStackTrace();
                     }
                 }
-            }            
+            }
         }
         return super.getElectoralRollCapabilitySharesForVoterBlock(voterBlock, tellerIndex);
     }
@@ -934,11 +934,11 @@ public class FileBasedElectionCache extends ElectionCache {
 
     public void setElectoralRollCapabilitiesForVoterBlock(int voterBlock, ElectoralRollCapabilities erc) {
         if (erc != null) {
-            PrintWriter out = getFilePrintWriter("electoralRollCapabilities_voterBlock"+voterBlock); 
-            erc.toXML(out); 
+            PrintWriter out = getFilePrintWriter("electoralRollCapabilities_voterBlock"+voterBlock);
+            erc.toXML(out);
             out.close();
         }
-        super.setElectoralRollCapabilitiesForVoterBlock(voterBlock, erc);        
+        super.setElectoralRollCapabilitiesForVoterBlock(voterBlock, erc);
     }
     public ElectoralRollCapabilities getElectoralRollCapabilitiesForVoterBlock(int voterBlock) {
         if (super.getElectoralRollCapabilitiesForVoterBlock(voterBlock) == null) {
@@ -967,13 +967,13 @@ public class FileBasedElectionCache extends ElectionCache {
                         e.printStackTrace();
                     }
                 }
-            }            
+            }
         }
         return super.getElectoralRollCapabilitiesForVoterBlock(voterBlock);
     }
-    
+
     private static String ttMixHashRevelationCacheName(int tellerIndex, boolean isVoteMix, int block) {
-        
+
         StringBuffer sb = new StringBuffer();
         sb.append(isVoteMix?"voteMix":"capabilityMix");
         sb.append("HashRevel");
@@ -984,11 +984,11 @@ public class FileBasedElectionCache extends ElectionCache {
     }
     public void setTTMixHashRevelation(int tellerIndex, boolean isVoteMix, int block, MixHashRevelation mhr) {
         if (mhr != null) {
-            PrintWriter out = getFilePrintWriter(ttMixHashRevelationCacheName(tellerIndex, isVoteMix, block));    
-            mhr.toXML(out); 
-            out.close();            
+            PrintWriter out = getFilePrintWriter(ttMixHashRevelationCacheName(tellerIndex, isVoteMix, block));
+            mhr.toXML(out);
+            out.close();
         }
-        super.setTTMixHashRevelation(tellerIndex, isVoteMix, block, mhr);        
+        super.setTTMixHashRevelation(tellerIndex, isVoteMix, block, mhr);
     }
     public boolean hasTTMixHashRevelation(int tellerIndex, boolean isVoteMix, int block) {
         if (super.hasTTMixHashRevelation(tellerIndex, isVoteMix, block)) return true;
@@ -1022,13 +1022,13 @@ public class FileBasedElectionCache extends ElectionCache {
                         e.printStackTrace();
                     }
                 }
-            }            
+            }
         }
-        
+
         return super.getTTMixHashRevelation(tellerIndex, isVoteMix, block);
     }
 
-    private static String ttVoterBlockContentCacheName(int voterBlock, int tellerIndex) {        
+    private static String ttVoterBlockContentCacheName(int voterBlock, int tellerIndex) {
         StringBuffer sb = new StringBuffer();
         sb.append("ttVoterBlockContent");
         sb.append(voterBlock);
@@ -1038,9 +1038,9 @@ public class FileBasedElectionCache extends ElectionCache {
     }
     public void setTabTellerVoterBlockContents(int voterBlock, int tellerIndex, TabTellerVoterBlockContents c) {
         if (c != null) {
-            PrintWriter out = getFilePrintWriter(ttVoterBlockContentCacheName(voterBlock, tellerIndex));           
-            c.toXML(LabelUtil.singleton().noComponents(),out); 
-            out.close();            
+            PrintWriter out = getFilePrintWriter(ttVoterBlockContentCacheName(voterBlock, tellerIndex));
+            c.toXML(LabelUtil.singleton().noComponents(),out);
+            out.close();
         }
         super.setTabTellerVoterBlockContents(voterBlock, tellerIndex, c);
     }
@@ -1070,9 +1070,9 @@ public class FileBasedElectionCache extends ElectionCache {
                         e.printStackTrace();
                     }
                 }
-            }            
+            }
         }
-        
+
         return super.getTabTellerVoterBlockContents(voterBlock, tellerIndex);
-    } 
+    }
 }

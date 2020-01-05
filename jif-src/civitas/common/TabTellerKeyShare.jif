@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import civitas.crypto.*;
@@ -22,7 +22,7 @@ public class TabTellerKeyShare implements XMLSerializable {
         this.tellerIndex = tellerIndex;
         this.keyShare = keyShare;
     }
-    
+
     public void toXML{}(PrintWriter[{}]{} sb) {
         toXML(new label {}, sb);
     }
@@ -36,7 +36,7 @@ public class TabTellerKeyShare implements XMLSerializable {
         if (this.keyShare != null) {
             this.keyShare.toXML(lbl, sb);
         }
-        
+
         sb.print("</tabTellerKeyShare>");
     }
     public TabTellerKeyShareCommitment{*lbl} constructCommitment{*lbl}(label{*lbl} lbl) {
@@ -46,14 +46,14 @@ public class TabTellerKeyShare implements XMLSerializable {
             MessageDigest[lbl] md = factory.messageDigest(lbl);
             if (md != null) {
                 StringWriter[lbl] sb = new StringWriter[lbl]();
-                this.toXML(lbl, new PrintWriter[lbl](sb));                
+                this.toXML(lbl, new PrintWriter[lbl](sb));
                 md.update(sb.toString());
                 hash = factory.constBytesToBase64(lbl, md.digest());
             }
         }
         return new TabTellerKeyShareCommitment(tellerIndex, hash);
     }
-    
+
     public static TabTellerKeyShare fromXML{}(Reader[{}]{} r) throws (IllegalArgumentException{}, IOException{}) {
         final label lbl = new label {};
         Util.swallowTag(lbl, r, "tabTellerKeyShare");
@@ -65,5 +65,5 @@ public class TabTellerKeyShare implements XMLSerializable {
         catch (NullPointerException imposs) { }
         Util.swallowEndTag(lbl, r, "tabTellerKeyShare");
         return new TabTellerKeyShare(index, keyShare);
-    }    
+    }
 }

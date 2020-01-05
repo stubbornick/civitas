@@ -13,7 +13,7 @@ use warnings;
 sub usage {
     print <<USAGE;
 usage: vote.pl experimentDescriptionFile
-    Perform the voter actions for the election described by the 
+    Perform the voter actions for the election described by the
     experiment description file.
 USAGE
     exit;

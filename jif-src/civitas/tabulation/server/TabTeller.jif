@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.tabulation.server;
 
 import java.net.*;
@@ -21,7 +21,7 @@ import civitas.crypto.*;
  * Tabulation teller sessions.
  */
 public class TabTeller {
-    
+
     /**
      * Usage is:
      *     TabTeller port publicKeyFile privateKeyFile
@@ -35,7 +35,7 @@ public class TabTeller {
         int port = -1;
         String pubKeyFile = null;
         String privKeyFile = null;
-        
+
         try {
             cacheRootDir = args[0];
             port = Integer.parseInt(args[1]);
@@ -44,9 +44,9 @@ public class TabTeller {
         }
         catch (ArrayIndexOutOfBoundsException imposs) { }
         catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Usage: TabTeller cacheRootDir port pubKeyFile privKeyFile");            
+            throw new IllegalArgumentException("Usage: TabTeller cacheRootDir port pubKeyFile privKeyFile");
         }
-        
+
         // get the tabulation teller keys
 
         PublicKey pubKey_ = null;
@@ -68,16 +68,16 @@ public class TabTeller {
         }
         catch (ClassCastException imposs) { }
         final TTStore[pubKey] ttstore = ttstore_;
-        
+
         // open a server socket
         ServerSocket[{*<-*}] ss = new ServerSocket[{*<-*}](port);
 
         // serve connections
         SocketUtil.acceptConnections(new label {*<-*},
-                                     ss, 
+                                     ss,
                                      new TTSocketAcceptor(pubKey, privKey, ttstore));
-        
-    }        
+
+    }
 }
 
 class TTStoreCreationClosure[principal p] implements Closure[p, {p<-p}] {
@@ -95,15 +95,15 @@ class TTSocketAcceptor implements SocketAcceptor {
     private final PublicKey{this} pubKey;
     private final PrivateKey{this} privKey;
     private final TTStore[pubKey]{this} ttstore;
-    
+
     TTSocketAcceptor(final PublicKey{this} pubKey, PrivateKey{this} privKey, TTStore[pubKey]{this} ttstore) {
         this.pubKey = pubKey;
         this.privKey = privKey;
         this.ttstore = ttstore;
     }
     public void accept{}(InputStream[{}]{} input, OutputStream[{}]{} output) throws (IOException{}){
-        final TTProtocol[pubKey] ttt = new TTProtocol[pubKey](privKey, 
-                                              input, 
+        final TTProtocol[pubKey] ttt = new TTProtocol[pubKey](privKey,
+                                              input,
                                               output,
                                               ttstore,
                                               null,  // no coordinator

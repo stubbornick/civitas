@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.registration.server;
 
 import java.io.*;
@@ -28,9 +28,9 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
     private final PrintStream[{}]{this} output;
     private final RTStore[tellerPubKey]{this} rtstore;
 
-    
+
     RTProtocol(PrivateKey{this} tellerPrivKey,
-               InputStream[{}]{this} input, 
+               InputStream[{}]{this} input,
                OutputStream[{}]{this} output,
                RTStore[tellerPubKey]{this} rtstore) {
         this.tellerPrivKey = tellerPrivKey;
@@ -39,7 +39,7 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
         this.rtstore = rtstore;
         super();
     }
-    
+
     public Object{} invoke{}() where caller(tellerPubKey) {
         try {
             run();
@@ -53,11 +53,11 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
         BufferedReader[{}] input = this.input;
         PrintStream[{}] output = this.output;
         if (input == null || output == null || rtstore == null) return;
-                
+
         String kind = input.readLine();
         if (kind == null) kind = "";
 
-        if (kind.equalsIgnoreCase("REQUEST_PARTICIPATION")) {            
+        if (kind.equalsIgnoreCase("REQUEST_PARTICIPATION")) {
             ElectionDetails elecDetails = readInElectionDetails();
             TellerDetails tellerDetails = readInTellerDetails();
             // read in the index
@@ -65,10 +65,10 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
             try {
                 index = Integer.parseInt(input.readLine());
             }
-            catch (NumberFormatException e) { 
+            catch (NumberFormatException e) {
                 throw new IOException(e.getMessage());
             }
-            
+
             // decide whether to participate
             boolean result = false;
             if (elecDetails != null && tellerDetails != null) {
@@ -86,7 +86,7 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
             try {
                 index = Integer.parseInt(input.readLine());
             }
-            catch (NumberFormatException e) { 
+            catch (NumberFormatException e) {
                 throw new IOException(e.getMessage());
             }
 
@@ -95,13 +95,13 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
                 // store the needed information about election and teller details.
                 // store the election key, and the index of this tellers place in it.
                 storeIndex(elecDetails, index);
-                
-                output.println(true);                
+
+                output.println(true);
             }
             else {
-                output.println(false);                                
+                output.println(false);
             }
-            
+
             output.flush();
         }
         else if (kind.equalsIgnoreCase("NEW_REGISTRATION")) {
@@ -126,7 +126,7 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
             }
         }
     }
-    
+
     private void retrieveCapabilities{}() throws (IOException{}, IllegalArgumentException{}, CryptoException{}) where caller(tellerPubKey) {
         CryptoFactory factory = CryptoUtil.factory();
         if (factory == null)  throw new IllegalArgumentException("couldn't get cryptofactory");
@@ -134,19 +134,19 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
 
         // STEP 1: voter generates nonce NV
         // STEP 2: receive ENC(electionID, Votername, NV; RegPubKey)
-        String wire2 = protocolInputString(input);        
-        PublicKeyCiphertext cipher2 = factory.publicKeyCiphertextFromXML(new label {}, new BufferedReader[{}](new StringReader[{}](wire2)));        
+        String wire2 = protocolInputString(input);
+        PublicKeyCiphertext cipher2 = factory.publicKeyCiphertextFromXML(new label {}, new BufferedReader[{}](new StringReader[{}](wire2)));
         String plaintext2 = null;
         try {
             plaintext2 = factory.publicKeyDecrypt(tellerPrivKey, cipher2).toString();
         }
         catch (NullPointerException ignore) { }
-                
+
         BufferedReader[{}] r = new BufferedReader[{}](new StringReader[{}](plaintext2));
         ElectionID electionID = ElectionID.fromXML(new label {}, r);
         String voterName = r.readLine();
         String NV = r.readLine();
-        
+
         if (electionID == null) {
             // no details posted yet
             throw new IOException("Bad election ID");
@@ -157,18 +157,18 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
             // no details posted yet
             throw new IOException("Could not retrieve election details");
         }
-        
+
         VoterDetails vd = retrieveVoterDetails(electionID, voterName);
-                
+
         // Make sure that the election is in a suitable state to retrieve capabilities.
-                
+
         if (vd == null || !isElectionReady(details, vd.voterBlock, electionCache)) {
             // election not in suitable state to give out credential shares.
             // inform the voter, and quit the protocol
-            protocolOutputString(output, "ELECTION NOT READY");   
+            protocolOutputString(output, "ELECTION NOT READY");
             return;
         }
-        
+
         ElGamalPublicKey tabTellerSharedPK = ElectionUtil.retrieveTabTellerSharedPublicKey(details, electionCache);
         if (tabTellerSharedPK == null) {
             // no tab teller key posted yet
@@ -182,21 +182,21 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
             // couldn't generate a key!
             throw new IOException("Could not genearte a shared key");
         }
-        
+
         // STEP 4: send Enc(electionID, tellerIndex, NR, NV, k; voterPubKey)
         PublicKey voterPK = retrieveVoterPublicKey(electionID, voterName);
         if (voterPK == null) {
             // no appropriate voter
-            return; 
+            return;
         }
         ElGamalPublicKey voterEGPK = retrieveVoterEGPublicKey(electionID, voterName);
         if (voterEGPK == null) {
             // no appropriate voter
-            return; 
+            return;
         }
-        
+
         int index = retrieveIndex(electionID);
-               
+
         StringWriter[{}] ma = new StringWriter[{}]();
         PrintWriter[{}] pw = new PrintWriter[{}](ma);
         pw.print(electionID.host);
@@ -214,24 +214,24 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
         k.toWire(new label {}, pw);
         PublicKeyMsg msg4 = factory.publicKeyMsg(ma.toString());
         PublicKeyCiphertext wire4 = factory.publicKeyEncrypt(voterPK, msg4);
-        
+
         if (wire4 != null) {
             StringWriter[{}] sb = new StringWriter[{}]();
             wire4.toXML(new label {}, new PrintWriter[{}](sb));
 
-            protocolOutputString(output, sb.toString());        
+            protocolOutputString(output, sb.toString());
         }
-                        
+
         // STEP 5: voter verifies NV, RegPubKey and electionID
         // STEP 6: receive NR'
         String NRprime = protocolInputString(input);
-        
+
         // STEP 7: verify NRprime
         if (NRprime == null || !NRprime.equals(NR)) {
             // voter sent back the wrong nonce
             return;
         }
-        
+
         // STEP 8: send Enc(capabilities and proofs; k)
         // Ideally, the proof should be private to the registration teller at this point,
         // and we declassify it here.
@@ -248,21 +248,21 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
             StringWriter[{}] sb = new StringWriter[{}]();
             cipher8.toXML(new label {}, new PrintWriter[{}](sb));
             protocolOutputString(output, sb.toString());
-        }        
+        }
     }
-    
+
     /**
      * Is the election ready
      * @return
      */
-    private boolean{} isElectionReady{}(ElectionDetails{} elecDetails, int{} voterBlock, ElectionCache{} electionCache) 
-    throws (IOException{}, CryptoException{}) 
-    where caller(tellerPubKey) {        
+    private boolean{} isElectionReady{}(ElectionDetails{} elecDetails, int{} voterBlock, ElectionCache{} electionCache)
+    throws (IOException{}, CryptoException{})
+    where caller(tellerPubKey) {
         // Election status must be started, and all registration tellers must have
         // posted their (encrypted) capability shares for the voter's block.
-        
+
         if (elecDetails == null) return false;
-                
+
         if (ElectionUtil.retrieveElectionStatus(tellerPubKey, elecDetails.electionID, electionCache) != ElectionUtil.STATUS_STARTED) {
             return false;
         }
@@ -272,7 +272,7 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
         try {
             numRegTellers = tellerDetails.registrationTellers.length;
         }
-        catch (NullPointerException ignore) { 
+        catch (NullPointerException ignore) {
             return false;
         }
 
@@ -284,17 +284,17 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
                 }
             }
             // not in the cache, try fetching from the board.
-            ElectoralRollCapabilityShares ercs = 
-                 ElectionUtil.retrieveElectoralRollCapabilitySharesForVoterBlock(electionCache, 
-                                                                                 elecDetails, 
-                                                                                 tellerDetails, 
+            ElectoralRollCapabilityShares ercs =
+                 ElectionUtil.retrieveElectoralRollCapabilitySharesForVoterBlock(electionCache,
+                                                                                 elecDetails,
+                                                                                 tellerDetails,
                                                                                  i+1,
                                                                                  voterBlock);
-            if (ercs == null) {                                                                                 
+            if (ercs == null) {
                 // not on the board, so not yet posted.
                 return false;
             }
-            
+
             // check the shares to make sure the proofs are right.
             VoterEncCapabilityShares[] roll = ercs.roll;
             try {
@@ -302,36 +302,36 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
                     ElGamalSignedCiphertext{}[] voterShares = roll[j].encCapabilityShares;
 
                     for (int k = 0; k < voterShares.length; k++) {
-                        if (!CryptoUtil.factory().elGamalVerify(elecDetails.elGamalParameters, voterShares[k], 
+                        if (!CryptoUtil.factory().elGamalVerify(elecDetails.elGamalParameters, voterShares[k],
                                                                 CryptoUtil.factory().messageDigest((i+1) + roll[j].name))) {
                             // uh oh, one of the registration tellers cheated!
-                            throw new CryptoException("Capability share " + (k+1) + 
-                                                      " of " + voterShares.length + 
-                                                      " posted by teller " + (i+1) + 
+                            throw new CryptoException("Capability share " + (k+1) +
+                                                      " of " + voterShares.length +
+                                                      " posted by teller " + (i+1) +
                                                       " for voter " + roll[j].name + " is invalid");
                         }
                     }
                 }
             }
             catch (ArrayIndexOutOfBoundsException imposs) { }
-            catch (NullPointerException imposs) { } 
-        }            
-            
+            catch (NullPointerException imposs) { }
+        }
+
         return true;
     }
-    
+
     /**
      * Process registration for election electionID. If messageID is non-null
      * then only that single message will be processed. If messageID is null,
      * and doEntireBoard is false, then only messages posted since the teller
      * last processed registration will be processed. If If messageID is null,
      * and doEntireBoard is true, then all messages on the board will be
-     * processed. 
+     * processed.
      */
-    private void registration{}(ElectionID{} electionID, 
-            String{} messageID, 
-            boolean{} doEntireBoard, 
-            PrintStream[{}]{} output) 
+    private void registration{}(ElectionID{} electionID,
+            String{} messageID,
+            boolean{} doEntireBoard,
+            PrintStream[{}]{} output)
     throws (IOException{}) where caller(tellerPubKey) {
         if (rtstore == null || electionID == null || !isAcceptedElection(electionID)) {
             if (output != null) output.println(false);
@@ -347,12 +347,12 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
             }
             catch (NumberFormatException failSilent) { }
         }
-        
+
         // find the new postings to consider.
         if (!doEntireBoard && fromTime == null) {
             fromTime = retrieveLastMessageProcessed(electionID);
         }
-        
+
         ElectionCache electionCache = electionCache(electionID);
         final ElectionDetails details = ElectionUtil.retrieveElectionDetails(electionID, electionCache);
         if (details == null) {
@@ -362,24 +362,24 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
 
         int numVoterBlocks = ElectionUtil.numberVoterBlocks(details, electionCache);
         numVoterBlocks = numVoterBlocks<0?0:numVoterBlocks; // make sure it is positive
-        
+
         BBClientUtil bb = new BBClientUtil(electionID);
-            
+
         // retrieve everything from fromTime to toTime
         List[{}] l = null;
         try {
             l = bb.retrieveParams(XMLDeserializers.ElectoralRoll(), ElectoralRoll.META, fromTime, toTime);
         }
         catch (IllegalArgumentException e) {
-            throw new IOException(e.getMessage()); 
+            throw new IOException(e.getMessage());
         }
-        if (l == null || l.isEmpty()) { 
+        if (l == null || l.isEmpty()) {
             if (output != null) output.println(false);
             return;
         }
-        
+
         int tellerIndex = retrieveIndex(electionID);
-        
+
         ElGamalPublicKey tabTellerSharedPK = ElectionUtil.retrieveTabTellerSharedPublicKey(details, electionCache);
 
         // process each one
@@ -392,11 +392,11 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
             catch (ClassCastException imposs) { }
             catch (IndexOutOfBoundsException imposs) { }
             if (post == null) continue;
-            
+
             if (post.timestamp > lastTimestamp) {
                 lastTimestamp = post.timestamp;
             }
-            
+
             // parse and validate
             try {
                 ElectoralRoll er = (ElectoralRoll)post.msg;
@@ -405,7 +405,7 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
                     // the electoral roll is ok!
                     VoterEncCapabilityShares{}[][] caps = new VoterEncCapabilityShares[numVoterBlocks][er.roll.length];
                     int{}[] capsCount = new int[numVoterBlocks];
-                    
+
                     for (int j = 0; j < er.roll.length; j++) {
                         VoterDetails vd = null;
                         try {
@@ -415,7 +415,7 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
                         VoterEncCapabilityShares vc = processVoter(tabTellerSharedPK, details, vd, bb);
                         if (vc != null) {
                             // add it to the appropriate array for posting to the BB
-                            
+
                             try {
                                 int index = capsCount[vc.voterBlock];
                                 caps[vc.voterBlock][index] = vc;
@@ -427,7 +427,7 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
                     }
                     // go through each voter block and post a message.
                     for (int voterBlock = 0; voterBlock < numVoterBlocks; voterBlock++) {
-                        int count = -1;                        
+                        int count = -1;
                         VoterEncCapabilityShares{}[] cs = null;
                         try {
                             count = capsCount[voterBlock];
@@ -453,7 +453,7 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
                         if (cs != null && cs.length > 0) {
                             ElectoralRollCapabilityShares erc = new ElectoralRollCapabilityShares(cs, tellerIndex, voterBlock);
                             try {
-                                bb.post(ElectoralRollCapabilityShares.meta(tellerIndex, voterBlock), erc, tellerPrivKey);                
+                                bb.post(ElectoralRollCapabilityShares.meta(tellerIndex, voterBlock), erc, tellerPrivKey);
                             }
                             catch (IllegalArgumentException e) {
                                 throw new IOException(e.getMessage());
@@ -462,20 +462,20 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
                     }
                 }
             }
-            catch (ClassCastException ignore) { } 
-        }        
-            
+            catch (ClassCastException ignore) { }
+        }
+
         // store last message processed.
         if (lastTimestamp >= 0) {
             storeLastMessageProcessed(electionID, lastTimestamp);
         }
-        if (output != null) output.println(true);        
+        if (output != null) output.println(true);
     }
 
-    private VoterEncCapabilityShares{} processVoter{}(ElGamalPublicKey{} tabTellerSharedPK, 
+    private VoterEncCapabilityShares{} processVoter{}(ElGamalPublicKey{} tabTellerSharedPK,
             ElectionDetails{} electionDetails,
-            VoterDetails{} vd, 
-            BBClientUtil{} bb)  
+            VoterDetails{} vd,
+            BBClientUtil{} bb)
     throws (IOException{})
     where caller(tellerPubKey) {
         if (vd == null || electionDetails == null || rtstore == null) return null;
@@ -483,33 +483,33 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
         // have we produced capabilities for vd before?
         if (!voterCapabilitiesGenerated(electionDetails.electionID, vd)) {
             // Generate and store capabilities and voter block for vd
-            generateCapabilities(electionDetails, vd); 
-                 
+            generateCapabilities(electionDetails, vd);
+
             // This is the point that we could email the
             // capability shares to the voter.
         }
-        
+
         // we have already generated capabilities for this voter
-        return constructVoterEncCapabilityShares(electionDetails, 
-              tabTellerSharedPK, vd, 
+        return constructVoterEncCapabilityShares(electionDetails,
+              tabTellerSharedPK, vd,
               retrieveVoterCapabilityShares(electionDetails.electionID, vd.name),
-              retrieveVoterEncryptFactors(electionDetails.electionID, vd.name));                    
+              retrieveVoterEncryptFactors(electionDetails.electionID, vd.name));
     }
-    
+
     private void generateCapabilities{}(final ElectionDetails{} electionDetails_, VoterDetails{} vd_)
-    where caller(tellerPubKey), endorse({tellerPubKey<-tellerPubKey}) 
+    where caller(tellerPubKey), endorse({tellerPubKey<-tellerPubKey})
     {
         if (rtstore == null) return;
         ElectionDetails electionDetails = endorse(electionDetails_, {tellerPubKey<-tellerPubKey});
         VoterDetails vd = endorse(vd_, {tellerPubKey<-tellerPubKey});
         if (electionDetails == null || vd == null) return;
-        
+
         // generate the capabilities
         BallotDesign bd = electionDetails.ballotDesign;
         if (bd == null) return;
         int size = bd.votesProducedPerBallot();
         ElGamalReencryptFactor{tellerPubKey<-tellerPubKey;tellerPubKey->tellerPubKey}[] encryptFactors = new ElGamalReencryptFactor[size<0?0:size];
-        
+
         for (int i = 0; i < size; i++) {
             try {
                 encryptFactors[i] = CryptoUtil.factory().generateElGamalReencryptFactor(electionDetails.elGamalParameters);
@@ -522,7 +522,7 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
         rtstore.storeVoterCapabilityShares(electionDetails.electionID, vd.name, caps);
         rtstore.storeVoterEncryptFactors(electionDetails.electionID, vd.name, encryptFactors);
 
-        
+
         // store voter public key
         rtstore.storeVoterDetails(electionDetails.electionID, vd.name, vd);
     }
@@ -532,83 +532,83 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
      * Construct the encryptions of a voters capability shares.
      * These will be posted to the bulletin board.
      */
-    private VoterEncCapabilityShares{} constructVoterEncCapabilityShares{}(final ElectionDetails{} electionDetails_, 
-            ElGamalPublicKey{} tabTellerSharedPK_, VoterDetails{} vd_, 
+    private VoterEncCapabilityShares{} constructVoterEncCapabilityShares{}(final ElectionDetails{} electionDetails_,
+            ElGamalPublicKey{} tabTellerSharedPK_, VoterDetails{} vd_,
                          VoterCapabilityShares[tellerPubKey]{} voterCapabilityShares_,
-                         ElGamalReencryptFactor{tellerPubKey<-tellerPubKey;tellerPubKey->tellerPubKey}[]{} encryptFactors_) 
+                         ElGamalReencryptFactor{tellerPubKey<-tellerPubKey;tellerPubKey->tellerPubKey}[]{} encryptFactors_)
                          where caller(tellerPubKey), endorse({tellerPubKey<-tellerPubKey}) {
-        ElectionDetails electionDetails = endorse(electionDetails_, {tellerPubKey<-tellerPubKey}); 
+        ElectionDetails electionDetails = endorse(electionDetails_, {tellerPubKey<-tellerPubKey});
         ElGamalPublicKey tabTellerSharedPK = endorse(tabTellerSharedPK_, {tellerPubKey<-tellerPubKey});
         VoterDetails vd = endorse(vd_, {tellerPubKey<-tellerPubKey});
         final VoterCapabilityShares[tellerPubKey] voterCapabilityShares = endorse(voterCapabilityShares_, {tellerPubKey<-tellerPubKey});
         ElGamalReencryptFactor{tellerPubKey<-tellerPubKey;tellerPubKey->tellerPubKey}[] encryptFactors = endorse(encryptFactors_, {tellerPubKey<-tellerPubKey});
-                
+
         int size = 0;
         if (voterCapabilityShares!=null && voterCapabilityShares.caps!=null) {
             size = voterCapabilityShares.caps.length;
             voterCapabilityShares.deliveryRequested = true;
         }
-        
+
         // the delivery has been requested.
-        
+
         ElGamalSignedCiphertext{}[] encCapabilities = new ElGamalSignedCiphertext[size];
         if (vd == null || electionDetails == null) return null;
         String voterName = vd.name;
-                
+
         int tellerIndex = retrieveIndex(electionDetails.electionID);
 
         for (int i = 0; i < size; i++) {
             VoteCapabilityShare cap = null;
             try {
-                cap = declassify(voterCapabilityShares.caps[i], 
-                                                     {tellerPubKey->[tellerPubKey /voterCapabilityShares.delivered/ *]voterCapabilityShares.deliveryRequested-> _; tellerPubKey<-tellerPubKey} 
+                cap = declassify(voterCapabilityShares.caps[i],
+                                                     {tellerPubKey->[tellerPubKey /voterCapabilityShares.delivered/ *]voterCapabilityShares.deliveryRequested-> _; tellerPubKey<-tellerPubKey}
                        to {} using voterCapabilityShares.deliveryRequested);
                 ElGamalReencryptFactor factor = declassify(encryptFactors[i], {});
                 // needs to be a signed encryption, i.e. prove we know the
                 // plaintext.
-                encCapabilities[i] = CryptoUtil.factory().elGamalSignedEncrypt(tabTellerSharedPK, cap, factor, 
-                                                      CryptoUtil.factory().messageDigest(tellerIndex + voterName));                
+                encCapabilities[i] = CryptoUtil.factory().elGamalSignedEncrypt(tabTellerSharedPK, cap, factor,
+                                                      CryptoUtil.factory().messageDigest(tellerIndex + voterName));
             }
             catch (UnsatisfiedConditionException imposs) { }
             catch (ArrayIndexOutOfBoundsException imposs) { }
             catch (NullPointerException imposs) { }
         }
-        
+
         if (voterCapabilityShares!=null && voterCapabilityShares.caps!=null) {
             // stop the capabilities from being declassified.
             voterCapabilityShares.deliveryRequested = false;
         }
 
         int voterBlock = voterBlock(electionDetails, vd);
-        
+
         // store the encrypt factors
-        
+
         return new VoterEncCapabilityShares(tellerIndex, voterName, voterBlock, encCapabilities);
     }
-    
-    private VoterCapabilitySharesAndProof{} constructCapabilitySharesAndProof{}(final ElectionDetails{} electionDetails_, 
-            ElGamalPublicKey{} tabTellerSharedPK_, 
-            VoterDetails{} vd_, 
+
+    private VoterCapabilitySharesAndProof{} constructCapabilitySharesAndProof{}(final ElectionDetails{} electionDetails_,
+            ElGamalPublicKey{} tabTellerSharedPK_,
+            VoterDetails{} vd_,
             ElGamalPublicKey{} voterEGPubKey_)
-    where caller(tellerPubKey), 
+    where caller(tellerPubKey),
           endorse({tellerPubKey<-tellerPubKey})  {
-        ElectionDetails electionDetails = endorse(electionDetails_, {tellerPubKey<-tellerPubKey});  
+        ElectionDetails electionDetails = endorse(electionDetails_, {tellerPubKey<-tellerPubKey});
         ElGamalPublicKey tabTellerSharedPK = endorse(tabTellerSharedPK_, {tellerPubKey<-tellerPubKey});
         VoterDetails vd = endorse(vd_, {tellerPubKey<-tellerPubKey});
         ElGamalPublicKey voterEGPubKey = endorse(voterEGPubKey_, {tellerPubKey<-tellerPubKey});
-        
+
         if (vd == null || electionDetails == null) return null;
         String voterName = vd.name;
         ElectionID electionID = electionDetails.electionID;
-        
+
 
         // get the capabilities
         final VoterCapabilityShares[tellerPubKey] caps = retrieveVoterCapabilityShares(electionID, voterName);
         ElGamalReencryptFactor{tellerPubKey<-tellerPubKey;tellerPubKey->tellerPubKey}[] factors = retrieveVoterEncryptFactors(electionID, voterName);
         int voterBlock = voterBlock(electionDetails, vd);
-        
+
        if (caps == null || caps.caps == null || factors == null || tabTellerSharedPK == null) return null;
-       
+
        // enable the declassification of capabilities.
        // For clarity, we could perhaps move this closer to the authentication of the voter?
        caps.deliveryRequested = true;
@@ -623,8 +623,8 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
                    // If the Jif language had the ability to reason more precisely about
                    // cryptography, we could maybe ensure that the declassification
                    // was to the principal represented by the voter's public key.
-                  capsUsable[i] = declassify(caps.caps[i], 
-                                   {tellerPubKey->[tellerPubKey /caps.delivered/ *]caps.deliveryRequested-> _; tellerPubKey<-tellerPubKey} 
+                  capsUsable[i] = declassify(caps.caps[i],
+                                   {tellerPubKey->[tellerPubKey /caps.delivered/ *]caps.deliveryRequested-> _; tellerPubKey<-tellerPubKey}
                                    to {} using caps.deliveryRequested);
                }
                catch (ArrayIndexOutOfBoundsException imposs) { }
@@ -632,28 +632,28 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
                ElGamalReencryptFactor rprime = CryptoUtil.factory().generateElGamalReencryptFactor(tabTellerSharedPK.getParams());
                proofFactors[i] = rprime;
                ElGamalCiphertext eprime = CryptoUtil.factory().elGamalEncrypt(tabTellerSharedPK, capsUsable[i], rprime);
-               
+
                ElGamalReencryptFactor factori = declassify(factors[i], {});
                ElGamalCiphertext e = CryptoUtil.factory().elGamalEncrypt(tabTellerSharedPK, capsUsable[i], factori);
                ElGamalProofDVR proof = CryptoUtil.factory().constructElGamalProofDVR(tabTellerSharedPK, voterEGPubKey, e, eprime, factori, rprime);
                proofs[i] = proof;
-               
+
            }
            catch (ArrayIndexOutOfBoundsException imposs) { }
            catch (UnsatisfiedConditionException imposs) { }
            catch (NullPointerException ignore) { }
        }
-       
+
        // the capabilities have been delivered, and can now be erased.
        caps.delivered = true;
-              
+
        return new VoterCapabilitySharesAndProof(capsUsable.clone(), proofFactors.clone(), proofs.clone(), voterBlock);
     }
 
-    
+
     private int{} voterBlock{}(final ElectionDetails{} electionDetails, VoterDetails{} vd) where caller(tellerPubKey) {
         if (electionDetails == null || vd == null) return 0;
-        
+
         try {
             int numVoterBlocks = ElectionUtil.numberVoterBlocks(electionDetails, electionCache(electionDetails.electionID));
             return vd.voterBlock % numVoterBlocks;
@@ -665,12 +665,12 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
             return vd.voterBlock;
         }
     }
-    private ElectionCache{tellerPubKey<-tellerPubKey} electionCache{}(ElectionID{} id_) 
+    private ElectionCache{tellerPubKey<-tellerPubKey} electionCache{}(ElectionID{} id_)
     where caller (tellerPubKey), endorse({tellerPubKey<-tellerPubKey}) {
         if (rtstore == null) return null;
-        return electionCache(id_, retrieveIndex(id_)); 
+        return electionCache(id_, retrieveIndex(id_));
     }
-    private ElectionCache{tellerPubKey<-tellerPubKey} electionCache{}(ElectionID{} id_, int{} tellerIndex_) 
+    private ElectionCache{tellerPubKey<-tellerPubKey} electionCache{}(ElectionID{} id_, int{} tellerIndex_)
     where caller (tellerPubKey), endorse({tellerPubKey<-tellerPubKey}) {
         ElectionID id = endorse(id_, {tellerPubKey<-tellerPubKey});
         int tellerIndex = endorse(tellerIndex_, {tellerPubKey<-tellerPubKey});
@@ -678,7 +678,7 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
 
         return rtstore.electionCache(id, tellerIndex);
     }
-    private boolean{tellerPubKey<-tellerPubKey} voterCapabilitiesGenerated{}(ElectionID{} id_, VoterDetails{} vd_) 
+    private boolean{tellerPubKey<-tellerPubKey} voterCapabilitiesGenerated{}(ElectionID{} id_, VoterDetails{} vd_)
     where caller (tellerPubKey), endorse({tellerPubKey<-tellerPubKey}) {
         ElectionID id = endorse(id_, {tellerPubKey<-tellerPubKey});
         VoterDetails vd = endorse(vd_, {tellerPubKey<-tellerPubKey});
@@ -686,7 +686,7 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
 
         return rtstore.voterCapabilitiesGenerated(id, vd.name);
     }
-    private void storeIndex{}(final ElectionDetails{} elecDetails_, int{} index_) 
+    private void storeIndex{}(final ElectionDetails{} elecDetails_, int{} index_)
     where caller (tellerPubKey), endorse({tellerPubKey<-tellerPubKey}) {
         ElectionDetails elecDetails = endorse(elecDetails_, {tellerPubKey<-tellerPubKey});
         int index = endorse(index_, {tellerPubKey<-tellerPubKey});
@@ -694,15 +694,15 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
 
         rtstore.storeIndex(elecDetails.electionID, index);
     }
-    
-    private int{tellerPubKey<-tellerPubKey} retrieveIndex{}(ElectionID{} id_) 
+
+    private int{tellerPubKey<-tellerPubKey} retrieveIndex{}(ElectionID{} id_)
     where caller (tellerPubKey), endorse({tellerPubKey<-tellerPubKey}) {
         ElectionID id = endorse(id_, {tellerPubKey<-tellerPubKey});
         if (id == null || rtstore == null) return -1;
 
         return rtstore.retrieveIndex(id);
     }
-    private VoterDetails{tellerPubKey<-tellerPubKey} retrieveVoterDetails{}(ElectionID{} id_, String{} voterName_) 
+    private VoterDetails{tellerPubKey<-tellerPubKey} retrieveVoterDetails{}(ElectionID{} id_, String{} voterName_)
     where caller (tellerPubKey), endorse({tellerPubKey<-tellerPubKey}) {
         ElectionID id = endorse(id_, {tellerPubKey<-tellerPubKey});
         String voterName = endorse(voterName_, {tellerPubKey<-tellerPubKey});
@@ -710,14 +710,14 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
 
         return rtstore.retrieveVoterDetails(id, voterName);
     }
-    private boolean{tellerPubKey<-tellerPubKey} isAcceptedElection{}(ElectionID{} id_) 
+    private boolean{tellerPubKey<-tellerPubKey} isAcceptedElection{}(ElectionID{} id_)
     where caller (tellerPubKey), endorse({tellerPubKey<-tellerPubKey}) {
         ElectionID id = endorse(id_, {tellerPubKey<-tellerPubKey});
         if (id == null || rtstore == null) return false;
 
         return rtstore.isAcceptedElection(id);
     }
-    private void storeLastMessageProcessed{}(ElectionID{} id_, long{} index_) 
+    private void storeLastMessageProcessed{}(ElectionID{} id_, long{} index_)
     where caller (tellerPubKey), endorse({tellerPubKey<-tellerPubKey}) {
         ElectionID id = endorse(id_, {tellerPubKey<-tellerPubKey});
         if (id == null || rtstore == null) return;
@@ -725,14 +725,14 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
 
         rtstore.storeLastMessageProcessed(id, index);
     }
-    private Long{tellerPubKey<-tellerPubKey} retrieveLastMessageProcessed{}(ElectionID{} id_) 
+    private Long{tellerPubKey<-tellerPubKey} retrieveLastMessageProcessed{}(ElectionID{} id_)
     where caller (tellerPubKey), endorse({tellerPubKey<-tellerPubKey}) {
         ElectionID id = endorse(id_, {tellerPubKey<-tellerPubKey});
         if (id == null || rtstore == null) return null;
 
         return rtstore.retrieveLastMessageProcessed(id);
     }
-    private ElGamalPublicKey{tellerPubKey<-tellerPubKey} retrieveVoterEGPublicKey{}(ElectionID{} id_, String{} voterName_) 
+    private ElGamalPublicKey{tellerPubKey<-tellerPubKey} retrieveVoterEGPublicKey{}(ElectionID{} id_, String{} voterName_)
     where caller (tellerPubKey), endorse({tellerPubKey<-tellerPubKey}) {
         ElectionID id = endorse(id_, {tellerPubKey<-tellerPubKey});
         String voterName = endorse(voterName_, {tellerPubKey<-tellerPubKey});
@@ -740,7 +740,7 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
 
         return rtstore.retrieveVoterEGPublicKey(id, voterName);
     }
-    private PublicKey{tellerPubKey<-tellerPubKey} retrieveVoterPublicKey{}(ElectionID{} id_, String{} voterName_) 
+    private PublicKey{tellerPubKey<-tellerPubKey} retrieveVoterPublicKey{}(ElectionID{} id_, String{} voterName_)
     where caller (tellerPubKey), endorse({tellerPubKey<-tellerPubKey}) {
         ElectionID id = endorse(id_, {tellerPubKey<-tellerPubKey});
         String voterName = endorse(voterName_, {tellerPubKey<-tellerPubKey});
@@ -748,7 +748,7 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
 
         return rtstore.retrieveVoterPublicKey(id, voterName);
     }
-    private VoterCapabilityShares[tellerPubKey]{tellerPubKey<-tellerPubKey} retrieveVoterCapabilityShares{}(ElectionID{} id_, String{} voterName_) 
+    private VoterCapabilityShares[tellerPubKey]{tellerPubKey<-tellerPubKey} retrieveVoterCapabilityShares{}(ElectionID{} id_, String{} voterName_)
     where caller (tellerPubKey), endorse({tellerPubKey<-tellerPubKey}) {
         ElectionID id = endorse(id_, {tellerPubKey<-tellerPubKey});
         String voterName = endorse(voterName_, {tellerPubKey<-tellerPubKey});
@@ -756,9 +756,9 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
 
         return rtstore.retrieveVoterCapabilityShares(id, voterName);
     }
-    
-    private ElGamalReencryptFactor{tellerPubKey<-tellerPubKey;tellerPubKey->tellerPubKey}[]{tellerPubKey<-tellerPubKey} 
-        retrieveVoterEncryptFactors{}(ElectionID{} id_, String{} voterName_) 
+
+    private ElGamalReencryptFactor{tellerPubKey<-tellerPubKey;tellerPubKey->tellerPubKey}[]{tellerPubKey<-tellerPubKey}
+        retrieveVoterEncryptFactors{}(ElectionID{} id_, String{} voterName_)
     where caller (tellerPubKey), endorse({tellerPubKey<-tellerPubKey}) {
         ElectionID id = endorse(id_, {tellerPubKey<-tellerPubKey});
         String voterName = endorse(voterName_, {tellerPubKey<-tellerPubKey});
@@ -767,7 +767,7 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
         return rtstore.retrieveVoterEncryptFactors(id, voterName);
     }
 
-    
+
     private ElectionDetails{} readInElectionDetails{}() throws (IOException{}) {
         if (input == null) return null;
 
@@ -775,19 +775,19 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
         try {
             elecDetails = ElectionDetails.fromXML(new label {}, new StringReader[{}](protocolInputString(input)));
         }
-        catch (IllegalArgumentException e) { 
+        catch (IllegalArgumentException e) {
             throw new IOException(e.getMessage());
-        }        
+        }
         return elecDetails;
     }
     private TellerDetails{} readInTellerDetails{}() throws (IOException{}) {
         if (input == null) return null;
-        
+
         TellerDetails tellerDetails = null;
         try {
             tellerDetails = TellerDetails.fromXML(new label {}, new StringReader[{}](protocolInputString(input)));
         }
-        catch (IllegalArgumentException e) { 
+        catch (IllegalArgumentException e) {
             throw new IOException(e.getMessage());
         }
         return tellerDetails;
@@ -799,16 +799,16 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
         try {
             electionID = ElectionID.fromXML(new label {}, new StringReader[{}](protocolInputString(input)));
         }
-        catch (IllegalArgumentException e) { 
+        catch (IllegalArgumentException e) {
             throw new IOException(e.getMessage());
         }
         return electionID;
     }
-    
+
     /**
      * Decide whether or not teller p will participate in an election
      */
-    protected boolean{} decideParticipation{}(final ElectionDetails{} elecDetails_, TellerDetails{} tellers_, int{} tellerIndex_) 
+    protected boolean{} decideParticipation{}(final ElectionDetails{} elecDetails_, TellerDetails{} tellers_, int{} tellerIndex_)
     where caller (tellerPubKey), endorse({tellerPubKey<-tellerPubKey}) {
         ElectionDetails elecDetails = endorse(elecDetails_, {tellerPubKey<-tellerPubKey});
         TellerDetails tellers = endorse(tellers_, {tellerPubKey<-tellerPubKey});
@@ -820,7 +820,7 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
         // check that the election status is appropriate
         boolean decision = true;
         try {
-            if (ElectionUtil.retrieveElectionStatus(tellerPubKey, elecDetails.electionID, electionCache) != ElectionUtil.STATUS_DEFINED) { 
+            if (ElectionUtil.retrieveElectionStatus(tellerPubKey, elecDetails.electionID, electionCache) != ElectionUtil.STATUS_DEFINED) {
                 decision = false;
             }
         }
@@ -828,8 +828,8 @@ public class RTProtocol[principal tellerPubKey] extends Protocol implements Clos
             // couldn't contact the BB server. Seems like a bad deal...
             decision = false;
         }
-                
-        
+
+
         if (endorse(decision, {tellerPubKey<-tellerPubKey}) && rtstore != null) {
             rtstore.storeAcceptance(elecDetails.electionID);
         }

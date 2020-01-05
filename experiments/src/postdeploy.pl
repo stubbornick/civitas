@@ -8,7 +8,7 @@ use warnings;
 sub usage {
     print <<USAGE;
 usage: deploy.pl deployDir
-    Performs any actions needed to unpack the files deployed.   
+    Performs any actions needed to unpack the files deployed.
 USAGE
     exit;
 }

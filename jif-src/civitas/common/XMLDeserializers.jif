@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import java.io.*;
@@ -81,7 +81,7 @@ public class XMLDeserializers {
     }
     public static XMLDeserializer generic() {
         return new XMLDeserializerGeneric();
-    }   
+    }
 }
 
 class XMLDeserializerElectionEvent implements XMLDeserializer {
@@ -210,6 +210,6 @@ class XMLGeneric implements XMLSerializable {
     public static XMLGeneric{} fromXML{}(Reader[{}]{} s):{} throws IllegalArgumentException, IOException {
         String tag = Util.nextTag(new label {}, s);
         String xml = Util.readUntil(new label {}, s, "</" + tag + ">");
-        return new XMLGeneric(xml); 
+        return new XMLGeneric(xml);
     }
 }

@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import java.io.*;
@@ -13,6 +13,6 @@ import java.io.*;
  * state in while tallying the results on an election. TallyStateDesign subclasses
  * should be the only code to modify a tally state.
  */
-public abstract class TallyState[label L] {        
-    public abstract TallyStateFinal{L} finalTally{L}();    
+public abstract class TallyState[label L] {
+    public abstract TallyStateFinal{L} finalTally{L}();
 }

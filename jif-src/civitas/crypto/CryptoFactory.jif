@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.crypto;
 
 import java.io.IOException;
@@ -16,11 +16,11 @@ import civitas.crypto.*;
 public interface CryptoFactory {
     /** Returns an array of length size that is a permutation, i.e. i maps to j iff ret[i] == j */
     int{*lbl}const[] createPermutation(label{*lbl} lbl, int{*lbl} size);
-    
+
 //    KeyPairPrincipal keyPair(String name, ElGamalPublicKey publicKey, ElGamalPrivateKey privateKey);
 //    KeyPairPrincipal keyPair(String name, PublicKey publicKey);
 //    KeyPairPrincipal keyPair(String name, PublicKey publicKey, PrivateKey privateKey);
-    
+
     // TODO: it is unclear what the label on the return result should be.
     ElGamalPublicKey egPubKeyFromFile(String keyFile) throws (IllegalArgumentException{keyFile}, FileNotFoundException{keyFile}, IOException{keyFile});
     ElGamalPrivateKey egPrivKeyFromFile(String keyFile) throws (IllegalArgumentException{keyFile}, FileNotFoundException{keyFile}, IOException{keyFile});
@@ -28,7 +28,7 @@ public interface CryptoFactory {
     PrivateKey privateKeyFromFile(String keyFile) throws (IllegalArgumentException{keyFile}, FileNotFoundException{keyFile}, IOException{keyFile});
 
     KeyPair generateKeyPair(int keyLength);
-    
+
     ElGamalParameters generateElGamalParameters();
     ElGamalParameters generateElGamalParameters(int keyLength, int groupLength);
     ElGamalKeyPair generateElGamalKeyPair(ElGamalParameters params);
@@ -58,29 +58,29 @@ public interface CryptoFactory {
     VoteCapabilityShare generateVoteCapabilityShare(ElGamalParameters params);
     VoteCapability{*lbl}[] combineVoteCapabilityShares(elabel lbl, VoteCapabilityShare{*lbl}[][] shares, ElGamalParameters params);
     ElGamalCiphertext{*lbl}[] multiplyCiphertexts(label lbl, ElGamalSignedCiphertext{*lbl}[][] shares, ElGamalParameters params);
-    
+
     ElGamalCiphertext{*lbl} const[] constructWellKnownCiphertexts(label{*lbl} lbl, ElGamalPublicKey{*lbl} key, int{*lbl} count);
-    
+
     ElGamalDecryptionShare constructDecryptionShare(label{*lbl} lbl, label{*lbl} lbl2, ElGamalCiphertext{*lbl2} c, ElGamalKeyPairShare{*lbl} keyShare) where {*lbl2} <= {*lbl};
     ElGamalMsg{*lbl;shares} combineDecryptionShares(label{*lbl} lbl, ElGamalCiphertext c, ElGamalDecryptionShare{*lbl}[] shares, ElGamalParameters params) throws (CryptoException{*lbl; shares});
 
-    ElGamal1OfLReencryption{*lbl} elGamal1OfLReencrypt(label{*lbl} lbl, ElGamalPublicKey{*lbl} key, ElGamalCiphertext{*lbl} const[]{*lbl} ciphertexts, int{*lbl} L, int{*lbl} choice, ElGamalReencryptFactor{*lbl} reencryptFactor); 
+    ElGamal1OfLReencryption{*lbl} elGamal1OfLReencrypt(label{*lbl} lbl, ElGamalPublicKey{*lbl} key, ElGamalCiphertext{*lbl} const[]{*lbl} ciphertexts, int{*lbl} L, int{*lbl} choice, ElGamalReencryptFactor{*lbl} reencryptFactor);
     int elGamal1OfLValue(ElGamalMsg m, int L, ElGamalParameters params) throws CryptoException;
-    
-    ProofVote constructProofVote(ElGamalParameters params, ElGamalCiphertext encCapability, ElGamal1OfLReencryption encChoice, String context, ElGamalReencryptFactor encCapabilityFactor, ElGamalReencryptFactor encChoiceFactor);    
-    
-    
+
+    ProofVote constructProofVote(ElGamalParameters params, ElGamalCiphertext encCapability, ElGamal1OfLReencryption encChoice, String context, ElGamalReencryptFactor encCapabilityFactor, ElGamalReencryptFactor encChoiceFactor);
+
+
     /*
      * Public Key and shared key encryption
-     */    
+     */
     PublicKeyCiphertext publicKeyEncrypt(PublicKey key, PublicKeyMsg msg);
     PublicKeyMsg publicKeyDecrypt(PrivateKey key, PublicKeyCiphertext ciphertext) throws (CryptoException{key;ciphertext});
     SharedKeyCiphertext sharedKeyEncrypt(SharedKey key, SharedKeyMsg msg);
     SharedKeyMsg sharedKeyDecrypt(SharedKey key, SharedKeyCiphertext ciphertext) throws (CryptoException{key;ciphertext});
     SharedKey generateSharedKey(int keyLength);
-    
+
     /* hashing and nonces
-     * Note that we assume the digest does not reveal any information about 
+     * Note that we assume the digest does not reveal any information about
      * the data used to produce the digest.
      */
     byte{*lbl; bitlength} const [] freshNonce(label{*lbl} lbl, int bitlength);
@@ -92,7 +92,7 @@ public interface CryptoFactory {
     byte{this meet *lbl}const[]{*lbl2} messageDigest(label{*lbl2} lbl, label{*lbl2} lbl2, byte{*lbl}const[]{*lbl2} a, int{*lbl2} b, boolean constBytes);
     byte{this meet *lbl}const[]{*lbl2} messageDigest(label{*lbl2} lbl, label{*lbl2} lbl2, byte{*lbl}const[]{*lbl2} a, boolean constBytes);
     byte{s}const[] messageDigest(String s);
-    
+
     /*
      * Base64 methods
      */
@@ -103,21 +103,21 @@ public interface CryptoFactory {
     /*
      * Randomness
      */
-    
+
     /**
      * Return a non-negative int less than n. n must be a positive integer.
      */
-    int randomInt(int n); 
-    
+    int randomInt(int n);
+
     /*
      * Public key signing operations
      */
     Signature signature(PrivateKey k, PublicKeyMsg m);
-    boolean publicKeyVerifySignature(PublicKey K, Signature s, PublicKeyMsg m);    
-    PublicKeyMsg publicKeyVerifySignatureMsg(PublicKey K, Signature s, PublicKeyMsg m);    
+    boolean publicKeyVerifySignature(PublicKey K, Signature s, PublicKeyMsg m);
+    PublicKeyMsg publicKeyVerifySignatureMsg(PublicKey K, Signature s, PublicKeyMsg m);
     Signature{k;*lbl} signature(PrivateKey k, label lbl, byte{*lbl}const[]{*lbl} bytes);
-    boolean{K;s;*lbl} publicKeyVerifySignature(PublicKey K, Signature s, label lbl, byte{*lbl}const[]{*lbl} bytes);    
-    boolean{K;s;bytes;this} publicKeyVerifySignature(PublicKey K, Signature s, byte{this}const[] bytes);    
+    boolean{K;s;*lbl} publicKeyVerifySignature(PublicKey K, Signature s, label lbl, byte{*lbl}const[]{*lbl} bytes);
+    boolean{K;s;bytes;this} publicKeyVerifySignature(PublicKey K, Signature s, byte{this}const[] bytes);
     /*
      * XML parsing methods
      */

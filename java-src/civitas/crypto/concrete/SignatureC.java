@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.crypto.concrete;
 
 import java.io.*;
@@ -17,7 +17,7 @@ import civitas.crypto.common.Base64;
 public class SignatureC implements Signature {
     final byte[] signature;
     public SignatureC(byte[] signature) {
-        this.signature = signature;       
+        this.signature = signature;
     }
 
     public byte[] toBytes() {

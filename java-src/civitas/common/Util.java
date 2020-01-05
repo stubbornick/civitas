@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import java.io.*;
@@ -77,7 +77,7 @@ public class Util {
     /**
      * Escape the characters:
      *  & (&amp;)
-     *  < (&lt;) 
+     *  < (&lt;)
      *  > (&gt;)
      *  , (&apos;)
      *  " (&quot;)
@@ -91,7 +91,7 @@ public class Util {
         if (s == null || sb == null) return;
         int n = s.length();
         int lastOut = -1;
-        
+
         for (int i = 0; i < n; i++) {
             char c = s.charAt(i);
             if (!is_meta[(int)c]) continue;
@@ -100,7 +100,7 @@ public class Util {
                 if (lastOut != i-1) sb.append(s.substring(lastOut+1, i));
                 sb.append("&amp;");
                 lastOut = i;
-                break;                  
+                break;
             case '<':
                 if (lastOut != i-1) sb.append(s.substring(lastOut+1, i));
                 sb.append("&lt;");
@@ -123,7 +123,7 @@ public class Util {
                 break;
             default:
                 // not a special character
-            }       
+            }
         }
         if (lastOut != n-1) sb.append(s.substring(lastOut+1, n));
     }
@@ -185,7 +185,7 @@ public class Util {
     public static void skipUntil(Label lbl, Reader r, String s) throws IllegalArgumentException, IOException {
         readUntilImpl(lbl, r, s, false);
     }
-    private static String readUntilImpl(Label lbl, Reader r, String s, boolean record) throws IllegalArgumentException, IOException {    
+    private static String readUntilImpl(Label lbl, Reader r, String s, boolean record) throws IllegalArgumentException, IOException {
         if (s == null || s.length() == 0) return "";
         int sentinalChar = s.charAt(0);
 
@@ -211,7 +211,7 @@ public class Util {
                 if (matchesSentinal) {
                     // we've matched the sentinal
                     return sb.toString();
-                }                
+                }
             }
             else {
                 if (record) sb.append((char)ch);
@@ -230,14 +230,14 @@ public class Util {
      * Swallows initial white space, and the initial "</tag>" string
      */
     public static void swallowEndTag(Label lbl, Reader r, String tag) throws IllegalArgumentException, IOException {
-        swallowString(lbl, r, "</");        
-        swallowString(lbl, r, tag);        
-        swallowString(lbl, r, ">");        
+        swallowString(lbl, r, "</");
+        swallowString(lbl, r, tag);
+        swallowString(lbl, r, ">");
     }
-    
+
     private static void swallowString(Label lbl, Reader r, String s) throws IllegalArgumentException, IOException {
         if (r == null || s == null) {
-            throw new IllegalArgumentException("Null arguments");            
+            throw new IllegalArgumentException("Null arguments");
         }
 
         int ch = r.read();
@@ -251,7 +251,7 @@ public class Util {
                 throw new IOException("Unexpected end of file: expecting " + s);
             }
             try {
-                if (((char)ch) != s.charAt(i)) {               
+                if (((char)ch) != s.charAt(i)) {
                     // try finding some more context, for a better error message...
                     StringBuffer received = new StringBuffer();
                     received.append(s.substring(0,i));
@@ -265,7 +265,7 @@ public class Util {
                         }
                     }
                     finally {
-                        throw new IOException("Expecting " + s + " got " + received.toString());                
+                        throw new IOException("Expecting " + s + " got " + received.toString());
                     }
                 }
             }
@@ -280,7 +280,7 @@ public class Util {
      */
     public static String readSimpleTag(Label lbl, Reader r, String tag) throws IllegalArgumentException, IOException {
         if (r == null || tag == null) {
-            throw new IllegalArgumentException("Null arguments");            
+            throw new IllegalArgumentException("Null arguments");
         }
 
         swallowString(lbl, r, "<");
@@ -297,7 +297,7 @@ public class Util {
         }
         if (ch != '>') {
             // error!
-            throw new IOException("Expecting <" + tag + ">");                
+            throw new IOException("Expecting <" + tag + ">");
         }
 
         StringBuffer s = new StringBuffer();
@@ -310,9 +310,9 @@ public class Util {
         if (ch == -1) {
             throw new IOException("Unexpected end of file");
         }
-        swallowString(lbl, r, "/");        
-        swallowString(lbl, r, tag);        
-        swallowString(lbl, r, ">");        
+        swallowString(lbl, r, "/");
+        swallowString(lbl, r, tag);
+        swallowString(lbl, r, ">");
         return stripTrailingLeadingWhitespace(s.toString());
     }
 
@@ -324,7 +324,7 @@ public class Util {
         try {
             return Integer.parseInt(s);
         }
-        catch (NumberFormatException e) { 
+        catch (NumberFormatException e) {
             throw new IllegalArgumentException("Expected an int: '" + s + "'");
         }
     }
@@ -337,7 +337,7 @@ public class Util {
         try {
             return Long.parseLong(s);
         }
-        catch (NumberFormatException e) { 
+        catch (NumberFormatException e) {
             throw new IllegalArgumentException("Expected a long: '" + s + "'");
         }
     }
@@ -350,7 +350,7 @@ public class Util {
     }
 
     public static boolean stringToBoolean(String s) {
-        return "true".equalsIgnoreCase(s) || "yes".equalsIgnoreCase(s) || "y".equalsIgnoreCase(s);        
+        return "true".equalsIgnoreCase(s) || "yes".equalsIgnoreCase(s) || "y".equalsIgnoreCase(s);
     }
 
     /**
@@ -358,7 +358,7 @@ public class Util {
      */
     public static boolean isNextTag(Label lbl, Reader r, String tag) throws IllegalArgumentException, IOException {
         if (r == null || tag == null) {
-            throw new IllegalArgumentException("Null arguments");            
+            throw new IllegalArgumentException("Null arguments");
         }
         int ch;
         do {
@@ -413,7 +413,7 @@ public class Util {
     }
 
     /**
-     * Convert string produced by bytesToString back into a byte array. 
+     * Convert string produced by bytesToString back into a byte array.
      */
     public static byte[] stringToBytes(Label lbl, String s) {
         if (s == null) return null;
@@ -421,7 +421,7 @@ public class Util {
     }
 
     /**
-     * Convert string produced by bytesToString back into a byte array. 
+     * Convert string produced by bytesToString back into a byte array.
      */
     public static byte[] stringToConstBytes(Label lbl, String s) {
         return stringToBytes(lbl, s);

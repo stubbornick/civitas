@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import java.io.*;
@@ -17,7 +17,7 @@ import java.io.*;
 public class ElectionEventFinalize extends ElectionEvent {
     public final TallyStateFinal{this} tally;
     public final String{this} message;
-    
+
     public ElectionEventFinalize(ElectionID{this} electionID, int{this} sequence) {
         this.tally = null;
         this.message = null;
@@ -28,7 +28,7 @@ public class ElectionEventFinalize extends ElectionEvent {
         this.message = message;
         super(EVENT_KIND_FINALIZE, electionID, sequence);
     }
-    
+
     protected void toXMLsub{*lbl}(label lbl, PrintWriter[lbl]{*lbl} sb)  {
         if (sb == null) return;
         if (this.tally != null) {
@@ -40,11 +40,11 @@ public class ElectionEventFinalize extends ElectionEvent {
             sb.print("</message>");
         }
     }
-    
+
     public static ElectionEvent{*lbl} fromXMLsub{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r, ElectionID{*lbl} electionID, int{*lbl} seq) throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
         TallyStateFinal tally = null;
         String message = null;
-        
+
         if (Util.isNextTag(lbl, r, TallyStateFinal.OPENING_TAG)) {
             tally = TallyStateFinal.fromXML(lbl, r);
         }

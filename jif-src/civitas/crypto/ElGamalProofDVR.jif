@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.crypto;
 
 import java.io.*;
@@ -14,10 +14,10 @@ import civitas.common.CiphertextList;
  */
 public interface ElGamalProofDVR {
     public boolean verify(ElGamalPublicKey K, ElGamalPublicKey verifierKey);
-    
+
     // getters
     ElGamalCiphertext getE();
     ElGamalCiphertext getEprime();
-    
+
     public void toXML{*lbl}(label lbl, PrintWriter[lbl]{*lbl} sb) where {this} <= lbl;
 }

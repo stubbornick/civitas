@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.crypto.concrete;
 
 import java.io.*;
@@ -23,12 +23,12 @@ import civitas.util.CivitasBigInteger;
  *      a = g_1^z
  *      b = g_2^z
  *      c = hash(v,w,a,b)
- *      r = (z + cx) mod q 
+ *      r = (z + cx) mod q
  * The proof is (a,b,c,r).
- * To verify, check that g_1^r = av^c (mod p) and g_2^r = bw^c (mod p). 
+ * To verify, check that g_1^r = av^c (mod p) and g_2^r = bw^c (mod p).
  */
 public class ElGamalProofDiscLogEqualityC implements ElGamalProofDiscLogEquality {
-    
+
     public final CivitasBigInteger g1;
     public final CivitasBigInteger g2;
 
@@ -39,7 +39,7 @@ public class ElGamalProofDiscLogEqualityC implements ElGamalProofDiscLogEquality
     public final CivitasBigInteger b;
     public final CivitasBigInteger c;
     public final CivitasBigInteger r;
-    
+
     public ElGamalProofDiscLogEqualityC(CivitasBigInteger g1,
             CivitasBigInteger g2,
             CivitasBigInteger a,
@@ -55,28 +55,28 @@ public class ElGamalProofDiscLogEqualityC implements ElGamalProofDiscLogEquality
         this.c = c;
         this.r = r;
     }
-    
+
      public static ElGamalProofDiscLogEqualityC constructProof(ElGamalParametersC params, CivitasBigInteger g1, CivitasBigInteger g2, CivitasBigInteger x) {
-        
+
         CryptoFactoryC factory = CryptoFactoryC.singleton();
-        
+
         CivitasBigInteger v = g1.modPow(x, params.p);
         CivitasBigInteger w = g2.modPow(x, params.p);
 
         CivitasBigInteger z = CryptoAlgs.randomElement(params.q);
         CivitasBigInteger a = g1.modPow(z, params.p);
         CivitasBigInteger b = g2.modPow(z, params.p);
-        
+
         List<CivitasBigInteger> l = new ArrayList<CivitasBigInteger>();
         l.add(v);
         l.add(w);
         l.add(a);
         l.add(b);
         CivitasBigInteger c = factory.hashToBigInt(factory.hash(l)).mod(params.q);
-        
+
         CivitasBigInteger r = z.modAdd(c.modMultiply(x, params.q), params.q);
-        
-        
+
+
         return new ElGamalProofDiscLogEqualityC(g1, g2, a, v, w, b, c, r);
     }
 
@@ -128,10 +128,10 @@ public class ElGamalProofDiscLogEqualityC implements ElGamalProofDiscLogEquality
         s.print("<r>");
         if (this.r != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.r), lbl, s);
         s.print("</r>");
-    
+
         s.print("</egPrfKnwDscLog>");
     }
-    
+
     public static ElGamalProofDiscLogEquality fromXML(Label lbl, Reader r) throws IllegalArgumentException, IOException {
         Util.swallowTag(lbl, r, "egPrfKnwDscLog");
         String g1 = Util.unescapeString(Util.readSimpleTag(lbl, r, "g1"));
@@ -148,5 +148,5 @@ public class ElGamalProofDiscLogEqualityC implements ElGamalProofDiscLogEquality
                                                 CryptoFactoryC.stringToBigInt(a), CryptoFactoryC.stringToBigInt(v),
                                                 CryptoFactoryC.stringToBigInt(w), CryptoFactoryC.stringToBigInt(b),
                                                 CryptoFactoryC.stringToBigInt(c), CryptoFactoryC.stringToBigInt(rr));
-    }    
+    }
 }

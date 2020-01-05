@@ -3,15 +3,15 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import java.io.*;
 
 /**
- * This class is the ballot of a majority grading race. In a majority 
+ * This class is the ballot of a majority grading race. In a majority
  * grading race, there
- * is a slate of candidates, and the voter assigns each candidate a grade. 
+ * is a slate of candidates, and the voter assigns each candidate a grade.
  * MajGradingBallot records the grades the voter assigns each candidate.
  */
 public class MajGradingBallot[label L] extends Ballot[L] {
@@ -22,7 +22,7 @@ public class MajGradingBallot[label L] extends Ballot[L] {
         grades = new int[0];
         super();
     }
-    
+
     public void addCandidate{L}(String{L} c, int{L} grade) {
         try {
             String{L}[] n = new String[candidates.length + 1];
@@ -32,7 +32,7 @@ public class MajGradingBallot[label L] extends Ballot[L] {
                     n[i] = candidates[i];
                     b[i] = grades[i];
                 }
-                catch (NullPointerException ignore) { }                
+                catch (NullPointerException ignore) { }
                 catch (ArrayIndexOutOfBoundsException ignore) { }
             }
             n[candidates.length] = c;
@@ -61,25 +61,25 @@ public class MajGradingBallot[label L] extends Ballot[L] {
                 sb.print(Integer.toString(grades[i]));
                 sb.print("</grade>");
                 sb.print("</candidate>");
-            }        
+            }
         }
         catch (NullPointerException imposs) { }
         catch (ArrayIndexOutOfBoundsException imposs) { }
         sb.print("</candidates>");
         sb.print("</" + OPENING_TAG + ">");
     }
-    
+
     public static Ballot[lbl]{*lbl} fromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r)  throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
         MajGradingBallot[lbl] b = new MajGradingBallot[lbl]();
 
         Util.swallowTag(lbl, r, "candidates");
-        
+
         while (Util.isNextTag(lbl, r, "candidate")) {
             Util.swallowTag(lbl, r, "candidate");
             b.addCandidate(Util.unescapeString(Util.readSimpleTag(lbl, r, "name")), Util.readSimpleIntTag(lbl, r, "grade"));
             Util.swallowEndTag(lbl, r, "candidate");
         }
-        
+
         Util.swallowEndTag(lbl, r, "candidates");
         return b;
     }

@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import civitas.crypto.*;
@@ -16,18 +16,18 @@ import java.io.*;
  */
 public class VoterCapabilities {
     public static final String{*<-*} OPENING_TAG = "voterCapabilities";
-    
+
     //  the order of these capabilities is important: the ith capability must
     // be used for the ith context, i.e., the ith produced vote.
-    public final VoteCapability{this} const[]{this} capabilities;  
-    
+    public final VoteCapability{this} const[]{this} capabilities;
+
     public final int{this} voterBlock;
 
     public VoterCapabilities(VoteCapability{this} const[]{this} capabilities, int{this} voterBlock) {
         this.capabilities = capabilities;
         this.voterBlock = voterBlock;
     }
-            
+
     public void toXML{*lbl}(label lbl, PrintWriter[lbl]{*lbl} sb) {
         if (sb == null) return;
         sb.print("<" + OPENING_TAG + ">");
@@ -48,14 +48,14 @@ public class VoterCapabilities {
         }
         else {
             sb.print("<size>0</size>");
-            
+
         }
         sb.print("</capabilities>");
         sb.print("<voterBlock>" + voterBlock + "</voterBlock>");
-        
+
         sb.print("</" + OPENING_TAG + ">");
     }
-    
+
     public static VoterCapabilities{*lbl} fromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r)  throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
         Util.swallowTag(lbl, r, OPENING_TAG);
 
@@ -77,9 +77,9 @@ public class VoterCapabilities {
         Util.swallowEndTag(lbl, r, "capabilities");
         int voterBlock = Util.readSimpleIntTag(lbl, r, "voterBlock");
 
-        
+
         Util.swallowEndTag(lbl, r, OPENING_TAG);
         VoterCapabilities vc = new VoterCapabilities(caps.clone(), voterBlock);
         return vc;
-    }    
+    }
 }

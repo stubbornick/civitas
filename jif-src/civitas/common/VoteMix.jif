@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import java.io.*;
@@ -22,7 +22,7 @@ public class VoteMix extends Mix {
     }
 
     public Vote{}[]{} votes;
-    
+
     public VoteMix(int{this} number) {
         this(number, null);
     }
@@ -40,7 +40,7 @@ public class VoteMix extends Mix {
             throw new IndexOutOfBoundsException();
         }
     }
-    public Vote{} getReencrypted{}(principal{} TT, int{TT->TT} i, ElGamalReencryptFactor{TT->TT} choiceFactor, ElGamalReencryptFactor{TT->TT} capabilityFactor, ElGamalPublicKey{} key) 
+    public Vote{} getReencrypted{}(principal{} TT, int{TT->TT} i, ElGamalReencryptFactor{TT->TT} choiceFactor, ElGamalReencryptFactor{TT->TT} capabilityFactor, ElGamalPublicKey{} key)
     throws (IndexOutOfBoundsException{}) where caller(TT), endorse({TT<-TT}) {
         Vote{}[] votes = endorse(this.votes, {TT<-TT});
         int ii = declassify(endorse(i, {TT<-TT;TT->TT}), {TT<-TT}); // declassify due to the indexoutofboundsexception that may be throw
@@ -48,11 +48,11 @@ public class VoteMix extends Mix {
             Vote v = endorse(votes[ii], {TT<-TT});
             return new Vote(v.context,
                             declassify(endorse(CryptoUtil.factory().elGamalReencrypt(key, v.encChoice, choiceFactor), {TT<-TT;TT->TT}), {}),
-                            declassify(endorse(CryptoUtil.factory().elGamalReencrypt(key, v.encCapability, capabilityFactor), {TT<-TT;TT->TT}), {}));            
+                            declassify(endorse(CryptoUtil.factory().elGamalReencrypt(key, v.encCapability, capabilityFactor), {TT<-TT;TT->TT}), {}));
         }
         catch (NullPointerException e) {
             throw new IndexOutOfBoundsException();
-        }        
+        }
     }
 
     public void add{}(Object{} v, byte{}const[]{} commitment) throws (ClassCastException{}) {
@@ -66,7 +66,7 @@ public class VoteMix extends Mix {
                 try {
                     n[i] = votes[i];
                 }
-                catch (NullPointerException ignore) { }                
+                catch (NullPointerException ignore) { }
                 catch (ArrayIndexOutOfBoundsException ignore) { }
             }
             n[votes.length] = v;
@@ -75,7 +75,7 @@ public class VoteMix extends Mix {
         catch (NullPointerException imposs) { }
         catch (ArrayIndexOutOfBoundsException imposs) { }
     }
-    
+
     public int{} size() {
         Vote{}[] vs = votes;
         return vs == null ? 0 : vs.length;
@@ -87,7 +87,7 @@ public class VoteMix extends Mix {
         sb.print("<number>");
         sb.print(number);
         sb.print("</number>");
-        
+
         if (mixNonceHash != null) {
             sb.print("<nonceHash>");
             sb.print(Util.constBytesToString(new label {}, mixNonceHash));
@@ -98,17 +98,17 @@ public class VoteMix extends Mix {
         try {
             for (int i = 0; i < votes.length; i++) {
                 votes[i].toXML(lbl, sb);
-            }        
+            }
         }
         catch (NullPointerException imposs) { }
         catch (ArrayIndexOutOfBoundsException imposs) { }
         sb.print("</votes>");
-        
+
         sb.print("</voteMix>");
     }
-    
+
     public static VoteMix{} fromXML{}(Reader[{}]{} r)  throws (IllegalArgumentException{}, IOException{}) {
-        final label lbl = new label {};        
+        final label lbl = new label {};
         Util.swallowTag(lbl, r, "voteMix");
         int number = Util.readSimpleIntTag(lbl, r, "number");
         byte{}const[] nonceHash = null;
@@ -116,12 +116,12 @@ public class VoteMix extends Mix {
             nonceHash = Util.stringToConstBytes(lbl, Util.readSimpleTag(lbl, r, "nonceHash"));
         }
         VoteMix vm = new VoteMix(number, nonceHash);
-        
+
         Util.swallowTag(lbl, r, "votes");
         while (Util.isNextTag(lbl, r, Vote.OPENING_TAG)) {
             vm.addVote(Vote.fromXML(r));
         }
-        
+
         Util.swallowEndTag(lbl, r, "votes");
         Util.swallowEndTag(lbl, r, "voteMix");
         return vm;

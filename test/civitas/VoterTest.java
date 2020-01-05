@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas;
 
 import java.io.*;
@@ -25,7 +25,7 @@ import civitas.crypto.*;
 public class VoterTest {
     public static void main(String[] args) {
         int voterBlock = 2;
-        String[] candidates1 = {"Fred", "Wil\"ma", "Barney" }; 
+        String[] candidates1 = {"Fred", "Wil\"ma", "Barney" };
         SingleChoiceBallotDesign bd1 = new SingleChoiceBallotDesign().civitas$common$SingleChoiceBallotDesign$(LabelUtil.singleton().noComponents(), candidates1);
         int capsNeeded = bd1.votesProducedPerBallot();
 
@@ -59,37 +59,37 @@ public class VoterTest {
 
         Map caps = new HashMap(LabelUntilUtil.singleton().noComponents(),LabelUntilUtil.singleton().noComponents()).jif$util$HashMap$();
         List contexts = bd1.contextsNeeded(LabelUntilUtil.singleton().noComponents(), "base");
-        
+
         VoteCapabilityShare[][] shares = new VoteCapabilityShare[1][capsNeeded];
-        for (int i = 0; i < capsNeeded; i++) {                
+        for (int i = 0; i < capsNeeded; i++) {
             shares[0][i] = CryptoUtil.factory().generateVoteCapabilityShare(params);
         }
         VoteCapability[] capabilities = CryptoUtil.factory().combineVoteCapabilityShares(LabelUntilUtil.singleton().noComponents(),
                                                          shares, params);
 
-        for (int i = 0; i < capabilities.length; i++) {                
+        for (int i = 0; i < capabilities.length; i++) {
             caps.put(contexts.get(i), new JifObjectWrapper(LabelUntilUtil.singleton().noComponents()).jif$lang$JifObjectWrapper$(capabilities[i]));
         }
-        
-        
-        
+
+
+
         ElGamalKeyPair kp = CryptoUtil.factory().generateElGamalKeyPair(params);
         ElGamalCiphertext[] ciphertexts = CryptoUtil.factory().constructWellKnownCiphertexts(LabelUtil.singleton().noComponents(), kp.publicKey(), bd1.maxPossibleChoices());
-        VoterSubmission vs = bd1.decompose(LabelUtil.singleton().noComponents(), 
-                                           b1, voterBlock, 
-                                           kp.publicKey(), 
-                                           ciphertexts, 
-                                           "base", 
+        VoterSubmission vs = bd1.decompose(LabelUtil.singleton().noComponents(),
+                                           b1, voterBlock,
+                                           kp.publicKey(),
+                                           ciphertexts,
+                                           "base",
                                            caps);
-        
+
         bd1.checkBallot(LabelUtil.singleton().noComponents(), b1);
         bd1.checkVoterSubmission(vs, "base", new CiphertextList().civitas$common$CiphertextList$(LabelUtil.singleton().noComponents(), ciphertexts), kp.publicKey());
 
-        System.out.println("candidate of choice is " + b1.candidate); 
+        System.out.println("candidate of choice is " + b1.candidate);
         StringWriter sb = new StringWriter();
         b1.toXML(new PrintWriter(sb));
-        System.out.println("ballot xml is " + sb.toString()); 
-        System.out.println("vs votes.length is " + vs.votes.length); 
+        System.out.println("ballot xml is " + sb.toString());
+        System.out.println("vs votes.length is " + vs.votes.length);
 
         sb = new StringWriter();
         vs.toXML(LabelUtil.singleton().noComponents(), new PrintWriter(sb));

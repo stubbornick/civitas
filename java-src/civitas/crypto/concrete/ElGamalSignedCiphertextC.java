@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.crypto.concrete;
 
 import java.io.*;
@@ -17,7 +17,7 @@ import civitas.util.CivitasBigInteger;
 public class ElGamalSignedCiphertextC extends ElGamalCiphertextC implements ElGamalSignedCiphertext {
     public final CivitasBigInteger c;
     public final CivitasBigInteger d;
-    
+
     public ElGamalSignedCiphertextC(CivitasBigInteger a, CivitasBigInteger b, CivitasBigInteger c, CivitasBigInteger d) {
         super(a,b);
         this.c = c;
@@ -45,7 +45,7 @@ public class ElGamalSignedCiphertextC extends ElGamalCiphertextC implements ElGa
         s.print("</d>");
         s.print("</elGamalSignedCiphertext>");
     }
-    
+
     public static ElGamalSignedCiphertext fromXMLsub(Label lbl, Reader r) throws IllegalArgumentException, IOException {
         Util.swallowTag(lbl, r, "elGamalSignedCiphertext");
         CivitasBigInteger a = null;
@@ -74,9 +74,9 @@ public class ElGamalSignedCiphertextC extends ElGamalCiphertextC implements ElGa
 
         Util.swallowEndTag(lbl, r, "elGamalSignedCiphertext");
         return new ElGamalSignedCiphertextC(a, b, c, d);
-    }     
+    }
     public void toUnsignedCiphertextXML(Label lbl, PrintWriter sb) {
         super.toXML(lbl, sb);
-    }     
-    
+    }
+
 }

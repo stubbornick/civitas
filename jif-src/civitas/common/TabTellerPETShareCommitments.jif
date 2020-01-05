@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import civitas.crypto.*;
@@ -16,7 +16,7 @@ public class TabTellerPETShareCommitments implements XMLSerializable {
     public final static String{*<-*} META_PREFIX = "ttPETShareCommits:";
 
     public final int{this} tellerIndex;
-    
+
     // an array of the commitments
     public final PETCommitment{}[]{this} commitments;
 
@@ -24,7 +24,7 @@ public class TabTellerPETShareCommitments implements XMLSerializable {
         this.tellerIndex = tellerIndex;
         this.commitments = commitments;
     }
-    
+
     public void toXML{}(PrintWriter[{}]{} sb) {
         toXML(new label {}, sb);
     }
@@ -50,12 +50,12 @@ public class TabTellerPETShareCommitments implements XMLSerializable {
             }
         }
         else {
-            sb.print("<size>0</size>");            
+            sb.print("<size>0</size>");
         }
-        
+
         sb.print("</tabTellerPETShareCommitments>");
     }
-    
+
     public static TabTellerPETShareCommitments fromXML{}(Reader[{}]{} r) throws (IllegalArgumentException{}, IOException{}) {
         final label lbl = new label {};
         Util.swallowTag(lbl, r, "tabTellerPETShareCommitments");
@@ -73,8 +73,8 @@ public class TabTellerPETShareCommitments implements XMLSerializable {
             }
             catch (ArrayIndexOutOfBoundsException imposs) { }
         }
-                
+
         Util.swallowEndTag(lbl, r, "tabTellerPETShareCommitments");
         return new TabTellerPETShareCommitments(index, commitments);
-    }    
+    }
 }

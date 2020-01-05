@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import java.io.*;
@@ -11,14 +11,14 @@ import java.io.*;
 /**
  * TallyState for a MultiballotDesign.
  */
-public class MultiTallyState[label L] extends TallyState[L] {        
+public class MultiTallyState[label L] extends TallyState[L] {
     private final TallyState[L]{L}[]{this} states;
-    
+
     MultiTallyState(TallyState[L]{L}[]{this} states) {
         this.states = states;
         super();
     }
-    
+
     TallyState[L]{L;i} get(int i) {
         if (states != null && i >= 0 && i < states.length) {
             try {
@@ -28,10 +28,10 @@ public class MultiTallyState[label L] extends TallyState[L] {
         }
         return null;
     }
-    
+
     public TallyStateFinal{L} finalTally{L}() {
         TallyStateFinal{L}[] finalStates = null;
-        if (states != null) { 
+        if (states != null) {
             int size = states.length;
 
             finalStates = new TallyStateFinal[size];

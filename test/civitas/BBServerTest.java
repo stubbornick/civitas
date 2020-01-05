@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas;
 
 import java.io.*;
@@ -26,12 +26,12 @@ public class BBServerTest {
         System.err.println("Create board");
         String bbid = "3";//bbcu.newBoard(pubKey);
         bbcu = new BBClientUtil().civitas$bboard$client$BBClientUtil$("localhost",3444, bbid);
-        
+
         ElectionID id = new ElectionID().civitas$common$ElectionID$("localhost", 3444, bbid);
         StringWriter sb = new StringWriter();
         id.toXML(LabelUtil.singleton().noComponents(), new PrintWriter(sb));
         System.err.println(sb.toString());
-        
+
         // post a message
         System.err.println("post");
         String stamp = bbcu.post("test", id, privKey);
@@ -41,7 +41,7 @@ public class BBServerTest {
         System.err.println("hash");
         String hash = CryptoUtil.factory().bytesToBase64(LabelUtil.singleton().noComponents(), bbcu.retrieveHash(pubKey, "test", null, null));
         System.err.println("  hash was " + hash);
-        
+
 /*        if (args.length < 2 || args.length > 3) {
             System.err.println("usage: bbservertest host port [bbid]");
             System.exit(1);
@@ -52,12 +52,12 @@ public class BBServerTest {
         System.out.println("Trying BBServer: " + host + ":"+port);
         Principal bbPrincipal = CryptoUtil.factory().keyPair("BB", CryptoUtil.factory().publicKeyFromFile("file"));
         BBClientUtil cu = new BBClientUtil(bbPrincipal).civitas$bboard$client$BBClientUtil$();
-        
+
         String bbid = null;
         if (args.length > 2) {
             bbid = args[2];
         }
-        
+
         try {
             if (bbid == null) {
                 System.out.println("Creating new board");
@@ -74,12 +74,12 @@ public class BBServerTest {
 
             l = cu.retrieveParams(host, port, bbid, "u", null, null);
             System.out.println("list with param is now " + l.toString());
-        
+
         }
         catch (NumberFormatException e) {
             e.printStackTrace();
         }
-        catch (IOException e) {   
+        catch (IOException e) {
             e.printStackTrace();
         }
         */

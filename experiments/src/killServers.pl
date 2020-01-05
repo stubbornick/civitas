@@ -11,7 +11,7 @@ use strict;
 sub usage {
     print <<USAGE;
 usage: killServers.pl [experimentDescriptionFile]
-    If no experiment description file is given, try to kill all CIVITAS 
+    If no experiment description file is given, try to kill all CIVITAS
     servers on this machine. Otherwise, try to kill all CIVITAS servers
     on machines listed in the experiment description file.
 USAGE
@@ -49,7 +49,7 @@ sub findPIDStoKill {
             chop($line);
             $line =~ s/^\s+//;
             #  make sure we don't kill the time command!
-            push( @possibles, $line ) if ( $line =~ /java.*civitas\S+server/  && $line !~ /time.*civitasrun/);            
+            push( @possibles, $line ) if ( $line =~ /java.*civitas\S+server/  && $line !~ /time.*civitasrun/);
         }
         close PS;
         foreach my $entry (@possibles) {

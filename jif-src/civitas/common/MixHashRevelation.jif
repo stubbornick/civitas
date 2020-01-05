@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import civitas.crypto.*;
@@ -26,16 +26,16 @@ public class MixHashRevelation implements XMLSerializable {
     }
 
     public final int{this} tellerIndex;
-    
+
     public final byte{} const []{this} mixNonce;
-    
-    
+
+
     public MixHashRevelation(int{this} tellerIndex, byte{} const []{this} mixNonce) {
         this.tellerIndex = tellerIndex;
         this.mixNonce = mixNonce;
     }
-    
-    
+
+
     public void toXML{}(PrintWriter[{}]{{}} sb) {
         if (sb == null) return;
         sb.print("<mixHashRevelation>");
@@ -50,7 +50,7 @@ public class MixHashRevelation implements XMLSerializable {
         sb.print("</nonce>");
         sb.print("</mixHashRevelation>");
     }
-    
+
     public static MixHashRevelation{} fromXML{}(Reader[{}]{} r) throws (IllegalArgumentException{}, IOException{}) {
         final label lbl = new label {};
         Util.swallowTag(lbl, r, "mixHashRevelation");
@@ -60,5 +60,5 @@ public class MixHashRevelation implements XMLSerializable {
         byte{} const [] mn = null;
         if (mixNonce != null) mn = mixNonce.clone();
         return new MixHashRevelation(index, mn);
-    }    
+    }
 }

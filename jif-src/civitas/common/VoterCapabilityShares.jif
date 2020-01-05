@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import civitas.crypto.*;
@@ -16,18 +16,18 @@ import java.io.*;
  */
 public class VoterCapabilityShares implements XMLSerializable {
     public static final String{*<-*} OPENING_TAG = "voterCapabilityShares";
-    
+
     //  the order of these capabilities is important: the ith capability must
     // be used for the ith context, i.e., the ith produced vote.
-    public final VoteCapabilityShare{this}const[]{this} capabilities;  
-    
+    public final VoteCapabilityShare{this}const[]{this} capabilities;
+
     public final int{this} voterBlock;
 
     public VoterCapabilityShares(VoteCapabilityShare{this} const[]{this} capabilities, int{this} voterBlock) {
         this.capabilities = capabilities;
         this.voterBlock = voterBlock;
     }
-            
+
     public void toXML{}(PrintWriter[{}]{} sb) {
         toXML(new label {}, sb);
     }
@@ -51,14 +51,14 @@ public class VoterCapabilityShares implements XMLSerializable {
         }
         else {
             sb.print("<size>0</size>");
-            
+
         }
         sb.print("</capabilities>");
         sb.print("<voterBlock>" + voterBlock + "</voterBlock>");
-        
+
         sb.print("</" + OPENING_TAG + ">");
     }
-    
+
     public static VoterCapabilityShares{*lbl} fromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r)  throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
         Util.swallowTag(lbl, r, OPENING_TAG);
 
@@ -80,9 +80,9 @@ public class VoterCapabilityShares implements XMLSerializable {
         Util.swallowEndTag(lbl, r, "capabilities");
         int voterBlock = Util.readSimpleIntTag(lbl, r, "voterBlock");
 
-        
+
         Util.swallowEndTag(lbl, r, OPENING_TAG);
         VoterCapabilityShares vc = new VoterCapabilityShares(caps.clone(), voterBlock);
         return vc;
-    }    
+    }
 }

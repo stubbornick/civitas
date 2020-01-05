@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 
 /*************************************************************************
  *  This code is derived from i2p.net's NativeBigInteger.
@@ -56,7 +56,7 @@ JNIEXPORT jbyteArray JNICALL Java_civitas_util_CivitasBigInteger_nativeModPow
         convert_j2mp(env, jbase, &mbase);
         convert_j2mp(env, jexp,  &mexp);
         convert_j2mp(env, jmod,  &mmod);
- 
+
         /* Perform the actual powmod. We use mmod for the result because it is
          * always at least as big as the result.
          */
@@ -92,13 +92,13 @@ JNIEXPORT jbyteArray JNICALL Java_civitas_util_CivitasBigInteger_nativeModMultip
 
         mpz_t mx;
         mpz_t my;
-        mpz_t mmod;     
+        mpz_t mmod;
         jbyteArray jresult;
 
         convert_j2mp(env, jx, &mx);
         convert_j2mp(env, jy, &my);
         convert_j2mp(env, jmod,  &mmod);
- 
+
         /* Perform the multiply, then the mod. We use mx for the result.
          */
         mpz_mul(mx, mx, my);
@@ -133,13 +133,13 @@ JNIEXPORT jbyteArray JNICALL Java_civitas_util_CivitasBigInteger_nativeModDivide
 
         mpz_t mx;
         mpz_t my;
-        mpz_t mmod;     
+        mpz_t mmod;
         jbyteArray jresult;
 
         convert_j2mp(env, jx, &mx);
         convert_j2mp(env, jy, &my);
         convert_j2mp(env, jmod,  &mmod);
- 
+
         /* Perform the invert, the multiply, then the mod. We use mx for the result.
          */
         mpz_invert(my, my, mmod); // take the inverse of y in mod mmod, and put result in my
@@ -215,7 +215,7 @@ void convert_mp2j(JNIEnv* env, mpz_t mvalue, jbyteArray* jvalue)
 {
         // size_t not jsize to work with 64bit CPUs (do we need to update this
         // elsewhere, and/or adjust memory alloc sizes?)
-        size_t size; 
+        size_t size;
         jbyte* buffer;
         jboolean copy;
         //int i;

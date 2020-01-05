@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import civitas.crypto.*;
@@ -11,11 +11,11 @@ import java.io.*;
 
 /**
  * A tabulation teller's view of what voter submissions
- * belong in a given voter block. That is, it contains a hash of the voter 
+ * belong in a given voter block. That is, it contains a hash of the voter
  * submissions that the tabulation teller believes belongs in the voter
  * block. This data structure is produced by each tabulation teller for
  * each voter block, and posted to the bulletin board. Tabulation tellers
- * then check that they all agree on the contents of each voter block. 
+ * then check that they all agree on the contents of each voter block.
  */
 public class TabTellerVoterBlockContents implements XMLSerializable {
     public static String meta(int tellerIndex, int voterBlock) {
@@ -30,7 +30,7 @@ public class TabTellerVoterBlockContents implements XMLSerializable {
         this.voterBlock = voterBlock;
         this.hash = hash;
     }
-    
+
     public void toXML{}(PrintWriter[{}]{} sb) {
         toXML(new label {}, sb);
     }
@@ -46,7 +46,7 @@ public class TabTellerVoterBlockContents implements XMLSerializable {
         sb.print("</voterBlock>");
         sb.print("<hash>");
         Util.escapeString(this.hash, lbl, sb);
-        sb.print("</hash>");        
+        sb.print("</hash>");
         sb.print("</tabTellerVoterBlockContents>");
     }
     public static TabTellerVoterBlockContents{*lbl} fromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r) throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
@@ -56,5 +56,5 @@ public class TabTellerVoterBlockContents implements XMLSerializable {
         String hash = Util.unescapeString(Util.readSimpleTag(lbl, r, "hash"));
         Util.swallowEndTag(lbl, r, "tabTellerVoterBlockContents");
         return new TabTellerVoterBlockContents(index, voterBlock, hash);
-    }    
+    }
 }

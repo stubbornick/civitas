@@ -3,19 +3,19 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import java.io.*;
 
 /**
- * This class represents the results of an election. It also records who 
+ * This class represents the results of an election. It also records who
  * computed the results. At the end of an election, each tabulation
  * teller computes the election results, and posts them to the bulletin board.
  */
 public class ElectionResults implements XMLSerializable {
     public static final String{*<-*} META  = "electionResults:";
-    
+
     public static String metaForTeller(int tellerIndex) {
         return ElectionResults.META + computerForTeller(tellerIndex);
     }
@@ -23,7 +23,7 @@ public class ElectionResults implements XMLSerializable {
         return "Teller" + tellerIndex;
     }
 
-    
+
     public final String{this} computer;
     public final TallyStateFinal{this} tally;
 
@@ -31,7 +31,7 @@ public class ElectionResults implements XMLSerializable {
         this.computer = computer;
         this.tally = tally;
     }
-    
+
     public void toXML{}(PrintWriter[{}]{} sb) {
         toXML(new label {}, sb);
     }
@@ -47,12 +47,12 @@ public class ElectionResults implements XMLSerializable {
         }
         sb.print("</electionResults>");
     }
-    
+
     public static ElectionResults{*lbl} fromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r) throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
         Util.swallowTag(lbl, r, "electionResults");
         String computer = Util.unescapeString(Util.readSimpleTag(lbl, r, "computer"));
         TallyStateFinal tally = TallyStateFinal.fromXML(lbl, r);
         Util.swallowEndTag(lbl, r, "electionResults");
         return new ElectionResults(computer, tally);
-    }    
+    }
 }

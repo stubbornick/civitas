@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import civitas.crypto.*;
@@ -16,10 +16,10 @@ public class TabTellerPETShareDecommitments implements XMLSerializable {
     public final static String{*<-*} META_PREFIX = "ttPETShareDecommits:";
 
     public final int{this} tellerIndex;
-    
+
     // an array of the decommitments
     public final PETDecommitment{}[]{this} decommitments;
-    
+
     // an array of the proofs
     public final ElGamalProofDiscLogEquality{}[]{this} proofs;
 
@@ -28,7 +28,7 @@ public class TabTellerPETShareDecommitments implements XMLSerializable {
         this.decommitments = decommitments;
         this.proofs = proofs;
     }
-    
+
     public void toXML{}(PrintWriter[{}]{} sb) {
         toXML(new label {}, sb);
     }
@@ -56,7 +56,7 @@ public class TabTellerPETShareDecommitments implements XMLSerializable {
         else {
             sb.print("<size>0</size>");
         }
-        
+
         if (this.proofs != null) {
             for (int i = 0; i < proofs.length; i++) {
                 try {
@@ -71,7 +71,7 @@ public class TabTellerPETShareDecommitments implements XMLSerializable {
 
         sb.print("</tabTellerPETShareDecommitments>");
     }
-    
+
     public static TabTellerPETShareDecommitments fromXML{}(Reader[{}]{} r) throws (IllegalArgumentException{}, IOException{}) {
         final label lbl = new label {};
         Util.swallowTag(lbl, r, "tabTellerPETShareDecommitments");
@@ -90,7 +90,7 @@ public class TabTellerPETShareDecommitments implements XMLSerializable {
             catch (ArrayIndexOutOfBoundsException imposs) { }
         }
 
-        
+
         // read in the proofs.
         ElGamalProofDiscLogEquality{}[] proofs = new ElGamalProofDiscLogEquality[size<0?0:size];
         for (int i =0; i < size; i++) {
@@ -101,8 +101,8 @@ public class TabTellerPETShareDecommitments implements XMLSerializable {
             catch (NullPointerException imposs) { }
             catch (ArrayIndexOutOfBoundsException imposs) { }
         }
-        
+
         Util.swallowEndTag(lbl, r, "tabTellerPETShareDecommitments");
         return new TabTellerPETShareDecommitments(index, decommitments, proofs);
-    }    
+    }
 }

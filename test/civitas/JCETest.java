@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas;
 
 import java.math.BigInteger;
@@ -25,19 +25,19 @@ public class JCETest {
         Security.addProvider(new BouncyCastleProvider());
         System.out.println("done.");
         String alg = "ElGamal";
-         
+
         // try an ElGamal encryption
         try {
             System.out.print("Creating ElGamal key-pair generator... ");
             KeyPairGenerator kpg = KeyPairGenerator.getInstance(alg, "BC");
             System.out.println("done.");
-            
+
             DHParameterSpec elParams = new DHParameterSpec(p, g);
             kpg.initialize(elParams);
             //kpg.initialize(128);
             System.out.println("Generating ElGamal key-pair... ");
             KeyPair kp = kpg.generateKeyPair();
-            
+
             Cipher cipherEnc = Cipher.getInstance(alg, "BC");
 
             System.out.println("Encrypting...");
@@ -45,15 +45,15 @@ public class JCETest {
             cipherEnc.init(Cipher.ENCRYPT_MODE, kp.getPublic());
             System.out.println("block size is " + cipherEnc.getBlockSize());
             byte[] encrypted = cipherEnc.doFinal(msg.getBytes());
-            
+
             System.out.println("Decrypting...");
             Cipher cipherDec = Cipher.getInstance(alg, "BC");
             cipherDec.init(Cipher.DECRYPT_MODE, kp.getPrivate());
             byte[] decrypted = cipherDec.doFinal(encrypted);
-            
+
             // convert the bytes to a string.
             System.out.println("Decrypted message is " + new String(decrypted));
-            
+
         }
         catch (Exception e) {
             e.printStackTrace();

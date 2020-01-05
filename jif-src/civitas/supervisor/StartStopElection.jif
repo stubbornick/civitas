@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.supervisor;
 
 import civitas.common.*;
@@ -18,31 +18,31 @@ import civitas.crypto.*;
  */
 public class StartStopElection {
     public static void startElection{}(final ElectionDetails{} details,
-                                       PrivateKey{} supPrivKey) 
+                                       PrivateKey{} supPrivKey)
     throws (IOException{}, IllegalArgumentException{}) {
         if (details == null || details.electionID == null) return;
         BBClientUtil bb = new BBClientUtil(details.electionID);
-        
+
         ElectionCache electionCache = new ElectionCache();
         electionCache.setElectionDetails(details);
-        ElectionEvent e = new ElectionEvent(ElectionEvent.EVENT_KIND_START, 
-                                            details.electionID, 
+        ElectionEvent e = new ElectionEvent(ElectionEvent.EVENT_KIND_START,
+                                            details.electionID,
                                             newValidSequence(details, electionCache));
         bb.post(ElectionEvent.META, e, supPrivKey);
     }
-    public static void stopElection{}(final ElectionDetails{} details, 
-                                      PrivateKey{} supPrivKey) 
+    public static void stopElection{}(final ElectionDetails{} details,
+                                      PrivateKey{} supPrivKey)
     throws (IOException{}, IllegalArgumentException{}) {
         if (details == null || details.electionID == null) return;
         BBClientUtil bb = new BBClientUtil(details.electionID);
-        
+
         ElectionCache electionCache = new ElectionCache();
         electionCache.setElectionDetails(details);
         int numVoterBlocks = ElectionUtil.numberVoterBlocks(details, electionCache);
 
         ElectionEvent e = new ElectionEvent(ElectionEvent.EVENT_KIND_STOP, details.electionID, newValidSequence(details, electionCache));
         bb.post(ElectionEvent.META, e, supPrivKey);
-        
+
         // now tell the voter BBs to stop
         TellerDetails tellerDetails = ElectionUtil.retrieveTellerDetails(details, electionCache);
         if (tellerDetails != null && tellerDetails.voterBBs != null) {
@@ -56,7 +56,7 @@ public class StartStopElection {
             }
         }
     }
-    
+
     public static void startTabulation{}(final ElectionDetails{} details, PrivateKey{} supPrivKey) throws (IOException{}, IllegalArgumentException{}) {
         if (details == null) throw new IllegalArgumentException();
         ElectionID electionID = details.electionID;
@@ -73,7 +73,7 @@ public class StartStopElection {
 
         // tell the tabulation tellers to start tabulation
         TellerDetails tellers = ElectionUtil.retrieveTellerDetails(details, cache);
-        
+
         // go through each tabulation teller.
         if (tellers != null && tellers.tabulationTellers != null) {
             for (int i = 0; i < tellers.tabulationTellers.length; i++) {
@@ -89,9 +89,9 @@ public class StartStopElection {
         else {
             throw new IllegalArgumentException("Election " + (electionID==null?"null":electionID.toString()) + " does not have any tabulation tellers!");
 
-        }        
+        }
     }
-    
+
     public static void debugTabulation{}(final ElectionDetails{} details, PrivateKey{} supPrivKey) throws (IOException{}, IllegalArgumentException{}) {
         if (details == null) throw new IllegalArgumentException();
         ElectionID electionID = details.electionID;
@@ -101,7 +101,7 @@ public class StartStopElection {
 
         // tell the tabulation tellers to start tabulation
         TellerDetails tellers = ElectionUtil.retrieveTellerDetails(details, cache);
-        
+
         // go through each tabulation teller.
         if (tellers != null && tellers.tabulationTellers != null) {
             for (int i = 0; i < tellers.tabulationTellers.length; i++) {
@@ -117,7 +117,7 @@ public class StartStopElection {
         else {
             throw new IllegalArgumentException("Election " + (electionID==null?"null":electionID.toString()) + " does not have any tabulation tellers!");
 
-        }        
+        }
     }
 
     public static void finalizeElection{}(final ElectionDetails{} details, PrivateKey{} supPrivKey, String{} message, int{} tellerIndexForTallyState) throws (IOException{}, IllegalArgumentException{}) {
@@ -141,17 +141,17 @@ public class StartStopElection {
     public static void finalizeElection{}(final ElectionDetails{} details, PrivateKey{} supPrivKey, String{} message, TallyStateFinal{} tally) throws (IOException{}, IllegalArgumentException{}) {
         if (details == null || details.electionID == null) return;
         BBClientUtil bb = new BBClientUtil(details.electionID);
-        
+
         ElectionCache electionCache = new ElectionCache();
         electionCache.setElectionDetails(details);
         ElectionEvent e = new ElectionEventFinalize(details.electionID, newValidSequence(details, electionCache), tally, message);
         bb.post(ElectionEvent.META, e, supPrivKey);
 
         // We could at this point close the BB, and tell it to stop accepting posts.
-    }    
+    }
 
-    private static int{} newValidSequence{}(final ElectionDetails{} details, 
-                                            ElectionCache{} electionCache) 
+    private static int{} newValidSequence{}(final ElectionDetails{} details,
+                                            ElectionCache{} electionCache)
     throws (IOException{}, IllegalArgumentException{}) {
         // determine a unique sequence number, greater than any previous sequence number of any valid event
         if (details == null) return 0;
@@ -164,9 +164,9 @@ public class StartStopElection {
                 }
             }
             catch (ArrayIndexOutOfBoundsException imposs) { }
-            
+
         }
         return 0;
     }
-    
+
 }

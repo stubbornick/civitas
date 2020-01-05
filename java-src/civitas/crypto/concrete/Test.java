@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.crypto.concrete;
 
 import java.io.*;
@@ -44,7 +44,7 @@ public class Test {
     public static ElGamalMsg distDecrypt(Label lbl, ElGamalCiphertext c, ElGamalKeyPairShare[] keys) {
         ElGamalKeyShare[] tellerPubShares = new ElGamalKeyShare[keys.length];
         for (int i = 0; i < keys.length; i++) {
-            tellerPubShares[i] = f.constructKeyShare(keys[i]); 
+            tellerPubShares[i] = f.constructKeyShare(keys[i]);
         }
 
         ElGamalMsg m2 = null;
@@ -56,7 +56,7 @@ public class Test {
             ElGamalDecryptionShare[] decryptShares = new ElGamalDecryptionShare[keys.length];
             for (int i = 0; i < keys.length; i++) {
                 decryptShares[i] = f.constructDecryptionShare(lbl, lbl, c, keys[i]);
-                test("distDecrypt verify decryption share " + i, decryptShares[i].verify(c, keys[i].pubKey)); 
+                test("distDecrypt verify decryption share " + i, decryptShares[i].verify(c, keys[i].pubKey));
             }
             m2 = f.combineDecryptionShares(lbl, c, decryptShares, ps());
         }
@@ -81,16 +81,16 @@ public class Test {
         int choice = 1;
         VerifiableVote[] verifV1 = new VerifiableVote[1];
         String context = "cibte";
-        for (int i = 0; i < verifV1.length; i++) {            
+        for (int i = 0; i < verifV1.length; i++) {
             ElGamal1OfLReencryptionC encChoice = (ElGamal1OfLReencryptionC)f.elGamal1OfLReencrypt(LabelUtil.singleton().noComponents(),
                                                                     K, ciphertexts, L, choice, encChoiceFactor);
-            
+
             ElGamalCiphertext encCap = f.elGamalEncrypt(K, f.generateVoteCapabilityShare(ps()), encCapFactor);
             ProofVote proofVote = f.constructProofVote(ps(), encCap, encChoice, context, encCapFactor, encChoiceFactor);
             verifV1[i] = new VerifiableVote().civitas$common$VerifiableVote$(context, encChoice , encCap, proofVote);
         }
         VoterSubmission vs1 = new VoterSubmission().civitas$common$VoterSubmission$(lbl, 2, verifV1);
-        
+
         StringWriter sb = new StringWriter();
         vs1.toXML(lbl, new PrintWriter(sb));
         String vxml = sb.toString();
@@ -120,7 +120,7 @@ public class Test {
         System.out.println("= msgTest =");
         msgTest();
         System.out.println("= decTest =");
-      decTest();
+        decTest();
 //
 //      // showProviderServices();
         System.out.println("= egHomoTest =");
@@ -323,7 +323,7 @@ public class Test {
         test("p=2q+1", ps.p.equals(ps.q.multiply(CivitasBigInteger.valueOf(2)).add(CivitasBigInteger.ONE)));
         // g is a generator of QR_p if it passes two tests.
         // Test 1. g is order q, i.e. g^q = 1.
-        test("g^q mod p = 1", ps.g.modPow(ps.q, ps.p).equals(CivitasBigInteger.ONE)); 
+        test("g^q mod p = 1", ps.g.modPow(ps.q, ps.p).equals(CivitasBigInteger.ONE));
         // Test 2. g is in QR_p, i.e. J_p(g) = 1.
         test("J_p(g) = 1", CryptoAlgs.legendreSymbol(ps.g, ps.p, ps.q) == 1);
         // If g \in QR_p then -g \notin QR_p
@@ -368,13 +368,13 @@ public class Test {
         ElGamalKeyPair pair = f.generateElGamalKeyPair(ps);
         ElGamalPrivateKeyC k = (ElGamalPrivateKeyC)pair.privateKey();
         ElGamalPublicKeyC K = (ElGamalPublicKeyC)pair.publicKey();
-        
+
         VoteCapabilityShareC m1 = (VoteCapabilityShareC)f.generateVoteCapabilityShare(ps);
         VoteCapabilityShareC m2 = (VoteCapabilityShareC)f.generateVoteCapabilityShare(ps);
         VoteCapabilityShare[][] vs = new VoteCapabilityShare[2][1];
         vs[0][0] = m1;
         vs[1][0] = m2;
-        
+
 //        System.err.println("q = " + ps.q);
 //        System.err.println("p = " + ps.p);
 //        System.err.println("x = " + k.x);
@@ -383,9 +383,9 @@ public class Test {
 //        System.err.println("m2 = " + m2.intValue());
 //        System.err.println("m1 in QR = " + m1.encodeQR(ps));
 //        System.err.println("m2 in QR = " + m2.encodeQR(ps));
-        
+
         ElGamalReencryptFactorC r = new ElGamalReencryptFactorC(CivitasBigInteger.ONE);
-        
+
         ElGamalSignedCiphertextC c1 = (ElGamalSignedCiphertextC)f.elGamalSignedEncrypt(K, m1, r);
         ElGamalSignedCiphertextC c2 = (ElGamalSignedCiphertextC)f.elGamalSignedEncrypt(K, m2, r);
 //        System.err.println("c1 = " + c1.a + "," + c1.b);
@@ -393,7 +393,7 @@ public class Test {
         ElGamalSignedCiphertext[][] cs = new ElGamalSignedCiphertext[2][1];
         cs[0][0] = c1;
         cs[1][0] = c2;
-        
+
         ElGamalMsg mf = f.combineVoteCapabilityShares(LabelUtil.singleton().noComponents(), vs, ps)[0];
         ElGamalCiphertextC cf = (ElGamalCiphertextC)f.multiplyCiphertexts(LabelUtil.singleton().noComponents(), cs, ps)[0];
 //        System.err.println("mf = m1 * m2 = " + mf.intValue());
@@ -419,8 +419,8 @@ public class Test {
         }
 //        System.err.println("md = dec(cf) = " + md.intValue());
         test("eg homomorphic", md.equals(mf));
-        
-        
+
+
     }
     /**
      * Test one of L encryption and proof
@@ -452,7 +452,7 @@ public class Test {
             catch (CryptoException e) {
                 e.printStackTrace();
             }
-        }        
+        }
     }
 
     /**
@@ -465,7 +465,7 @@ public class Test {
         ElGamalKeyPairShare[] tellerShares = new ElGamalKeyPairShare[NUM_TELLERS];
         ElGamalKeyShare[] tellerPubShares = new ElGamalKeyShare[NUM_TELLERS];
         for (int i = 0; i < tellerShares.length; i++) {
-            tellerShares[i] = f.generateKeyPairShare(ps());      
+            tellerShares[i] = f.generateKeyPairShare(ps());
             tellerPubShares[i] = f.constructKeyShare(tellerShares[i]);
             StringWriter sb = new StringWriter();
             tellerShares[i].toXML(lbl, new PrintWriter(sb));
@@ -496,7 +496,7 @@ public class Test {
             e1.printStackTrace();
         }
 
-        // choose a message 
+        // choose a message
         ElGamalMsgC m = (ElGamalMsgC)f.generateVoteCapabilityShare(ps);
 
         // encrypt it
@@ -652,8 +652,8 @@ public class Test {
         ElGamalKeyPairShare[] tellerShares = new ElGamalKeyPairShare[NUM_TELLERS];
         ElGamalKeyShare[] tellerPubShares = new ElGamalKeyShare[NUM_TELLERS];
         for (int i = 0; i < tellerShares.length; i++) {
-            tellerShares[i] = f.generateKeyPairShare(ps);      
-            tellerPubShares[i] = f.constructKeyShare(tellerShares[i]); 
+            tellerShares[i] = f.generateKeyPairShare(ps);
+            tellerPubShares[i] = f.constructKeyShare(tellerShares[i]);
         }
 
         ElGamalPublicKey sharedPubKey = null;
@@ -664,7 +664,7 @@ public class Test {
             e1.printStackTrace();
         }
 
-        // choose matching messages 
+        // choose matching messages
 
         for (int round = 0; round < 2; round++) {
             ElGamalMsgC m1 = (ElGamalMsgC)f.generateVoteCapabilityShare(ps);
@@ -697,14 +697,14 @@ public class Test {
                 test("PET result for matching", f.petResult(petResDec));
             }
             else {
-                test("PET result for nonmatching", !f.petResult(petResDec));                
+                test("PET result for nonmatching", !f.petResult(petResDec));
             }
         }
     }
 
     private static void performance() {
         Label lbl = LabelUtil.singleton().noComponents();
-        ElGamalParametersC[] ps = new ElGamalParametersC[4]; 
+        ElGamalParametersC[] ps = new ElGamalParametersC[4];
         System.err.println("Generating params 1");
         try {
             ps[0] = ElGamalParametersC.fromXML(LabelUtil.singleton().noComponents(), new FileReader("experiments/keys/elGamalKeyParams-160-1024.xml"));
@@ -739,16 +739,16 @@ public class Test {
         // try doing 100 el gamal encryptions with different length keys
         for (int i = 0; i < ps.length; i++) {
             System.err.println("Testing params " + (i+1));
-            ElGamalParametersC params = ps[i];              
+            ElGamalParametersC params = ps[i];
             ElGamalKeyPair pair = f.generateElGamalKeyPair(params);
             long start = System.currentTimeMillis();
             for (int j = 0; j < COUNT; j++) {
                 ElGamalMsgC msg = (ElGamalMsgC)f.generateVoteCapabilityShare(params);
-                ElGamalCiphertext encCap = f.elGamalEncrypt(pair.publicKey(), msg);                
+                ElGamalCiphertext encCap = f.elGamalEncrypt(pair.publicKey(), msg);
             }
             long total = System.currentTimeMillis() - start;
             System.err.println("Time to do " + COUNT + " encryptions with params " + params.q.bitLength() + "-" + params.p.bitLength() + " : " + total);
-            
+
             // try some distributed decryptions
             ElGamalMsgC msg = (ElGamalMsgC)f.generateVoteCapabilityShare(params);
             ElGamalCiphertext encCap = f.elGamalEncrypt(pair.publicKey(), msg);
@@ -761,8 +761,8 @@ public class Test {
             System.err.println("Time to do " + COUNT + " distributed decryptions with params " + params.q.bitLength() + "-" + params.p.bitLength() + " : " + total);
         }
     }
-    
-   
+
+
     @SuppressWarnings("unused")
 	private static void proofVoteTest() {
         ElGamalMsgC capability = (ElGamalMsgC)f.generateVoteCapabilityShare(ps);
@@ -781,7 +781,7 @@ public class Test {
                                                                 K, ciphertexts, L, choice, factorChoice);
         ElGamalReencryptFactor factorCap = f.generateElGamalReencryptFactor(K.getParams());
         ElGamalCiphertext encCapability = f.elGamalEncrypt(K, capability, factorCap);
-        
+
         ProofVote proofVote = f.constructProofVote(ps, encCapability, encChoice, context, factorCap, factorChoice);
 
         CiphertextList cipherList = new CiphertextList().civitas$common$CiphertextList$(LabelUtil.singleton().noComponents(),ciphertexts);
@@ -803,15 +803,15 @@ public class Test {
         Label lbl = LabelUtil.singleton().noComponents();
         String orig;
 
-//      ElGamalPublicKeyC.java 
+//      ElGamalPublicKeyC.java
         orig = K.toXML();
         test("XML ElGamalPublicKeyC", orig.equals(ElGamalPublicKeyC.fromXML(lbl, reader(orig)).toXML()));
 
-//      ElGamalPrivateKeyC.java 
+//      ElGamalPrivateKeyC.java
         orig = k.toXML();
         test("XML ElGamalPrivateKeyC", orig.equals(ElGamalPrivateKeyC.fromXML(lbl, reader(orig)).toXML()));
 
-        // ElGamalCiphertextC.java 
+        // ElGamalCiphertextC.java
         orig = c.toXML();
         test("XML ElGamalCiphertextC", orig.equals(ElGamalCiphertextC.fromXML(lbl, reader(orig)).toXML()));
 
@@ -819,21 +819,21 @@ public class Test {
         orig = ps.toXML();
         test("XML ElGamalParametersC", orig.equals(ElGamalParametersC.fromXML(lbl, reader(orig)).toXML()));
 
-//      ElGamalDecryptionShareC.java 
-//      ElGamalKeyShareC.java 
-        // see decryptionShareTest 
+//      ElGamalDecryptionShareC.java
+//      ElGamalKeyShareC.java
+        // see decryptionShareTest
 
-//        ElGamal1OfLReencryptionC.java 
+//        ElGamal1OfLReencryptionC.java
 //      ElGamalProof1OfLC.java
 //      ElGamalProofDiscLogEqualityC.java
-//      ElGamalProofDVRC.java 
+//      ElGamalProofDVRC.java
 //      ElGamalProofKnowDiscLogC.java
 //      ElGamalReencryptFactorC.java
-//      ElGamalSignedCiphertextC.java 
+//      ElGamalSignedCiphertextC.java
 //      KeyCiphertextC.java
 //      PETCommitmentC.java
-//      PETDecommitmentC.java 
-//      PETShareC.java 
+//      PETDecommitmentC.java
+//      PETShareC.java
 //      PrivateKeyC.java
 //      PublicKeyC.java
 //      SharedKeyC.java

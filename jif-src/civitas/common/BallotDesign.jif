@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import civitas.crypto.*;
@@ -12,8 +12,8 @@ import jif.util.*;
 
 /**
  * A BallotDesign describes a race. For example, in a "single choice" race,
- * there is a slate of candidates of which 
- * the voter may choose one; a ballot design for a single choice race (a 
+ * there is a slate of candidates of which
+ * the voter may choose one; a ballot design for a single choice race (a
  * SingleChoiceBallotDesign) lists the candidates on the slate.
  */
 public abstract class BallotDesign implements XMLSerializable {
@@ -21,23 +21,23 @@ public abstract class BallotDesign implements XMLSerializable {
     public void toXML{}(PrintWriter[{}]{} sb) {
         toXML(new label {}, sb);
     }
-    public abstract void toXML{*lbl}(label lbl, PrintWriter[lbl]{*lbl} sb) where {this} <= lbl;    
+    public abstract void toXML{*lbl}(label lbl, PrintWriter[lbl]{*lbl} sb) where {this} <= lbl;
     /**
      * Checks that the Ballot b is an acceptable ballot for this ballot design.
      * Throws an IllegalArgumentException is this is not the case.
      */
     public abstract void checkBallot{*lbl}(label{*lbl} lbl, Ballot[lbl]{*lbl} b) throws (IllegalArgumentException{*lbl});
-    
+
     /**
      * decompose the ballot into a VoterSubmission. The iterator gives a supply
-     * of capabilities, as a map from contexts for votes to 
+     * of capabilities, as a map from contexts for votes to
      * <code>VoteCapability</code>s; an IllegalArgumentException is thrown if there are
      * insufficient capabilities.
      */
-    public abstract VoterSubmission{*lbl} decompose{*lbl}(label{*lbl} lbl, Ballot[lbl]{*lbl} ballot, int{*lbl} voterBlock, 
+    public abstract VoterSubmission{*lbl} decompose{*lbl}(label{*lbl} lbl, Ballot[lbl]{*lbl} ballot, int{*lbl} voterBlock,
                                                       ElGamalPublicKey{*lbl} key,
                                                       ElGamalCiphertext{*lbl}const[]{*lbl} ciphertexts,
-                                                      String{*lbl} context, 
+                                                      String{*lbl} context,
                                                       Map[lbl,lbl]{*lbl} capabilities) throws (IllegalArgumentException{*lbl});
 
     /**
@@ -55,7 +55,7 @@ public abstract class BallotDesign implements XMLSerializable {
      * ballot design. Throws an IllegalArgumentException is this is not the
      * case.
      */
-    public abstract void checkVoterSubmission(VoterSubmission vs, int startIndex, String context, CiphertextList ciphertexts, ElGamalPublicKey pubKey) 
+    public abstract void checkVoterSubmission(VoterSubmission vs, int startIndex, String context, CiphertextList ciphertexts, ElGamalPublicKey pubKey)
     throws (IllegalArgumentException{this;vs;startIndex;context;ciphertexts;pubKey});
 
     /**
@@ -63,7 +63,7 @@ public abstract class BallotDesign implements XMLSerializable {
      * produced by a single ballot for this ballot design.
      */
     public abstract int{this} votesProducedPerBallot();
-    
+
     /**
      * Returns a list of the contexts that will be used in a vote submission.
      * The domain of the map capabilities given to the decompose method must
@@ -74,11 +74,11 @@ public abstract class BallotDesign implements XMLSerializable {
         contextsNeeded(lbl, l, baseContext);
         return l;
     }
-    
+
     public abstract void contextsNeeded{*lbl}(label{*lbl} lbl, List[lbl]{*lbl} l, String{*lbl} context) throws (IllegalArgumentException{*lbl});
 
     public abstract String nthContext(int n);
-    
+
     /**
      * The maximum number of choices that a single verifiable vote will be out
      * of. i.e., this determines the maximum value of L to be used in 1-of-L
@@ -91,12 +91,12 @@ public abstract class BallotDesign implements XMLSerializable {
      * tally state s.
      */
     public abstract void tally{*lbl}(label{*lbl} lbl, String{*lbl} ctxt, ElGamalMsg{*lbl} m, String{*lbl} c, TallyState[lbl]{*lbl} s, ElGamalParameters{*lbl} params) throws (IllegalArgumentException{*lbl});
-    
+
     /**
      * Construct a new tally state.
      */
     public abstract TallyState[lbl]{*lbl2} newTallyState{*lbl2}(label{*lbl2} lbl, label{*lbl2} lbl2)  where lbl2 <= lbl;
-    
+
     /**
      * Produce an appropriate BallotDesign from an XML representation. The super class needs
      * to know about all subclasses.
@@ -121,7 +121,7 @@ public abstract class BallotDesign implements XMLSerializable {
         else if (kind.equalsIgnoreCase(MultiBallotDesign.KIND)) {
             bd = MultiBallotDesign.fromXML(lbl, r);
         }
-        else 
+        else
             throw new IOException("Unknown ballot kind: " + kind);
         Util.swallowEndTag(lbl, r, OPENING_TAG);
         return bd;

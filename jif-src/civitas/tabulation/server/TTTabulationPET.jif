@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.tabulation.server;
 
 import java.io.*;
@@ -17,7 +17,7 @@ import civitas.common.*;
 import civitas.crypto.*;
 
 /**
- * Utility class to help with the tabulation protocol. 
+ * Utility class to help with the tabulation protocol.
  * The principal TT should be the tab teller's public key.
  * The principal SUP is the election supervisor.
  * The principal TELLS represents all of the tabulation tellers, i.e., it is a principal that
@@ -30,8 +30,8 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
     private final BBClientUtil{this} bb;
     final TTTabulationUtil[TT,SUP,TELLS]{this} tttUtil;
     private final PrintStream[{*->*}]{this} debugLog;
-    
-    
+
+
     TTTabulationPET(PrivateKey{TT<-TT} tellerPrivKey,
                     TTTabulation[TT,SUP,TELLS]{this} ttt,
                     TTStore[TT]{this} ttstore,
@@ -44,19 +44,19 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
         this.tttUtil = new TTTabulationUtil[TT,SUP,TELLS](tellerPrivKey, ttstore, bb);
         this.debugLog = debugLog;
     }
-    
-    boolean postVotePETCommitment{TT<-SUP}(PETCache{TT<-SUP} cache, final ElectionDetails{TT<-SUP} electionDetails, 
+
+    boolean postVotePETCommitment{TT<-SUP}(PETCache{TT<-SUP} cache, final ElectionDetails{TT<-SUP} electionDetails,
             ElectionCache{TT<-SUP} electionCache,
-            ElGamalPublicKey{TT<-SUP} tabTellerSharedKey, TellerDetails{TT<-SUP} tellerDetails, int{TT<-SUP} tellerIndex, 
-            int{TT<-SUP} block, int{TT<-SUP} ballotIndex) 
-    throws (IOException{}) 
+            ElGamalPublicKey{TT<-SUP} tabTellerSharedKey, TellerDetails{TT<-SUP} tellerDetails, int{TT<-SUP} tellerIndex,
+            int{TT<-SUP} block, int{TT<-SUP} ballotIndex)
+    throws (IOException{})
     where caller(TT), SUP equiv electionDetails.supervisor {
         if (electionDetails == null || bb == null || ttstore == null || tttUtil == null) return false;
         ElectionID electionID = electionDetails.electionID;
-        if (electionID == null) return false;        
-        
+        if (electionID == null) return false;
+
         PETShare{TT->TT;TT<-TT}[] shares = ttstore.retrieveVoteVotePETShares(SUP, electionID, block, ballotIndex);
-        
+
         if (endorse(shares == null, {TT<-SUP})) {
             // compute the shares
             if (debugLog != null) debugLog.println("  Computing vote pet shares for block " + block + " ballot index " + ballotIndex);
@@ -72,7 +72,7 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
         // post the commitments
         TabTellerPETShareCommitments ttpsc = new TabTellerPETShareCommitments(tellerIndex, commitments);
         try {
-            bb.post(TabTellerPETShareCommitments.META_PREFIX+TTTabulation[TT, SUP, TELLS].blockMeta(TTTabulation[TT, SUP, TELLS].META_VOTES_TO_VOTES, electionDetails, block, ballotIndex, tellerIndex), ttpsc, tellerPrivKey); 
+            bb.post(TabTellerPETShareCommitments.META_PREFIX+TTTabulation[TT, SUP, TELLS].blockMeta(TTTabulation[TT, SUP, TELLS].META_VOTES_TO_VOTES, electionDetails, block, ballotIndex, tellerIndex), ttpsc, tellerPrivKey);
             if (cache != null) {
                 cache.setCommitment(TTTabulation[TT, SUP, TELLS].META_VOTES_TO_VOTES, block, ballotIndex, tellerIndex, ttpsc);
             }
@@ -86,7 +86,7 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
     }
     PETShare{TT->TT;TT<-TT}[]{} computeVotePETShares{TT<-SUP}(final ElectionDetails{TT<-SUP} electionDetails,
             ElectionCache{TT<-SUP} electionCache,
-            ElGamalPublicKey{TT<-SUP} tabTellerSharedKey, int{TT<-SUP} block, int{TT<-SUP} ballotIndex) 
+            ElGamalPublicKey{TT<-SUP} tabTellerSharedKey, int{TT<-SUP} block, int{TT<-SUP} ballotIndex)
     throws (IOException{}) where caller(TT), SUP equiv electionDetails.supervisor {
         if (electionDetails == null || ttt == null || ttstore == null) return null;
         ElectionID electionID = electionDetails.electionID;
@@ -97,15 +97,15 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
         if (vvs == null) {
             throw new IOException("Cannot retrieve votes. Is the election stopped?");
         }
-        
+
         if (ballotIndex < 0 || ballotIndex >= vvs.length) {
             if (debugLog != null) debugLog.println("ERROR! ballotIndex is " + ballotIndex + " and vvs.length is " + vvs.length);
             return null;
         }
-        
+
         int commitmentCount = 0;
         int numberOfPETs = vvs.length - 1 - ballotIndex;
-        
+
         PETShare{TT->TT}[] shares = new PETShare[numberOfPETs<0 ? 0 : numberOfPETs];
         VerifiableVote vi = null;
         try {
@@ -119,14 +119,14 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
                 vj = vvs[j];
             }
             catch (ArrayIndexOutOfBoundsException imposs) { }
-            
+
             if (endorse(vj == null || vi == null, {TT<-SUP})) continue;
             PETShare share = null;
             try {
                 share = CryptoUtil.factory().constructPETShare(electionDetails.elGamalParameters, vi.encCapability, vj.encCapability);
             }
             catch (NullPointerException imposs) { }
-            
+
             if (share != null) {
                 int c = commitmentCount++;
                 try {
@@ -138,14 +138,14 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
         return storeVoteVotePETShares(electionID, shares, block, ballotIndex);
     }
 
-    PETShare{TT->TT;TT<-TT}[]{} storeVoteVotePETShares{TT<-SUP}(ElectionID{TT<-SUP} election_, PETShare{TT->TT}[]{TT<-SUP} shares_, int{TT<-SUP} block_, int{TT<-SUP} ballotIndex_) 
+    PETShare{TT->TT;TT<-TT}[]{} storeVoteVotePETShares{TT<-SUP}(ElectionID{TT<-SUP} election_, PETShare{TT->TT}[]{TT<-SUP} shares_, int{TT<-SUP} block_, int{TT<-SUP} ballotIndex_)
     where caller(TT),endorse ({TT<-TT}) {
         ElectionID election = endorse(election_, {TT<-TT});
         PETShare{TT->TT}[] shares = endorse(shares_, {TT<-TT});
         int block = endorse(block_, {TT<-TT});
         int ballotIndex = endorse(ballotIndex_, {TT<-TT});
         if (shares == null || ttstore == null) return null;
-        
+
         PETShare{TT->TT;TT<-TT}[] eshares = new PETShare[shares.length];
         for (int i = 0; i < eshares.length; i++) {
             PETShare s = null;
@@ -158,30 +158,30 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
             }
             catch (ArrayIndexOutOfBoundsException imposs) { }
         }
-        ttstore.storeVoteVotePETShares(election, block, ballotIndex, eshares);                
-        return eshares;        
+        ttstore.storeVoteVotePETShares(election, block, ballotIndex, eshares);
+        return eshares;
     }
-    
-    
+
+
     /**
-     * Post the commitment for the PETs between the electoral roll and the capabilities used in the votes 
+     * Post the commitment for the PETs between the electoral roll and the capabilities used in the votes
      */
-    boolean{} postRollVotePETCommitment{TT<-SUP}(PETCache{} cache, ElectionCache{TT<-SUP} electionCache, ElectionDetails{TT<-SUP} electionDetails, TellerDetails{TT<-SUP} tellerDetails, int{TT<-SUP} tellerIndex, int{TT<-SUP} block, int{TT<-SUP} ballotIndex) 
+    boolean{} postRollVotePETCommitment{TT<-SUP}(PETCache{} cache, ElectionCache{TT<-SUP} electionCache, ElectionDetails{TT<-SUP} electionDetails, TellerDetails{TT<-SUP} tellerDetails, int{TT<-SUP} tellerIndex, int{TT<-SUP} block, int{TT<-SUP} ballotIndex)
     throws (IOException{}) where caller(TT) {
         if (electionDetails == null || bb == null || ttstore == null || tttUtil == null) return false;
         ElectionID electionID = electionDetails.electionID;
         if (electionID == null) return false;
         int numTabTellers = TTTabulationUtil[TT,SUP,TELLS].numTabTellers(tellerDetails);
-        
+
         PETShare{TT->TT;TT<-TT}[] shares = ttstore.retrieveRollVotePETShares(SUP, electionID, block, ballotIndex);
-        
+
         if (endorse(shares == null, {TT<-SUP})) {
             // compute the shares
             if (debugLog != null) debugLog.println("  Computing roll-vote pet shares for block " + block + " ballotIndex " + ballotIndex);
             shares = computeRollVotePETShares(electionCache, electionDetails, tellerDetails, block, ballotIndex);
         }
         if (shares == null) return false;
-        
+
         // compute the commitments
         PETCommitment{}[] commitments = new PETCommitment[shares.length];
         if (debugLog != null) debugLog.println("  Computing roll-vote pet commitment for block " + block+ " ballotIndex " + ballotIndex);
@@ -206,9 +206,9 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
      * Compute (and store) the roll-vote PET shares.
      */
     PETShare{TT->TT;TT<-TT}[]{} computeRollVotePETShares{TT<-SUP}(ElectionCache{TT<-SUP} electionCache,
-                     ElectionDetails{TT<-SUP} electionDetails, 
-                     TellerDetails{TT<-SUP} tellerDetails, 
-                     int{TT<-SUP} block, int{TT<-SUP} ballotIndex) 
+                     ElectionDetails{TT<-SUP} electionDetails,
+                     TellerDetails{TT<-SUP} tellerDetails,
+                     int{TT<-SUP} block, int{TT<-SUP} ballotIndex)
     throws (IOException{}) where caller(TT) {
         if (electionDetails == null || ttstore == null || tttUtil == null) return null;
         ElectionID electionID = electionDetails.electionID;
@@ -237,12 +237,12 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
             }
         }
         if (retriesLeft < 0 || electoralRoll == null || votes == null) return null;
-        
+
         if (ballotIndex < 0 || ballotIndex >= votes.size()) return null;
-        
+
         int commitmentCount = 0;
         int numberOfPETs = electoralRoll.size();
-        
+
         PETShare{TT->TT}[] shares = new PETShare[numberOfPETs<0 ? 0 : numberOfPETs];
         Vote vi = null;
         try {
@@ -254,7 +254,7 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
         for (int j = 0; j < electoralRoll.size(); j++) {
             ElGamalCiphertext cj = null;
             try {
-                cj = (ElGamalCiphertext)electoralRoll.get(j);    
+                cj = (ElGamalCiphertext)electoralRoll.get(j);
             }
             catch (IndexOutOfBoundsException imposs) { }
             catch (ClassCastException imposs) { }
@@ -271,20 +271,20 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
                 try {
                     shares[c] = share;
                 }
-                catch (ArrayIndexOutOfBoundsException imposs) { }                            
+                catch (ArrayIndexOutOfBoundsException imposs) { }
             }
-        }            
+        }
         return storeRollVotePETShares(electionID, block, ballotIndex, shares);
     }
 
-    PETShare{TT->TT;TT<-TT}[]{} storeRollVotePETShares{}(ElectionID{} election_, int{} block_, int{} ballotIndex_, PETShare{TT->TT}[]{} shares_) 
+    PETShare{TT->TT;TT<-TT}[]{} storeRollVotePETShares{}(ElectionID{} election_, int{} block_, int{} ballotIndex_, PETShare{TT->TT}[]{} shares_)
     where caller(TT),endorse ({TT<-TT}) {
         ElectionID election = endorse(election_, {TT<-TT});
         PETShare{TT->TT}[] shares = endorse(shares_, {TT<-TT});
         int block = endorse(block_, {TT<-TT});
         int ballotIndex = endorse(ballotIndex_, {TT<-TT});
         if (shares == null || ttstore == null) return null;
-        
+
         PETShare{TT->TT;TT<-TT}[] eshares = new PETShare[shares.length];
         for (int i = 0; i < eshares.length; i++) {
             PETShare s = null;
@@ -297,12 +297,12 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
             }
             catch (ArrayIndexOutOfBoundsException imposs) { }
         }
-        ttstore.storeRollVotePETShares(election, block, ballotIndex, eshares);                
-        return eshares;        
+        ttstore.storeRollVotePETShares(election, block, ballotIndex, eshares);
+        return eshares;
     }
 
     void computeCommitments{}(ElGamalParameters{} params_,
-            PETCommitment{}[]{} commitments_, PETShare{TT->TT;TT<-TT}[]{} shares_) 
+            PETCommitment{}[]{} commitments_, PETShare{TT->TT;TT<-TT}[]{} shares_)
             where caller(TT), endorse({TT<-TT}) {
         PETCommitment{}[] commitments = endorse(commitments_, {TT<-TT});
         ElGamalParameters params = endorse(params_, {TT<-TT});
@@ -313,7 +313,7 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
             try {
                 PETShare share = shares[i];
                 PETCommitment commitment = null;
-                if (share != null) { 
+                if (share != null) {
                     commitment = share.commitment(params);
                 }
                 commitments[i] = declassify(commitment, {TT->TT;TT<-TT} to  {}); // declassification is because we are computing a commitment, i.e., WHAT information
@@ -322,12 +322,12 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
         }
     }
 
-    
-    boolean postPETDecommitment{TT<-SUP}(PETCache{TT<-SUP} cache, 
-            ElectionDetails{TT<-SUP} electionDetails, 
-            TellerDetails{TT<-SUP} tellerDetails, 
-            String{TT<-SUP} meta, 
-            int{TT<-SUP} block, 
+
+    boolean postPETDecommitment{TT<-SUP}(PETCache{TT<-SUP} cache,
+            ElectionDetails{TT<-SUP} electionDetails,
+            TellerDetails{TT<-SUP} tellerDetails,
+            String{TT<-SUP} meta,
+            int{TT<-SUP} block,
             int{TT<-SUP} ballotIndex,
             int{TT<-SUP} tellerIndex,
             PETShare{TT->TT;TT<-TT}[]{TT<-SUP} shares)
@@ -341,7 +341,7 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
 
         // wait for all the PET commits from the other servers
         boolean allCommitments = false;
-        try {            
+        try {
             int retriesLeft = tttUtil.maxRetries(numTabTellers);
             while (!allCommitments && retriesLeft-- > 0) {
                 allCommitments = hasAllTTPETShareCommitments(cache, meta, electionDetails, block, ballotIndex, tellerDetails);
@@ -374,13 +374,13 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
             tttUtil.broadcast(electionID, tellerDetails, tellerIndex);
             return true;
         }
-        catch (IllegalArgumentException e) { 
+        catch (IllegalArgumentException e) {
             throw new IOException(e.getMessage());
         }
     }
-    void declassifyPETShare{}(ElGamalParameters{} params_, 
-            PETShare{TT->TT;TT<-TT}[]{} shares_, int{} i_, 
-            PETDecommitment{}[]{} decommitments_, ElGamalProofDiscLogEquality{}[]{} proofs_) 
+    void declassifyPETShare{}(ElGamalParameters{} params_,
+            PETShare{TT->TT;TT<-TT}[]{} shares_, int{} i_,
+            PETDecommitment{}[]{} decommitments_, ElGamalProofDiscLogEquality{}[]{} proofs_)
             where caller(TT), endorse({TT<-TT}) {
         PETShare{TT->TT;TT<-TT}[] shares = endorse(shares_, {TT<-TT});
         int i = endorse(i_, {TT<-TT});
@@ -393,7 +393,7 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
                 share = shares[i];
             }
             catch (ArrayIndexOutOfBoundsException imposs) { }
-            
+
             PETDecommitment decom_ = null;
             if (share != null) decom_ = share.decommitment(params);
             PETDecommitment decom = declassify(endorse(decom_, {TT<-TT;TT->TT}), {TT<-TT}); // declassification is ok because we are releasing the decommitment. WHEN and WHAT
@@ -401,21 +401,21 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
             try {
                 decommitments[i] = decom;
             }
-            catch (ArrayIndexOutOfBoundsException imposs) { }            
-            
+            catch (ArrayIndexOutOfBoundsException imposs) { }
+
             try {
                 if (decom != null) proofs[i] = decom.proof();
             }
             catch (ArrayIndexOutOfBoundsException imposs) { }
-            
+
         }
     }
 
-    boolean postPETDecryptShare{TT<-SUP}(PETCache{TT<-SUP} cache, 
-            ElectionDetails{TT<-SUP} electionDetails, 
-            TellerDetails{TT<-SUP} tellerDetails, 
-            String{TT<-SUP} meta, 
-            int{TT<-SUP} block, 
+    boolean postPETDecryptShare{TT<-SUP}(PETCache{TT<-SUP} cache,
+            ElectionDetails{TT<-SUP} electionDetails,
+            TellerDetails{TT<-SUP} tellerDetails,
+            String{TT<-SUP} meta,
+            int{TT<-SUP} block,
             int{TT<-SUP} ballotIndex,
             int{TT<-SUP} tellerIndex,
             PETShare{TT->TT;TT<-TT}[]{TT<-SUP} shares)
@@ -423,7 +423,7 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
         if (electionDetails == null || bb == null || ttstore == null || ttt == null || tttUtil == null) return false;
         ElectionID electionID = electionDetails.electionID;
         if (electionID == null) return false;
-        
+
         int numTabTellers = TTTabulationUtil[TT,SUP,TELLS].numTabTellers(tellerDetails);
 
         ElGamalCiphertext{TT<-SUP;TT<-TELLS}[] cprime = cache==null?null:cache.getCiphertexts(meta, block, ballotIndex, TT, SUP, TELLS);
@@ -432,7 +432,7 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
             boolean{TT<-SUP} allDecommitments = false;
             int{TT<-SUP} retriesLeft = tttUtil.maxRetries(numTabTellers);
             while (!allDecommitments && retriesLeft-- > 0) {
-                allDecommitments = hasAllTTPETShareDecommitments(cache, meta, electionDetails, block, ballotIndex, tellerDetails, shares); 
+                allDecommitments = hasAllTTPETShareDecommitments(cache, meta, electionDetails, block, ballotIndex, tellerDetails, shares);
                 if (retriesLeft > 0 && !allDecommitments) {
                     // sleep for a bit
                     if (debugLog != null) debugLog.println("Sleeping for " + meta + " PET decommitment for block " + block + " ballot " + ballotIndex + ". Retries left = " + retriesLeft);
@@ -443,19 +443,19 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
 
             try {
                 if (debugLog != null) debugLog.println("Decommitments to ciphertext for " + meta + " for block " + block + " ballot " + ballotIndex);
-                cprime = decommitmentsToCiphertexts(cache, 
-                                                    electionDetails, 
-                                                    tellerDetails, 
-                                                    meta, 
+                cprime = decommitmentsToCiphertexts(cache,
+                                                    electionDetails,
+                                                    tellerDetails,
+                                                    meta,
                                                     block,
                                                     ballotIndex,
                                                     shares,
                                                     electionDetails.elGamalParameters);
             }
             catch (CryptoException e) {
-                // a crypto operation went awry, i.e., a decommit disagreed 
+                // a crypto operation went awry, i.e., a decommit disagreed
                 tttUtil.abandonElection(electionID,
-                                "Unable to produce decryption shares: " + meta +": " + e.getMessage(), 
+                                "Unable to produce decryption shares: " + meta +": " + e.getMessage(),
                                 tellerIndex);
                 return false;
             }
@@ -485,30 +485,30 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
             throw new IOException("Unable to produce decryption shares: " + meta);
         }
     }
-        
-    private void verifyPETDecommitments{}(PETCache{} cache, 
-            ElectionDetails{} electionDetails_, 
-            TellerDetails{} tellerDetails_, 
-            String{} meta_, 
-            int{} block_, 
+
+    private void verifyPETDecommitments{}(PETCache{} cache,
+            ElectionDetails{} electionDetails_,
+            TellerDetails{} tellerDetails_,
+            String{} meta_,
+            int{} block_,
             int{} ballotIndex_,
-            TabTellerPETShareDecommitments{} decs_, 
+            TabTellerPETShareDecommitments{} decs_,
             PETShare{TT->TT;TT<-TT}[]{} shares_,
-            int{} tellerIndex_) 
+            int{} tellerIndex_)
     throws (IOException{}) where caller(TT), endorse ({TT<-TT}) {
-        ElectionDetails electionDetails = endorse(electionDetails_, {TT<-TT}); 
+        ElectionDetails electionDetails = endorse(electionDetails_, {TT<-TT});
         TellerDetails tellerDetails = endorse(tellerDetails_, {TT<-TT});
         String meta = endorse(meta_, {TT<-TT});
         int block = endorse(block_, {TT<-TT});
         int ballotIndex = endorse(ballotIndex_, {TT<-TT});
-        TabTellerPETShareDecommitments decs = endorse(decs_, {TT<-TT}); 
+        TabTellerPETShareDecommitments decs = endorse(decs_, {TT<-TT});
         PETShare{TT->TT;TT<-TT}[] shares = endorse(shares_, {TT<-TT});
         int tellerIndex = endorse(tellerIndex_, {TT<-TT});
-        
+
         if (decs == null || electionDetails == null || tttUtil == null) return;
         String abandonElectionReason = null;
         ElectionID electionID = electionDetails.electionID;
-        
+
         TabTellerPETShareCommitments coms_ = null;
         IOException ioex = null;
         try {
@@ -518,15 +518,15 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
             ioex = e;
         }
         TabTellerPETShareCommitments coms = endorse(coms_, {TT<-TT});
-               
+
         if (coms == null) {
            throw new IOException(meta + " PET commitments not retrievable");
         }
 
         int numberOfPETs = (shares == null ? 0 : shares.length);
-        
+
         try {
-            if (decs.decommitments != null && decs.proofs != null && coms.commitments != null) {                    
+            if (decs.decommitments != null && decs.proofs != null && coms.commitments != null) {
                 if (decs.decommitments.length != numberOfPETs || decs.proofs.length != numberOfPETs) {
                     // bad lengths
                     abandonElectionReason = "The number of decommitments and/or proofs of teller " + tellerIndex + " are incorrect.";
@@ -541,26 +541,26 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
                         PETDecommitment decom = decs.decommitments[j];
                         ElGamalProofDiscLogEquality prf = decs.proofs[j];
                         PETCommitment com = coms.commitments[j];
-                        
-                        if (decom == null || share == null || !decom.verify(com, electionDetails.elGamalParameters, share.ciphertext1(), share.ciphertext2())) { 
+
+                        if (decom == null || share == null || !decom.verify(com, electionDetails.elGamalParameters, share.ciphertext1(), share.ciphertext2())) {
                             // Decommitment doesn't match commitment
                             abandonElectionReason = meta + " decommitment " + j + " of teller " + tellerIndex + " does not agree with the commitment.";
                             break;
-                        }                            
+                        }
                     }
                 }
             }
             else {
-                abandonElectionReason = "Null commitments or decommitments from teller " + tellerIndex;                
+                abandonElectionReason = "Null commitments or decommitments from teller " + tellerIndex;
             }
         }
         catch (ArrayIndexOutOfBoundsException imposs) {
-            abandonElectionReason = "An impossible array index out of bounds...";                
+            abandonElectionReason = "An impossible array index out of bounds...";
         }
 
         String reason = null;
         reason = declassify(endorse(abandonElectionReason, {TT<-TT;TT->TT}), {TT<-TT});
-        if (reason != null) {            
+        if (reason != null) {
             // Record that the election has been abandoned
             try {
                 tttUtil.abandonElection(electionID, reason, tellerIndex);
@@ -568,20 +568,20 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
             catch (IOException e) {
                 ioex = e;
             }
-        }        
+        }
         IOException eioex = endorse(ioex, {TT<-TT});
         if (eioex != null) throw eioex;
     }
-    
+
     /**
      * Convert an array of decommitments into an array of ciphertexts.
      */
-    ElGamalCiphertext{TT<-SUP;TT<-TELLS}[]{TT<-SUP} 
+    ElGamalCiphertext{TT<-SUP;TT<-TELLS}[]{TT<-SUP}
     decommitmentsToCiphertexts{TT<-SUP}(PETCache{TT<-SUP} cache,
             ElectionDetails{TT<-SUP} electionDetails,
             TellerDetails{TT<-SUP} tellerDetails,
-            String{TT<-SUP} meta, 
-            int{TT<-SUP} block, 
+            String{TT<-SUP} meta,
+            int{TT<-SUP} block,
             int{TT<-SUP} ballotIndex,
             PETShare{TT<-TT;TT->TT}[]{TT<-SUP} shares,
             ElGamalParameters{TT<-SUP} elGamalParameters):{TT<-SUP}
@@ -592,11 +592,11 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
             if (c != null) return c;
         }
         if (debugLog != null) debugLog.println("  retrieve all tt pet share decommitments for block " + block + " ballot " + ballotIndex);
-        TabTellerPETShareDecommitments{TT<-SUP;TT<-TELLS}[] allDecs = 
+        TabTellerPETShareDecommitments{TT<-SUP;TT<-TELLS}[] allDecs =
             retrieveAllTTPETShareDecommitments(cache, meta, electionDetails, block, ballotIndex, tellerDetails, shares);
 
         if (allDecs == null) return null;
-        // We need to have at least one element in the array, 
+        // We need to have at least one element in the array,
         // i.e., there must be at least one tabulation teller.
         if (allDecs.length < 1) return null;
 
@@ -610,7 +610,7 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
         catch (ArrayIndexOutOfBoundsException{} imposs) { }
         int length = endorse(length_, {TT<-SUP});
 
-        
+
         if (debugLog != null) debugLog.println("  starting to combine all tt pet share decommitments for block " + block);
         ElGamalCiphertext{TT<-SUP;TT<-TELLS}[] ret = new ElGamalCiphertext[length];
         PETDecommitment{TT<-SUP;TT<-TELLS}[] decs = new PETDecommitment[allDecs.length];
@@ -618,7 +618,7 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
             for (int j = 0; j < allDecs.length; j++) {
                 PETDecommitment petd = null;
                 try {
-                    decs[j] = null; 
+                    decs[j] = null;
                     TabTellerPETShareDecommitments ttdecs = allDecs[j];
                     petd = ttdecs.decommitments[i];
                 }
@@ -631,10 +631,10 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
             }
             CryptoException cex = null;
             try {
-                ret[i] = null; 
+                ret[i] = null;
                 ret[i] = CryptoUtil.factory().combinePETShareDecommitments(new label {TT<-SUP;TT<-TELLS}, decs, elGamalParameters);
             }
-            catch (ArrayIndexOutOfBoundsException imposs) { }            
+            catch (ArrayIndexOutOfBoundsException imposs) { }
             catch (NullPointerException imposs) { }
             catch (CryptoException ex) {
                 // the verification of the decommits failed.
@@ -645,28 +645,28 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
         }
         if (cache != null) {
             cache.setCiphertexts(meta, block, ballotIndex, TT, SUP, TELLS, ret);
-        }        
+        }
         return endorse(ret, {TT<-SUP});
     }
-    
+
     /**
      * returns all of the posted TTPETShareCommitments, or null if not all of them have been posted yet.
      */
-    boolean{TT<-SUP} hasAllTTPETShareCommitments{TT<-SUP}(PETCache{TT<-SUP} cache, 
-            String{TT<-SUP} meta, 
-            ElectionDetails{TT<-SUP} electionDetails, 
-            int{TT<-SUP} block, 
+    boolean{TT<-SUP} hasAllTTPETShareCommitments{TT<-SUP}(PETCache{TT<-SUP} cache,
+            String{TT<-SUP} meta,
+            ElectionDetails{TT<-SUP} electionDetails,
+            int{TT<-SUP} block,
             int{TT<-SUP} ballotIndex,
-            TellerDetails{TT<-SUP} tellerDetails) 
+            TellerDetails{TT<-SUP} tellerDetails)
     throws (IOException{TT<-SUP}) where caller(TT) {
         // go to the bulletin board, and try to retreive all tab teller PET share decommitments
         if (electionDetails == null || bb == null) return false;
-        ElectionID electionID = electionDetails.electionID; 
+        ElectionID electionID = electionDetails.electionID;
         if (electionID == null || cache == null) return false;
         int numTabTellers = TTTabulationUtil[TT,SUP,TELLS].numTabTellers(tellerDetails);
 
         IOException ioex = null;
-        for (int i = 0; i < numTabTellers; i++) {                    
+        for (int i = 0; i < numTabTellers; i++) {
             boolean has_ = false;
             try {
                 has_ = hasTTPETShareCommitments(cache, meta, electionDetails, block, ballotIndex, tellerDetails, i+1);
@@ -678,12 +678,12 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
             IOException eioex = endorse(ioex, {TT<-SUP});
             if (eioex != null) throw eioex;
             boolean has = endorse(has_, {TT<-SUP});
-            if (!has) return false;                        
+            if (!has) return false;
         }
         return true;
     }
 
-    boolean{} hasTTPETShareCommitments{}(PETCache{TT<-SUP} cache, 
+    boolean{} hasTTPETShareCommitments{}(PETCache{TT<-SUP} cache,
             String{TT<-SUP} meta,
             ElectionDetails{TT<-SUP} electionDetails,
             int{TT<-SUP} block,
@@ -691,7 +691,7 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
             TellerDetails{TT<-SUP} tellerDetails, int{TT<-SUP} tellerIndex)
     throws (IOException{}) {
         if (electionDetails == null || bb == null) return false;
-        ElectionID electionID = electionDetails.electionID;            
+        ElectionID electionID = electionDetails.electionID;
         if (electionID == null) return false;
 
         if (cache != null && cache.hasCommitment(meta, block, ballotIndex, tellerIndex)) {
@@ -702,7 +702,7 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
     /**
      * returns the posted TTPETShareCommitments for tab teller tellerIndex, or null if they have not been posted yet.
      */
-    TabTellerPETShareCommitments{} retrieveTTPETShareCommitments{}(PETCache{} cache, 
+    TabTellerPETShareCommitments{} retrieveTTPETShareCommitments{}(PETCache{} cache,
             String{} meta,
             ElectionDetails{} electionDetails,
             int{} block,
@@ -712,7 +712,7 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
         // go to the bulletin board, and try to retreive the PET share commitments for tab teller tellerIndex
         try {
             if (electionDetails == null || bb == null) return null;
-            ElectionID electionID = electionDetails.electionID;            
+            ElectionID electionID = electionDetails.electionID;
             if (electionID == null) return null;
 
             if (cache != null && cache.hasCommitment(meta, block, ballotIndex, tellerIndex)) {
@@ -721,8 +721,8 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
             String metaSuffix = TTTabulation[TT, SUP, TELLS].blockMeta(meta, electionDetails, block, ballotIndex, tellerIndex);
             List[{}] results = bb.retrieveParams(XMLDeserializers.TabTellerPETShareCommitments(), TabTellerPETShareCommitments.META_PREFIX+metaSuffix, null, null);
             if (results == null) return null;
-            
-            // parse and verify the posts. 
+
+            // parse and verify the posts.
             for (int i = 0; i < results.size(); i++) {
                 BBPost post = null;
                 try {
@@ -742,26 +742,26 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
                         return c;
                     }
                 }
-                catch (ClassCastException ignore) { } 
+                catch (ClassCastException ignore) { }
             }
-            return null;  
+            return null;
         }
-        catch (IllegalArgumentException e) { 
+        catch (IllegalArgumentException e) {
             throw new IOException(e.getMessage());
-        }        
+        }
     }
-    
+
     boolean{TT<-SUP} hasAllTTPETShareDecommitments{TT<-SUP}(
-            PETCache{TT<-SUP} cache, String{TT<-SUP} meta, 
-            ElectionDetails{TT<-SUP} electionDetails, 
-            int{TT<-SUP} block, 
-            int{TT<-SUP} ballotIndex, 
+            PETCache{TT<-SUP} cache, String{TT<-SUP} meta,
+            ElectionDetails{TT<-SUP} electionDetails,
+            int{TT<-SUP} block,
+            int{TT<-SUP} ballotIndex,
             TellerDetails{TT<-SUP} tellerDetails,
-            PETShare{TT->TT;TT<-TT}[]{TT<-SUP} shares) 
+            PETShare{TT->TT;TT<-TT}[]{TT<-SUP} shares)
     throws (IOException{TT<-SUP}) where caller(TT)  {
         // go to the bulletin board, and try to retreive all tab teller PET share decommitments
         if (electionDetails == null || bb == null || cache == null) return false;
-        ElectionID electionID = electionDetails.electionID; 
+        ElectionID electionID = electionDetails.electionID;
         if (electionID == null) return false;
         int numTabTellers = TTTabulationUtil[TT,SUP,TELLS].numTabTellers(tellerDetails);
 
@@ -778,36 +778,36 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
             IOException eioex = endorse(ioex, {TT<-SUP});
             if (eioex != null) throw eioex;
             boolean has = endorse(has_, {TT<-SUP});
-            if (!has) return false;                        
+            if (!has) return false;
         }
         return true;
     }
 
     TabTellerPETShareDecommitments{TT<-SUP;TT<-TELLS}[]{TT<-SUP} retrieveAllTTPETShareDecommitments{TT<-SUP}(
-            PETCache{TT<-SUP} cache, 
-            String{TT<-SUP} meta, 
-            ElectionDetails{TT<-SUP} electionDetails, 
-            int{TT<-SUP} block, 
-            int{TT<-SUP} ballotIndex, 
+            PETCache{TT<-SUP} cache,
+            String{TT<-SUP} meta,
+            ElectionDetails{TT<-SUP} electionDetails,
+            int{TT<-SUP} block,
+            int{TT<-SUP} ballotIndex,
             TellerDetails{TT<-SUP} tellerDetails,
-            PETShare{TT->TT;TT<-TT}[]{TT<-SUP} shares) 
+            PETShare{TT->TT;TT<-TT}[]{TT<-SUP} shares)
     throws (IOException{TT<-SUP}) where caller(TT)  {
         // go to the bulletin board, and try to retreive all tab teller PET share decommitments
         if (electionDetails == null || bb == null || cache == null) return null;
-        ElectionID electionID = electionDetails.electionID; 
+        ElectionID electionID = electionDetails.electionID;
         if (electionID == null) return null;
         int numTabTellers = TTTabulationUtil[TT,SUP,TELLS].numTabTellers(tellerDetails);
 
-        if (!hasAllTTPETShareDecommitments(cache, 
-                                           meta, 
-                                           electionDetails, 
-                                           block, 
-                                           ballotIndex, 
+        if (!hasAllTTPETShareDecommitments(cache,
+                                           meta,
+                                           electionDetails,
+                                           block,
+                                           ballotIndex,
                                            tellerDetails, shares)) {
             return null;
         }
         IOException ioex = null;
-                
+
         TabTellerPETShareDecommitments{TT<-SUP;TT<-TELLS}[] ret = new TabTellerPETShareDecommitments[numTabTellers<0?0:numTabTellers];
         for (int i = 0; i < numTabTellers; i++) {
             TabTellerPETShareDecommitments d_ = null;
@@ -824,7 +824,7 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
             TabTellerPETShareDecommitments d = endorse(d_, {TT<-SUP});
 
             if (d == null) return null;
-            try {                
+            try {
                 ret[i] = d;
             }
             catch (ArrayIndexOutOfBoundsException imposs) { }
@@ -835,11 +835,11 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
 
     boolean{} hasTTPETShareDecommitments{}(
             PETCache{} cache,
-            String{} meta,            
+            String{} meta,
             ElectionDetails{TT<-SUP} electionDetails,
             int{TT<-SUP} block,
             int{TT<-SUP} ballotIndex,
-            TellerDetails{TT<-SUP} tellerDetails, 
+            TellerDetails{TT<-SUP} tellerDetails,
             int{TT<-SUP} tellerIndex,
             PETShare{TT->TT;TT<-TT}[]{TT<-SUP} shares) throws (IOException{}) where caller(TT) {
         if (electionDetails == null || bb == null) return false;
@@ -855,11 +855,11 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
      */
     TabTellerPETShareDecommitments{} retrieveTTPETShareDecommitments{}(
             PETCache{} cache,
-            String{} meta,            
+            String{} meta,
             ElectionDetails{} electionDetails,
             int{} block,
             int{} ballotIndex,
-            TellerDetails{} tellerDetails, 
+            TellerDetails{} tellerDetails,
             int{} tellerIndex,
             PETShare{TT->TT;TT<-TT}[]{} shares) throws (IOException{}) where caller(TT) {
         // go to the bulletin board, and try to retreive PET share decommitments for tab teller tellerIndex
@@ -873,8 +873,8 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
             String metaSuffix = TTTabulation[TT, SUP, TELLS].blockMeta(meta, electionDetails, block, ballotIndex, tellerIndex);
             List[{}] results = bb.retrieveParams(XMLDeserializers.TabTellerPETShareDecommitments(), TabTellerPETShareDecommitments.META_PREFIX+metaSuffix, null, null);
             if (results == null) return null;
-            
-            // parse and verify the posts.             
+
+            // parse and verify the posts.
             for (int i = 0; i < results.size(); i++) {
                 BBPost post = null;
                 try {
@@ -888,25 +888,25 @@ public class TTTabulationPET[principal TT, principal SUP, principal TELLS] {
                     TabTellerPETShareDecommitments c = (TabTellerPETShareDecommitments)post.msg;
                     // check the signature of c
                     if (c != null && c.tellerIndex == tellerIndex && post.verify(ElectionUtil.tabTellerPublicKey(tellerDetails, tellerIndex))) {
-                        
+
                         // verify the single decommitment
                         if (debugLog != null) debugLog.println("Verifying PET decommitments for " + meta + " for block " + block + " ballot " + ballotIndex + " teller " + tellerIndex);
                         verifyPETDecommitments(cache, electionDetails, tellerDetails, meta, block, ballotIndex, c, shares, tellerIndex);
-                        
+
                         if (cache != null) {
                             cache.setDecommitment(meta, block, ballotIndex, tellerIndex, c);
                         }
                         return c;
                     }
                 }
-                catch (ClassCastException ignore) {  }                 
+                catch (ClassCastException ignore) {  }
             }
-            return null;  
+            return null;
         }
-        catch (IllegalArgumentException e) { 
+        catch (IllegalArgumentException e) {
             throw new IOException(e.getMessage());
-        }        
+        }
     }
 
-   
+
 }

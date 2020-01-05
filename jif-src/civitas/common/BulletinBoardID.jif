@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import java.io.*;
@@ -22,7 +22,7 @@ public class BulletinBoardID implements XMLSerializable {
         this.port = port;
         this.id = id;
     }
-    
+
     public String{this} toString() {
         return this.host+":"+this.port+":"+this.id;
     }
@@ -31,7 +31,7 @@ public class BulletinBoardID implements XMLSerializable {
                (this.host == that.host || (this.host != null && this.host.equals(that.host))) &&
                (this.id == that.id || (this.id != null && this.id.equals(that.id)));
     }
-    
+
     private static final String{*<-*} TAG = "bulletinBoardID";
     protected String{this} tag() {
         return TAG;
@@ -54,9 +54,9 @@ public class BulletinBoardID implements XMLSerializable {
 //        s += "<id>";
 //        s += this.id;
 //        s += "</id>";
-//        
+//
 //        s += "</" + t + ">";
-//                
+//
 //        return s;
 //    }
     public void toXML{}(PrintWriter[{}]{} sb) {
@@ -81,10 +81,10 @@ public class BulletinBoardID implements XMLSerializable {
         sb.print("<id>");
         Util.escapeString(this.id, lbl, sb);
         sb.print("</id>");
-        
+
         sb.print("</" + t + ">");
     }
-    
+
     public static BulletinBoardID{*lbl} bbIDFromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r) throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
         Util.swallowTag(lbl, r, TAG);
         String host = Util.unescapeString(Util.readSimpleTag(lbl, r, "host"));
@@ -92,5 +92,5 @@ public class BulletinBoardID implements XMLSerializable {
         String id = Util.unescapeString(Util.readSimpleTag(lbl, r, "id"));
         Util.swallowEndTag(lbl, r, TAG);
         return new BulletinBoardID(host, port, id);
-    }    
+    }
 }

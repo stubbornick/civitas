@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import civitas.crypto.*;
@@ -25,11 +25,11 @@ public class MixRevelation implements XMLSerializable {
     }
 
     public final int{this} tellerIndex;
-    
+
     // an array of the indicators. True means the revelation is of the right mix, false means left.
     public final boolean{}[]{this} indicators;
-    
-    
+
+
     // the revelation of the mapping to either the left or the right.
     public final MixElementRevelation{}[]{this} revelations;
 
@@ -38,7 +38,7 @@ public class MixRevelation implements XMLSerializable {
         this.indicators = indicators;
         this.revelations = revelations;
     }
-    
+
     public boolean{} verify{}(ElGamalPublicKey{} key, Mix{} initialMix, Mix{} leftMix, Mix{} rightMix, boolean{}[]{} revelationDirections) {
         // go through each revelation, and check that it matches
         if (revelationDirections == null || revelations == null || indicators == null) return false;
@@ -51,16 +51,16 @@ public class MixRevelation implements XMLSerializable {
                 if (revelationDirections[i] != indicators[i]) {
                     return false;
                 }
-                
+
                 MixElementRevelation mer = revelations[i];
                 if (mer == null) return false;
                 int fromIndex = -1;
                 int toIndex = -1;
                 Mix fromMix = null;
                 Mix toMix = null;
-                
+
                 if (revelationDirections[i]) {
-                    // taken from the right                    
+                    // taken from the right
                     fromMix = leftMix;
                     toMix = rightMix;
                     fromIndex = i;
@@ -77,7 +77,7 @@ public class MixRevelation implements XMLSerializable {
                 if (!Util.equals(new label {}, toMix.commitments[toIndex].clone(), CryptoUtil.factory().messageDigest(new label {}, mer.nonce, mer.mapping, true), true)) {
                     return false;
                 }
-                
+
                 // check that the posted mix agrees with the revelation
                 if (!mer.verify(key, fromIndex, toIndex, fromMix, toMix)) {
                     return false;
@@ -89,7 +89,7 @@ public class MixRevelation implements XMLSerializable {
 
         return true;
     }
-    
+
     public void toXML{}(PrintWriter[{}]{} sb) {
         toXML(new label {}, sb);
     }
@@ -120,12 +120,12 @@ public class MixRevelation implements XMLSerializable {
             }
         }
         else {
-            sb.print("<size>0</size>");            
+            sb.print("<size>0</size>");
         }
-        
+
         sb.print("</mixRevelation>");
     }
-    
+
     public static MixRevelation{} fromXML{}(Reader[{}]{} r) throws (IllegalArgumentException{}, IOException{}) {
         final label lbl = new label {};
         Util.swallowTag(lbl, r, "mixRevelation");
@@ -135,7 +135,7 @@ public class MixRevelation implements XMLSerializable {
         boolean{}[] inds = new boolean[size<0?0:size];
         MixElementRevelation{}[] revs = new MixElementRevelation[size<0?0:size];
 
-        
+
         for (int i = 0; i < size; i++) {
             Util.swallowTag(lbl, r, "rev");
             String ind = Util.readSimpleTag(lbl, r, "dir");
@@ -148,8 +148,8 @@ public class MixRevelation implements XMLSerializable {
             catch (ArrayIndexOutOfBoundsException imposs) { }
             Util.swallowEndTag(lbl, r, "rev");
         }
-                
+
         Util.swallowEndTag(lbl, r, "mixRevelation");
         return new MixRevelation(index, inds, revs);
-    }    
+    }
 }

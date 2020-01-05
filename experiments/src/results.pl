@@ -33,7 +33,7 @@ my $AXIS = "axis";
 my $SCALE = "scale";
 
 # Measurements
-my %tabWallClock = ($FILE   => "adminBB", 
+my %tabWallClock = ($FILE   => "adminBB",
 		    $LABEL  => "elapsedStopToResults",
 		    $NAME   => "tabWallClock",
 		    $AXIS   => "Wall clock (hr.)",
@@ -45,12 +45,12 @@ my %tabTellUser =  ($FILE   => "time-tab-auth",
 	        $SCALE  => "./60 ./60" );
 my %tabTellCPU =   ($FILE   => "time-tab-auth",
 		    $LABEL  => "Percent of CPU",
-		    $NAME   => "tabTellCPU", 
+		    $NAME   => "tabTellCPU",
 	            $AXIS   => "%CPU",
 	            $SCALE  => "" );
-			
+
 my @measurements = (\%tabWallClock, \%tabTellUser, \%tabTellCPU);
-			
+
 # Experiments
 my %simpleGroup = ($BASENAME => "simple",
   		   $PARAM_VALS => [1, 2, 3],
@@ -60,7 +60,7 @@ my %voterGroup = ($BASENAME => "voter",
 	          $AXIS => "V" );
 my %authGroup  = ($BASENAME => "auth",
 		  $PARAM_VALS => [1, 2, 3, 4, 5, 6, 7, 8],
-	          $AXIS => "A" ); 
+	          $AXIS => "A" );
 my %chaffGroup = ($BASENAME => "chaff",
 		  $PARAM_VALS => [0, 1, 2, 5, 8, 10, 20, 30, 40, 50],
 	          $AXIS => "% Chaff" );
@@ -75,18 +75,18 @@ my %anon160Group  = ($BASENAME => "anon160key",
 my @experimentGroups = (\%voterGroup, \%authGroup, \%chaffGroup, \%anonGroup);
 #my @experimentGroups = (\%voterGroup, \%authGroup, \%anonGroup, \%anon160Group);
 
-my $resultsDir = $ARGV[0];  
+my $resultsDir = $ARGV[0];
 my $resultsFile = $ARGV[1];
 
-open(RESULTS, "> $resultsFile") or 
+open(RESULTS, "> $resultsFile") or
  	die "Cannot open output file $resultsFile: $!";
 
 print RESULTS "% Generated from $resultsDir\n";
-print RESULTS "% " . localtime() . "\n\n"; 
+print RESULTS "% " . localtime() . "\n\n";
 
 my $script = <<"EOF";
-if (str2num(version('-release')) < 14) 
-  error('Requires Matlab R14'); 
+if (str2num(version('-release')) < 14)
+  error('Requires Matlab R14');
 end
 EOF
 print RESULTS $script;
@@ -117,7 +117,7 @@ foreach my $group_ref (@experimentGroups) {
 		}
 	}
 	print RESULTS "];\n";
-		
+
 	foreach my $meas_ref (@measurements) {
 		my $measFilePrefix = $meas_ref->{$FILE};
 		my $label = $meas_ref->{$LABEL};
@@ -126,7 +126,7 @@ foreach my $group_ref (@experimentGroups) {
 		foreach my $paramVal (@$paramVal_ref) {
 
 			my @meas = ();
-		
+
 			my $rep = 1;
 			while (1) {
 				my $expDir = "$resultsDir/$groupName$paramVal-$rep";
@@ -144,10 +144,10 @@ foreach my $group_ref (@experimentGroups) {
 						print "Missing measurement \"$label\" in file $measFile\n";
 						next;
 					}
-					
+
 					# Assume: only first match from grep matters
 					$match[0] =~ /$label.*:\s*([:\.\d]+)/;
-					push @meas, ($1); 
+					push @meas, ($1);
 				}
 
 				$rep++;
@@ -155,9 +155,9 @@ foreach my $group_ref (@experimentGroups) {
 
 			my $values = join(" ", @meas);
 			my $arrayName = "$groupName$paramVal\_$measName";
-			print RESULTS "$arrayName = [$values];\n"; 
-			print RESULTS "$arrayName\_mean = mean($arrayName);\n"; 
-			print RESULTS "$arrayName\_std = std($arrayName);\n"; 
+			print RESULTS "$arrayName = [$values];\n";
+			print RESULTS "$arrayName\_mean = mean($arrayName);\n";
+			print RESULTS "$arrayName\_std = std($arrayName);\n";
 		}
 
 		print RESULTS "$groupName\_$measName = [\n";
@@ -169,7 +169,7 @@ foreach my $group_ref (@experimentGroups) {
 
 		print RESULTS "$groupName\_$measName\_std_pct_mean = $groupName\_$measName(:,2) ./ $groupName\_$measName(:,1) .* 100;\n";
 
-	
+
 	}
 }
 

@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.registration.server;
 
 import civitas.common.*;
@@ -24,7 +24,7 @@ public interface RTStore[principal RT] {
      * election?
      */
     public boolean{RT<-RT} isAcceptedElection{RT<-RT}(ElectionID{RT<-RT} election);
-    
+
     public ElectionCache{RT<-RT} electionCache{RT<-RT}(ElectionID{RT<-RT} election, int{RT<-RT} tellerIndex);
 
     /*
@@ -42,7 +42,7 @@ public interface RTStore[principal RT] {
     public boolean{RT<-RT} isAbandonedElection{RT<-RT}(ElectionID{RT<-RT} election);
     public boolean{RT<-sup} isAbandonedElection{RT<-sup}(principal sup, ElectionID{RT<-sup} election);
     public String{RT<-RT} retrieveAbandonment{RT<-RT}(ElectionID{RT<-RT} election);
-    public String{RT<-sup} retrieveAbandonment{RT<-sup}(principal sup, ElectionID{RT<-sup} election);    
+    public String{RT<-sup} retrieveAbandonment{RT<-sup}(principal sup, ElectionID{RT<-sup} election);
 
     public Long{RT<-RT} retrieveLastMessageProcessed{RT<-RT}(ElectionID{RT<-RT} election);
     public void storeLastMessageProcessed{RT<-RT}(ElectionID{RT<-RT} election, long{RT<-RT} messageID);
@@ -52,7 +52,7 @@ public interface RTStore[principal RT] {
     public void storeVoterCapabilityShares{RT<-RT}(ElectionID{RT<-RT} election, String{RT<-RT} voterName, VoterCapabilityShares[RT]{RT<-RT} capabilities);
     public ElGamalReencryptFactor{RT<-RT;RT->RT}[]{RT<-RT} retrieveVoterEncryptFactors{RT<-RT}(ElectionID{RT<-RT} election, String{RT<-RT} voterName);
     public void storeVoterEncryptFactors{RT<-RT}(ElectionID{RT<-RT} election, String{RT<-RT} voterName, ElGamalReencryptFactor{RT<-RT;RT->RT}[]{RT<-RT} factors);
-        
+
     public ElGamalPublicKey{RT<-RT} retrieveVoterEGPublicKey{RT<-RT}(ElectionID{RT<-RT} election, String{RT<-RT} voterName);
     public PublicKey{RT<-RT} retrieveVoterPublicKey{RT<-RT}(ElectionID{RT<-RT} election, String{RT<-RT} voterName);
     public VoterDetails{RT<-RT} retrieveVoterDetails{RT<-RT}(ElectionID{RT<-RT} election, String{RT<-RT} voterName);

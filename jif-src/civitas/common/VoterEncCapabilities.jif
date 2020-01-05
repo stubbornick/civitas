@@ -3,17 +3,17 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import civitas.crypto.*;
 import java.io.*;
 
 /**
- * Associates a collection of encrypted capabilities and a 
+ * Associates a collection of encrypted capabilities and a
  * voter block with a voter name. That is, for a given voter, this data structure
  * is a list of encrypted capabilities, and the block the voter belongs in.
- * This data structure created by combining a collection of VoterEncCapabilityShares 
+ * This data structure created by combining a collection of VoterEncCapabilityShares
  * objects.
  */
 public class VoterEncCapabilities implements XMLSerializable {
@@ -23,23 +23,23 @@ public class VoterEncCapabilities implements XMLSerializable {
      * The voter's name
      */
     public final String{this} name;
-    
+
     /**
      * for the purposes of blocking, voters are divided into blocks, according
      * to the security parameters of the election details.
      */
-    public final int{this} voterBlock; 
-    
+    public final int{this} voterBlock;
+
     //  the order of these capabilities is important: the ith capability must
     // be used for the ith context, i.e., the ith produced vote.
-    public final ElGamalCiphertext{}[]{this} encCapabilities;  
+    public final ElGamalCiphertext{}[]{this} encCapabilities;
 
     public VoterEncCapabilities(String{this} name, int{this} voterBlock, ElGamalCiphertext{}[]{this} encCapabilities) {
         this.name = name;
         this.voterBlock = voterBlock;
         this.encCapabilities = encCapabilities;
     }
-            
+
     public void toXML{}(PrintWriter[{}]{} sb) {
         if (sb == null) return;
         final label lbl = new label {};
@@ -65,13 +65,13 @@ public class VoterEncCapabilities implements XMLSerializable {
         }
         else {
             sb.print("<size>0</size>");
-            
+
         }
         sb.print("</encCapabilities>");
-        
+
         sb.print("</" + OPENING_TAG + ">");
     }
-    
+
     public static VoterEncCapabilities fromXML{}(Reader[{}]{} r) throws (IllegalArgumentException{}, IOException{}) {
         final label lbl = new label {};
         Util.swallowTag(lbl, r, OPENING_TAG);
@@ -96,8 +96,8 @@ public class VoterEncCapabilities implements XMLSerializable {
 
         Util.swallowEndTag(lbl, r, "encCapabilities");
 
-        
+
         Util.swallowEndTag(lbl, r, OPENING_TAG);
         return new VoterEncCapabilities(name, voterBlock, caps);
-    }    
+    }
 }

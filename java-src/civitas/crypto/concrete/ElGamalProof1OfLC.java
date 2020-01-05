@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.crypto.concrete;
 
 import java.io.*;
@@ -33,11 +33,11 @@ public class ElGamalProof1OfLC implements ElGamalProof1OfL {
         }
     }
 
-    public static ElGamalProof1OfLC constructProof(ElGamalPublicKeyC key, 
-            ElGamalCiphertext[] ciphertexts, 
-            int L, 
-            int choice, 
-            ElGamalCiphertextC m, 
+    public static ElGamalProof1OfLC constructProof(ElGamalPublicKeyC key,
+            ElGamalCiphertext[] ciphertexts,
+            int L,
+            int choice,
+            ElGamalCiphertextC m,
             ElGamalReencryptFactorC factor) {
         CryptoFactoryC factory = CryptoFactoryC.singleton();
 
@@ -45,7 +45,7 @@ public class ElGamalProof1OfLC implements ElGamalProof1OfL {
         CivitasBigInteger u = m.a;
         CivitasBigInteger v = m.b;
         CivitasBigInteger r = factor.r;
-        
+
         ElGamalCiphertextC[] ms = new ElGamalCiphertextC[L];
         for (int i = 0; i < L; i++) {
             ms[i] = (ElGamalCiphertextC)ciphertexts[i];
@@ -58,7 +58,7 @@ public class ElGamalProof1OfLC implements ElGamalProof1OfL {
             ds[i] = CryptoAlgs.randomElement(ps.q);
             rs[i] = CryptoAlgs.randomElement(ps.q);
         }
-        
+
         // compute a_i's and b_i's
         CivitasBigInteger[] as = new CivitasBigInteger[L];
         CivitasBigInteger[] bs = new CivitasBigInteger[L];
@@ -66,17 +66,17 @@ public class ElGamalProof1OfLC implements ElGamalProof1OfL {
             as[i] = ms[i].a.modDivide(u, ps.p).modPow(ds[i], ps.p).modMultiply(ps.g.modPow(rs[i], ps.p), ps.p).mod(ps.p);
             bs[i] = ms[i].b.modDivide(v, ps.p).modPow(ds[i], ps.p).modMultiply(key.y.modPow(rs[i], ps.p), ps.p).mod(ps.p);
         }
-        
+
         List<CivitasBigInteger> env = new ArrayList<CivitasBigInteger>(2 + 4*L);
         env.add(u);
         env.add(v);
         for (int i = 0; i < L; i++) {
             env.add(ms[i].a);
-            env.add(ms[i].b);            
-            env.add(as[i]);            
-            env.add(bs[i]);            
+            env.add(ms[i].b);
+            env.add(as[i]);
+            env.add(bs[i]);
         }
-        CivitasBigInteger c = factory.hashToBigInt(factory.hash(env)).mod(ps.q); 
+        CivitasBigInteger c = factory.hashToBigInt(factory.hash(env)).mod(ps.q);
         CivitasBigInteger w = (r.modNegate(ps.q).modMultiply(ds[choice], ps.q)).modAdd(rs[choice], ps.q);
         CivitasBigInteger sum = CivitasBigInteger.ZERO;
         for (int i = 0; i < L; i++) {
@@ -86,7 +86,7 @@ public class ElGamalProof1OfLC implements ElGamalProof1OfL {
         }
         CivitasBigInteger dprimet = c.modSubtract(sum, ps.q);
         CivitasBigInteger rprimet = w.modAdd(r.modMultiply(dprimet, ps.q), ps.q);
-        
+
         CivitasBigInteger[] dvs = new CivitasBigInteger[L];
         CivitasBigInteger[] rvs = new CivitasBigInteger[L];
         for (int i = 0; i < L; i++) {
@@ -95,12 +95,12 @@ public class ElGamalProof1OfLC implements ElGamalProof1OfL {
                 rvs[i] = rs[i];
             }
             else {
-                dvs[i] = dprimet;                
-                rvs[i] = rprimet;                
+                dvs[i] = dprimet;
+                rvs[i] = rprimet;
             }
         }
 
-        return new ElGamalProof1OfLC(L, dvs, rvs);        
+        return new ElGamalProof1OfLC(L, dvs, rvs);
     }
     public boolean verify(ElGamalPublicKey pubKey, CiphertextList ciphertexts, int L, ElGamalCiphertext msg) {
         if (this.L != L) return false;
@@ -124,18 +124,18 @@ public class ElGamalProof1OfLC implements ElGamalProof1OfL {
             bs[i] = (ms[i].b.modDivide(v, ps.p)).modPow(dvs[i], ps.p).modMultiply(key.y.modPow(rvs[i], ps.p), ps.p);
             sum = sum.modAdd(dvs[i], ps.q);
         }
-        
+
         // construct the hash of the environment
         List<CivitasBigInteger> env = new ArrayList<CivitasBigInteger>(2 + 4*L);
         env.add(u);
         env.add(v);
         for (int i = 0; i < L; i++) {
             env.add(ms[i].a);
-            env.add(ms[i].b);            
-            env.add(as[i]);            
-            env.add(bs[i]);            
+            env.add(ms[i].b);
+            env.add(as[i]);
+            env.add(bs[i]);
         }
-        CivitasBigInteger c = factory.hashToBigInt(factory.hash(env)).mod(ps.q);         
+        CivitasBigInteger c = factory.hashToBigInt(factory.hash(env)).mod(ps.q);
         return sum.equals(c);
     }
     public String toXML() {
@@ -156,7 +156,7 @@ public class ElGamalProof1OfLC implements ElGamalProof1OfL {
         for (int i = 0; i < L; i++) {
             s.print("<rv>");
             if (rvs[i] != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.rvs[i]), lbl, s);
-            s.print("</rv>");            
+            s.print("</rv>");
         }
         s.print("</elGamalProof1OfL>");
     }

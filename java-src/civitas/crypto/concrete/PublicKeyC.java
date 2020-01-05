@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.crypto.concrete;
 
 import java.io.*;
@@ -54,11 +54,11 @@ public class PublicKeyC implements PublicKey {
                 PrivateKeyC privKey = (PrivateKeyC)authPrf;
                 // check if privKey is the matching private key for this public key
 
-                PublicKeyMsg m = CryptoFactoryC.singleton().publicKeyMsg(CryptoFactoryC.singleton().freshNonceBase64(LabelUtil.singleton().noComponents(), 
-                                                                                                                     AUTHENTICATION_NONCE_LENGTH)); 
+                PublicKeyMsg m = CryptoFactoryC.singleton().publicKeyMsg(CryptoFactoryC.singleton().freshNonceBase64(LabelUtil.singleton().noComponents(),
+                                                                                                                     AUTHENTICATION_NONCE_LENGTH));
                 Signature sig = CryptoFactoryC.singleton().signature(privKey, m);
                 return CryptoFactoryC.singleton().publicKeyVerifySignature(this, sig, m);
-                
+
             }
             catch (CryptoException e) {
                 return false;

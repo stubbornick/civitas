@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.crypto.concrete;
 
 import java.io.UnsupportedEncodingException;
@@ -14,7 +14,7 @@ import civitas.crypto.ElGamalMsg;
 import civitas.util.CivitasBigInteger;
 
 /**
- * An element of an El Gamal message space. 
+ * An element of an El Gamal message space.
  * A <i>message space</i> is a multiplicative group
  * over which DDH is believed to hold, and thus over
  * which ElGamal can be implemented.
@@ -29,11 +29,11 @@ class ElGamalMsgC implements ElGamalMsg {
     /**
      * The message.  It is an element of a multiplicative group.
      */
-    protected final CivitasBigInteger m;    
+    protected final CivitasBigInteger m;
 
     /**
-     * @param plaintext A plaintext.  This is not the same as a message.  A plaintext 
-     *          is a value from some consecutive set of integers, e.g. Zq.  
+     * @param plaintext A plaintext.  This is not the same as a message.  A plaintext
+     *          is a value from some consecutive set of integers, e.g. Zq.
      *          This constructor encodes the plaintext as a message.
      * @throws CryptoException Unless plaintext can be converted to a valid message
      *          in the message space defined by params.
@@ -41,7 +41,7 @@ class ElGamalMsgC implements ElGamalMsg {
     protected ElGamalMsgC(CivitasBigInteger plaintext, ElGamalParametersC params) throws CryptoException {
         this.m = params.encodePlaintext(plaintext);
     }
-    
+
     /**
      * @param message An element of a group.  This constructor does not do any
      *                verification that the element corresponds to any particular group.
@@ -76,8 +76,8 @@ class ElGamalMsgC implements ElGamalMsg {
 
     public String plaintextStringValue(ElGamalParametersC params) throws CryptoException {
         return bigIntToString(plaintextBigIntValue(params));
-    } 
-    
+    }
+
     public CivitasBigInteger bigIntValue() {
         return m;
     }

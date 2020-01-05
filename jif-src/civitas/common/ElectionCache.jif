@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import civitas.crypto.*;
@@ -24,10 +24,10 @@ public class ElectionCache {
     private ElectoralRollEstimate{} electoralRollEstimate;
     private ElGamalKeyShare{}[]{} tabTellerKeyShares;
     private TabTellerKeyShareCommitment{}[]{} tabTellerKeyShareCommitments;
-    private ElGamalPublicKey{} tabTellerSharedKey;    
-    private BoardsForTabulation{} boardsForTabulation;    
+    private ElGamalPublicKey{} tabTellerSharedKey;
+    private BoardsForTabulation{} boardsForTabulation;
     private final Map[{},{}]{} voterBlocks;
-    
+
     public ElectionCache{}() {
         super();
         this.voterBlocks = new HashMap[{},{}]();
@@ -42,7 +42,7 @@ public class ElectionCache {
     public PETCache newPETCache(String meta, int numberBlocks, int numTabTellers) {
         return null;
     }
-    
+
     /*
      * Caching methods
      */
@@ -93,17 +93,17 @@ public class ElectionCache {
     public ElectoralRollEstimate{} getElectoralRollEstimate() {
         return this.electoralRollEstimate;
     }
-        
+
     public void setTabTellerKeyShare{}(int{} tellerIndex, ElGamalKeyShare{} tabTellerKeyShares) {
         ElGamalKeyShare{}[] shares = this.tabTellerKeyShares;
         if (shares == null) {
             try {
                 shares = new ElGamalKeyShare[tellerIndex + 10];
             }
-            catch (NegativeArraySizeException imposs) { 
+            catch (NegativeArraySizeException imposs) {
                 shares = new ElGamalKeyShare[10];
             }
-            
+
             this.tabTellerKeyShares = shares;
         }
         if (tellerIndex - 1 >= shares.length) {
@@ -119,13 +119,13 @@ public class ElectionCache {
             catch (ArrayIndexOutOfBoundsException imposs) { }
             this.tabTellerKeyShares = shares;
         }
-        
+
         try {
             shares[tellerIndex - 1] = tabTellerKeyShares;
         }
         catch (ArrayIndexOutOfBoundsException unlikely) { }
     }
-    
+
     public ElGamalKeyShare{} getTabTellerKeyShare(int{} tellerIndex) {
         ElGamalKeyShare{}[] shares = this.tabTellerKeyShares;
         if (shares != null && tellerIndex - 1 < shares.length) {
@@ -142,8 +142,8 @@ public class ElectionCache {
             try {
                 coms = new TabTellerKeyShareCommitment[tellerIndex + 10];
             }
-            catch (NegativeArraySizeException imposs) { 
-                coms = new TabTellerKeyShareCommitment[10];                
+            catch (NegativeArraySizeException imposs) {
+                coms = new TabTellerKeyShareCommitment[10];
             }
             this.tabTellerKeyShareCommitments = coms;
         }
@@ -160,13 +160,13 @@ public class ElectionCache {
             catch (ArrayIndexOutOfBoundsException imposs) { }
             this.tabTellerKeyShareCommitments = coms;
         }
-        
+
         try {
             coms[tellerIndex - 1] = c;
         }
         catch (ArrayIndexOutOfBoundsException unlikely) { }
     }
-    
+
     public TabTellerKeyShareCommitment{} getTabTellerKeyShareCommitment(int{} tellerIndex) {
         TabTellerKeyShareCommitment{}[] coms = this.tabTellerKeyShareCommitments;
         if (coms != null && tellerIndex - 1 < coms.length) {
@@ -179,10 +179,10 @@ public class ElectionCache {
     }
 
     public void setTabTellerSharedKey{}(ElGamalPublicKey{} tabTellerSharedKey) {
-        this.tabTellerSharedKey = tabTellerSharedKey;    
+        this.tabTellerSharedKey = tabTellerSharedKey;
     }
     public ElGamalPublicKey{} getTabTellerSharedKey() {
-        return this.tabTellerSharedKey;    
+        return this.tabTellerSharedKey;
     }
 
     public void setBoardsForTabulation{}(BoardsForTabulation{} boardsForTabulation) {
@@ -191,26 +191,26 @@ public class ElectionCache {
     public BoardsForTabulation{} getBoardsForTabulation() {
         return this.boardsForTabulation;
     }
-    
+
     /*
      * Some things that this implementation doesn't cache.
      */
-        
-    public int getInitialVoteMixSize{}(int{} block) { 
+
+    public int getInitialVoteMixSize{}(int{} block) {
         return -1;
     }
-    public int getInitialCapabilityMixSize{}(int{} block) { 
+    public int getInitialCapabilityMixSize{}(int{} block) {
         return -1;
     }
     public void setElectoralRollCapabilitiesForVoterBlock{}(int{} voterBlock, ElectoralRollCapabilities{} erc) {
-        
+
     }
     public ElectoralRollCapabilities{} getElectoralRollCapabilitiesForVoterBlock{}(int{} voterBlock) {
         return null;
     }
-    
+
     public void setElectoralRollCapabilitySharesForVoterBlock{}(int{} voterBlock, int{} tellerIndex, ElectoralRollCapabilityShares{} erc) {
-        
+
     }
     public ElectoralRollCapabilityShares{} getElectoralRollCapabilitySharesForVoterBlock{}(int{} voterBlock, int{} tellerIndex) {
         return null;
@@ -220,31 +220,31 @@ public class ElectionCache {
     }
 
     public void setElectoralRollCapabilities{}(int{} block, ElectoralRollCapabilities{} erc) {
-        
+
     }
     public ElectoralRollCapabilities{} getElectoralRollCapabilities{}(int{} block) {
         return null;
     }
-    
+
     public void setValidVerifiableVotesForBlock{}(int{} block, VerifiableVote{}[]{} vv) {
-        
+
     }
     public VerifiableVote{}[]{} getValidVerifiableVotesForBlock{}(int{} block) {
-        return null;        
+        return null;
     }
     public int{} getValidVerifiableVoteSizeForBlock{}(int{} block) {
-        return -1;        
+        return -1;
     }
-    
+
     public void setVoterSubmissionsForVoterBlock{}(int{} voterBlock, List[{}]{} voterSubmissions) {
-        
+
     }
     public List[{}] getVoterSubmissionsForVoterBlock(int{} voterBlock) {
-        return null;        
+        return null;
     }
-    
+
     public void setTTMixHashRevelation(int{} tellerIndex, boolean{} isVoteMix, int{} block, MixHashRevelation{} mhr) {
-        
+
     }
     public boolean hasTTMixHashRevelation(int{} tellerIndex, boolean{} isVoteMix, int{} block) {
         return false;
@@ -253,26 +253,26 @@ public class ElectionCache {
         return null;
     }
     public void setInitialCapabilityMix{}(int{} block, CapabilityMix{} mix) {
-        
+
     }
     public CapabilityMix getInitialCapabilityMix(int{} block) {
         return null;
     }
     public void setInitialVoteMix{}(int{} block, VoteMix{} mix) {
-        
+
     }
     public VoteMix getInitialVoteMix(int{} block) {
         return null;
     }
     public void setMix{}(int{} block, int{} n, boolean{} isRightMix, boolean{} isVoteMix, Mix{} mix) {
-        
+
     }
     public Mix getMix(int{} block, int{} n, boolean{} isRightMix, boolean{} isVoteMix) {
         return null;
     }
-    
+
     public void setTabTellerVoterBlockContents{}(int{} voterBlock, int{} tellerIndex, TabTellerVoterBlockContents{} c) {
-        
+
     }
     public TabTellerVoterBlockContents{} getTabTellerVoterBlockContents(int{} voterBlock, int{} tellerIndex) {
         return null;
@@ -295,5 +295,5 @@ public class ElectionCache {
         }
         return -1;
     }
-        
+
 }

@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.crypto.concrete;
 
 import java.io.*;
@@ -24,7 +24,7 @@ class ElGamalKeyShareC extends ElGamalAbstractKeyShare {
         ElGamalProofKnowDiscLogC prf = (ElGamalProofKnowDiscLogC)proof;
         // the base of the prf is correct, as it is taken from params.
         ElGamalPublicKeyC K = (ElGamalPublicKeyC)pubKey;
-        if (prf == null || K == null) { 
+        if (prf == null || K == null) {
             return false;
         }
         return prf.v.equals(K.y) && prf.verify(pubKey.getParams());
@@ -48,13 +48,13 @@ class ElGamalKeyShareC extends ElGamalAbstractKeyShare {
 
     public static ElGamalKeyShareC fromXML(Label lbl, Reader r) throws IllegalArgumentException, IOException {
         Util.swallowTag(lbl, r, "elGamalKeyShare");
-        Util.swallowTag(lbl, r, "pubKey");	
+        Util.swallowTag(lbl, r, "pubKey");
         ElGamalPublicKeyC pubKey = ElGamalPublicKeyC.fromXML(lbl, r);
         Util.swallowEndTag(lbl, r, "pubKey");
-        Util.swallowTag(lbl, r, "proof");		
+        Util.swallowTag(lbl, r, "proof");
         ElGamalProofKnowDiscLogC proof = ElGamalProofKnowDiscLogC.fromXML(lbl, r);
         Util.swallowEndTag(lbl, r, "proof");
         Util.swallowEndTag(lbl, r, "elGamalKeyShare");
         return new ElGamalKeyShareC(pubKey, proof);
-    }	
+    }
 }

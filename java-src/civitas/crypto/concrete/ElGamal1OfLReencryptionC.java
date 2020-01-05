@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.crypto.concrete;
 
 import java.io.*;
@@ -17,16 +17,16 @@ import civitas.crypto.*;
 public class ElGamal1OfLReencryptionC implements ElGamal1OfLReencryption {
     public final ElGamalCiphertextC m;
     public final ElGamalProof1OfLC proof;
-    
+
     public ElGamal1OfLReencryptionC(ElGamalCiphertextC m, ElGamalProof1OfLC proof) {
         this.m = m;
         this.proof = proof;
     }
-    
+
     public ElGamalCiphertext getCiphertext() {
         return m;
     }
-    
+
     public ElGamalProof1OfL getProof() {
         return proof;
     }
@@ -42,7 +42,7 @@ public class ElGamal1OfLReencryptionC implements ElGamal1OfLReencryption {
         if (proof != null) this.proof.toXML(lbl, s);
         s.print("</elGamal1OfLReencryption>");
     }
-    
+
     public static ElGamal1OfLReencryption fromXML(Label lbl, Reader r) throws IllegalArgumentException, IOException {
         Util.swallowTag(lbl, r, "elGamal1OfLReencryption");
         ElGamalCiphertextC m = (ElGamalCiphertextC)CryptoFactoryC.singleton().elGamalCiphertextFromXML(lbl, r);
@@ -68,5 +68,5 @@ public class ElGamal1OfLReencryptionC implements ElGamal1OfLReencryption {
             }
         }
         return false;
-    }     
+    }
 }

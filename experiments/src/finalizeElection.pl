@@ -13,7 +13,7 @@ use warnings;
 sub usage {
     print <<USAGE;
 usage: finalizeElection.pl experimentDescriptionFile
-    Perform the actions required by the supervisor to finalize the 
+    Perform the actions required by the supervisor to finalize the
     election described by the experiment description file.
 USAGE
     exit;

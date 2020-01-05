@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.bboard.common;
 
 import civitas.crypto.*;
@@ -37,10 +37,10 @@ public final class BBPost implements JifObject[{}], XMLSerializable {
      * then it should be a signature of the msg field.
      */
     public final Signature{this} sig;
-    
-    
+
+
     public BBPost(String{this} bbid,
-            long{this} timestamp, 
+            long{this} timestamp,
             String{this} meta,
             XMLSerializable{this} msg,
             Signature{this} sig) {
@@ -50,7 +50,7 @@ public final class BBPost implements JifObject[{}], XMLSerializable {
         this.msg = msg;
         this.sig = sig;
     }
-    
+
     /**
      * Verify that the signature is correct. If no signature exists for this
      * post, then false is returned.
@@ -62,7 +62,7 @@ public final class BBPost implements JifObject[{}], XMLSerializable {
             MessageDigest[{}] md = CryptoUtil.factory().messageDigest(lbl);
             MessageDigestWriter[{}] mdw = new MessageDigestWriter[{}](null, md);
             if (msg != null) msg.toXML(new PrintWriter[{}](mdw));
-            
+
             return CryptoUtil.factory().publicKeyVerifySignature(K, sig, lbl, md.digest());
         }
         catch (NullPointerException imposs) {
@@ -81,10 +81,10 @@ public final class BBPost implements JifObject[{}], XMLSerializable {
 //            catch (CryptoException e) {
 //            }
 //        }
-//        return endorse(s, {this;signer;p} meet {*->*; p <- signer});        
+//        return endorse(s, {this;signer;p} meet {*->*; p <- signer});
 //    }
 //
-    
+
     public boolean{other;_<-_} equals(IDComparable[{}] other) {
         return equals(new label {}, other);
     }
@@ -97,16 +97,16 @@ public final class BBPost implements JifObject[{}], XMLSerializable {
                    eq(this.meta, that.meta) &&
                    this.msg == that.msg;
         }
-        return false;        
+        return false;
     }
-    
+
     /**
      * Utility method to compare two strings.
      */
     private boolean eq(String s, String t) {
         return s == t || (s != null && s.equals(t));
     }
-    
+
     public String{} toString() {
         return "BBPost(unimpl)";
     }
@@ -131,13 +131,13 @@ public final class BBPost implements JifObject[{}], XMLSerializable {
         if (sig != null) {
             sig.toXML(new label {}, sb);
         }
-        
+
         sb.print("</" + OPENING_TAG + ">");
     }
 
     public int{} hashCode() {
         return (bbid==null?0:bbid.hashCode()) ^ ((int)timestamp);
     }
-    
-    
+
+
 }

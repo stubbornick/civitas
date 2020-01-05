@@ -3,14 +3,14 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import java.io.*;
 import civitas.crypto.*;
 
 /**
- * The unique identifier of a host, such as a tab teller, 
+ * The unique identifier of a host, such as a tab teller,
  * a registration teller, or a bulletin board. It consists
  * of the address, port, and public key of the host.
  */
@@ -18,13 +18,13 @@ public class Host implements XMLSerializable {
     public final String{this} address;
     public final int{this} port;
     public final PublicKey{this} publicKey;
-    
+
     public Host(String{this} address, int{this} port, PublicKey{this} publicKey) {
         this.address = address;
         this.port = port;
         this.publicKey = publicKey;
     }
-    
+
     public String{this} toString() {
         String s = this.address;
         s += ":";
@@ -48,10 +48,10 @@ public class Host implements XMLSerializable {
         if (this.publicKey != null) {
             this.publicKey.toXML(lbl, sb);
         }
-        
+
         sb.print("</host>");
     }
-    
+
     public static Host{*lbl} fromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r) throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
         Util.swallowTag(lbl, r, "host");
         String address = Util.unescapeString(Util.readSimpleTag(lbl, r, "address"));
@@ -65,5 +65,5 @@ public class Host implements XMLSerializable {
         }
         Util.swallowEndTag(lbl, r, "host");
         return new Host(address, port, publicKey);
-    }    
+    }
 }

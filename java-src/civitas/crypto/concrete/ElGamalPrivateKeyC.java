@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.crypto.concrete;
 
 import java.io.*;
@@ -41,10 +41,10 @@ public class ElGamalPrivateKeyC extends ElGamalAbstractKey implements ElGamalPri
         s.print("<x>");
         if (this.x != null) Util.escapeString(CryptoFactoryC.bigIntToString(x), lbl, s);
         s.print("</x>");
-        
+
         s.print("</elGamalPrivateKey>");
     }
-    
+
     public static ElGamalPrivateKeyC fromXML(Label lbl, Reader r) throws IllegalArgumentException, IOException {
         Util.swallowTag(lbl, r, "elGamalPrivateKey");
         Util.swallowTag(lbl, r, "params");
@@ -53,5 +53,5 @@ public class ElGamalPrivateKeyC extends ElGamalAbstractKey implements ElGamalPri
         String x = Util.unescapeString(Util.readSimpleTag(lbl, r, "x"));
         Util.swallowEndTag(lbl, r, "elGamalPrivateKey");
         return new ElGamalPrivateKeyC(CryptoFactoryC.stringToBigInt(x), params);
-    }    
+    }
 }

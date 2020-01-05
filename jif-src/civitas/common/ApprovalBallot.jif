@@ -3,14 +3,14 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import java.io.*;
 
 /**
  * This class is the ballot of an approval race. In an approval race, there
- * is a slate of candidates, and the voter indicates approval or 
+ * is a slate of candidates, and the voter indicates approval or
  * disapproval of each candidate. An ApprovalBallot records for each
  * candidate whether the voter approves or disapproves.
  */
@@ -22,7 +22,7 @@ public class ApprovalBallot[label L] extends Ballot[L] {
         approved = new boolean[0];
         super();
     }
-    
+
     public void addCandidate{L}(String{L} c, boolean{L} app) {
         try {
             String{L}[] n = new String[candidates.length + 1];
@@ -32,7 +32,7 @@ public class ApprovalBallot[label L] extends Ballot[L] {
                     n[i] = candidates[i];
                     b[i] = approved[i];
                 }
-                catch (NullPointerException ignore) { }                
+                catch (NullPointerException ignore) { }
                 catch (ArrayIndexOutOfBoundsException ignore) { }
             }
             n[candidates.length] = c;
@@ -61,25 +61,25 @@ public class ApprovalBallot[label L] extends Ballot[L] {
                 sb.print(Boolean.toString(approved[i]));
                 sb.print("</approved>");
                 sb.print("</candidate>");
-            }        
+            }
         }
         catch (NullPointerException imposs) { }
         catch (ArrayIndexOutOfBoundsException imposs) { }
         sb.print("</candidates>");
         sb.print("</" + OPENING_TAG + ">");
     }
-    
+
     public static Ballot[lbl]{*lbl} fromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r)  throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
         ApprovalBallot[lbl] b = new ApprovalBallot[lbl]();
 
         Util.swallowTag(lbl, r, "candidates");
-        
+
         while (Util.isNextTag(lbl, r, "candidate")) {
             Util.swallowTag(lbl, r, "candidate");
             b.addCandidate(Util.unescapeString(Util.readSimpleTag(lbl, r, "name")), Util.readSimpleBooleanTag(lbl, r, "approved"));
             Util.swallowEndTag(lbl, r, "candidate");
         }
-        
+
         Util.swallowEndTag(lbl, r, "candidates");
         return b;
     }

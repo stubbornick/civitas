@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.tabulation.server;
 
 import java.io.*;
@@ -17,7 +17,7 @@ import civitas.common.*;
 import civitas.crypto.*;
 
 /**
- * Utility class to help with the tabulation protocol. 
+ * Utility class to help with the tabulation protocol.
  * The principal TT should be the tab teller's public key.
  * The principal SUP is the election supervisor.
  * The principal TELLS represents all of the tabulation tellers, i.e., it is a principal that
@@ -32,7 +32,7 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
     final TTTabulationUtil[TT,SUP,TELLS]{this} tttUtil;
     private final TTVotes[TT,SUP,TELLS]{this} ttVotes;
     private final PrintStream[{*->*}]{this} debugLog;
-    
+
     static final String{*<-*} META_VOTES_TO_VOTES = "votes-votes";
     static final String{*<-*} META_VOTES_TO_ROLL = "votes-roll";
     static final String{*<-*} META_FINAL_VOTE_DECRYPTION = "finalVotes";
@@ -51,11 +51,11 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
         this.ttVotes = new TTVotes[TT,SUP,TELLS](tellerPrivKey, ttstore, bb, tttUtil);
         this.debugLog = debugLog;
     }
-    
-    
-    void tabulate{TT<-TT meet TT<-SUP}(final ElectionDetails{TT<-SUP} electionDetails):{TT<-SUP} 
+
+
+    void tabulate{TT<-TT meet TT<-SUP}(final ElectionDetails{TT<-SUP} electionDetails):{TT<-SUP}
     throws IOException where caller(TT), SUP equiv electionDetails.supervisor {
-        if (ttstore == null || electionDetails == null || bb == null 
+        if (ttstore == null || electionDetails == null || bb == null
                 || tttm == null || tttpet == null || tttUtil == null || ttVotes == null) return;
         if (debugLog != null) debugLog.println("tabulate called");
         final BallotDesign ballotDesign = electionDetails.ballotDesign;
@@ -65,7 +65,7 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
         if (electionID == null) return;
         int tellerIndex = ttstore.retrieveIndex(SUP, electionID);
         ElectionCache electionCache = tttUtil.electionCache(electionID, tellerIndex);
-                
+
         // Check if we have abandoned this election.
         if (ttstore.isAbandonedElection(SUP, electionID)) {
             throw new IOException(ttstore.retrieveAbandonment(SUP, electionID));
@@ -85,16 +85,16 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
             ioex = e;
         }
         int electionStatus = endorse(electionStatus_, {TT<-SUP});
-        
+
         eioex = endorse(ioex, {TT<-SUP});
         if (eioex != null) throw eioex;
-        
+
         TellerDetails tellerDetails_ = null;
         if (electionStatus == ElectionUtil.STATUS_ABANDONED) {
             try {
-                ElectionAbandonment ea = ElectionUtil.retrieveAbandonmentReason(electionID, electionCache); 
+                ElectionAbandonment ea = ElectionUtil.retrieveAbandonmentReason(electionID, electionCache);
                 if (ea != null) {
-                    throw new IOException(ea.reason);                            
+                    throw new IOException(ea.reason);
                 }
             }
             catch (IOException e) {
@@ -109,7 +109,7 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
             if (debugLog != null) debugLog.println("Exiting because status is not stopped");
             return;
         }
-        
+
         TellerDetails tellerDetails = endorse(tellerDetails_, {TT<-SUP});
 
         if (tellerDetails == null) {
@@ -118,13 +118,13 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
             }
             catch (IOException e) {
                 ioex = e;
-            }         
+            }
             tellerDetails = endorse(tellerDetails_, {TT<-SUP});
         }
         eioex = endorse(ioex, {TT<-SUP});
         if (eioex != null) throw eioex;
-         
-        
+
+
         ElGamalPublicKey tabTellerSharedKey_ = null;
         try {
             tabTellerSharedKey_ = ElectionUtil.retrieveTabTellerSharedPublicKey(electionDetails, electionCache);
@@ -139,7 +139,7 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
         /*
          * Summary of the tabulation process:
          * 0. for each voter block
-         *      make sure all tab tellers agree on which votes to tabulate 
+         *      make sure all tab tellers agree on which votes to tabulate
          * 1. Plaintext Equivalence Test of the votes to the votes
          *      Prevents same capability being used for multiple votes
          *      for each block:
@@ -147,7 +147,7 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
          *         b. post decommitment once all tellers posted commitments
          *         c. post distributed decryption once all tellers posted decommitments
          * 2. Mix votes
-         * 3. Mix electoral roll 
+         * 3. Mix electoral roll
          * 4. Post Mix hash revelations
          * 5. Post Mix revelations
          * 6. Check other tellers mix revelations
@@ -158,7 +158,7 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
          *         b. post decommitment once all tellers posted commitments
          *         c. post distributed decryption once all tellers posted decommitments
          */
-        
+
         // we need to perform PET of the votes to the votes.
         int numberBlocks_ = 0;
         int numberVoterBlocks_ = 0;
@@ -166,7 +166,7 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
             numberVoterBlocks_ = ElectionUtil.numberVoterBlocks(electionDetails, electionCache);
             numberBlocks_ = ElectionUtil.numberBlocks(electionDetails, electionCache);
             if (numberBlocks_  <= 0) {
-                throw new IOException("Could not retrieve number of blocks, or voter blocks.");                            
+                throw new IOException("Could not retrieve number of blocks, or voter blocks.");
             }
         }
         catch (IOException e) {
@@ -174,11 +174,11 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
         }
         eioex = endorse(ioex, {TT<-SUP});
         if (eioex != null) throw eioex;
-        
+
         int numberBlocks = endorse(numberBlocks_, {TT<-SUP});
         int numberVoterBlocks = endorse(numberVoterBlocks_, {TT<-SUP});
-        int numTabTellers = TTTabulationUtil[TT,SUP,TELLS].numTabTellers(tellerDetails);        
-        
+        int numTabTellers = TTTabulationUtil[TT,SUP,TELLS].numTabTellers(tellerDetails);
+
         // for each voter block, check that each tt agrees on what the voter submissions are.
         for (int voterBlock = 0; voterBlock < numberVoterBlocks; voterBlock++) {
             // has this teller posted what it believes the votes for this block are?
@@ -188,7 +188,7 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
             }
             catch (IOException e) {
                 ioex = e;
-            }   
+            }
             boolean postedVoterBlockContents = endorse(postedVoterBlockContents_, {TT<-SUP});
             eioex = endorse(ioex, {TT<-SUP});
             if (eioex != null) throw eioex;
@@ -196,7 +196,7 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                 // need to post the voter block contents
                 try {
                     List[{}] voterSubmissions = ttVotes.retrieveVoterSubmissions(electionDetails, electionCache, tabTellerSharedKey, voterBlock);
-                    // compute the hash                
+                    // compute the hash
                     String hash = null;
                     try {
                         MessageDigest[{}] md = CryptoUtil.factory().messageDigest(new label {});
@@ -217,7 +217,7 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                         }
                         hash = CryptoUtil.factory().constBytesToBase64(new label {}, md.digest());
                     }
-                    catch (NullPointerException imposs) { }                
+                    catch (NullPointerException imposs) { }
 
                     // post the hash
                     TabTellerVoterBlockContents mybc = new TabTellerVoterBlockContents(tellerIndex, voterBlock, hash);
@@ -234,12 +234,12 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                 }
                 catch (IOException e) {
                     ioex = e;
-                }   
+                }
                 eioex = endorse(ioex, {TT<-SUP});
                 if (eioex != null) throw eioex;
             }
         }
-        
+
         // now make sure that all the other TTs agree.
         for (int voterBlock = 0; voterBlock < numberVoterBlocks; voterBlock++) {
             TabTellerVoterBlockContents mybc = null;
@@ -251,11 +251,11 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
             }
             eioex = endorse(ioex, {TT<-SUP});
             if (eioex != null) throw eioex;
-            
+
             for (int t = 0; t < numTabTellers; t++) {
                 int checkTellerIndex = t+1;
                 if (checkTellerIndex == tellerIndex) continue;
-                
+
                 TabTellerVoterBlockContents bc = null;
                 int retriesLeft = tttUtil.maxRetries(numTabTellers);
                 try {
@@ -274,7 +274,7 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                 }
                 eioex = endorse(ioex, {TT<-SUP});
                 if (eioex != null) throw eioex;
-                
+
                 if (endorse(retriesLeft < 0 || bc == null, {TT<-SUP})) {
                     if (debugLog != null) debugLog.println("Exiting because timed out for tab teller voter block contents");
                     return;
@@ -284,7 +284,7 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                     if (mybc == null || bc == null || mybc.hash == null || !mybc.hash.equals(bc.hash)) {
                         // it's bad, we need to abandon the election.
                         tttUtil.abandonElection(electionID,
-                                                "Tabulation tellers disagree on the set of votes to tabulate for voter block " + voterBlock, 
+                                                "Tabulation tellers disagree on the set of votes to tabulate for voter block " + voterBlock,
                                                 tellerIndex);
                     }
                 }
@@ -293,34 +293,34 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                 }
                 eioex = endorse(ioex, {TT<-SUP});
                 if (eioex != null) throw eioex;
-                
+
             }
         }
-        
+
         PETCache votePETCache = null;
         if (electionCache != null) {
             votePETCache = electionCache.newPETCache(META_VOTES_TO_VOTES, numberBlocks, numTabTellers);
         }
 
-        for (int block = 0; block < numberBlocks; block++) {                
+        for (int block = 0; block < numberBlocks; block++) {
             // how many ballots in this block?
             int blockBallotSize = retrieveValidVerifiableVoteSize(electionDetails, electionCache, tabTellerSharedKey, block);
-            
+
             for (int ballotIndex = 0; ballotIndex < blockBallotSize; ballotIndex++) {
                 // Has this teller posted the commitments for the vote-vote PETs?
                 boolean postedVotePETCommitment_ = false;
                 try {
-                    postedVotePETCommitment_ = tttpet.hasTTPETShareCommitments(votePETCache, 
-                                                                               META_VOTES_TO_VOTES, 
-                                                                               electionDetails, 
+                    postedVotePETCommitment_ = tttpet.hasTTPETShareCommitments(votePETCache,
+                                                                               META_VOTES_TO_VOTES,
+                                                                               electionDetails,
                                                                                block,
                                                                                ballotIndex,
-                                                                               tellerDetails, 
+                                                                               tellerDetails,
                                                                                tellerIndex);
                 }
                 catch (IOException e) {
                     ioex = e;
-                }   
+                }
                 boolean postedVotePETCommitment = endorse(postedVotePETCommitment_, {TT<-SUP});
                 eioex = endorse(ioex, {TT<-SUP});
                 if (eioex != null) throw eioex;
@@ -332,11 +332,11 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                     }
                     catch (IOException e) {
                         ioex = e;
-                    }                
+                    }
                 }
                 eioex = endorse(ioex, {TT<-SUP});
                 if (eioex != null) throw eioex;
-    
+
                 efailed = endorse(failed, {TT<-SUP});
                 if (efailed) {
                     if (debugLog != null) debugLog.println("Exiting because failed to post vote PET commit");
@@ -344,36 +344,36 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                 }
             }
         }
-        
-        for (int block = 0; block < numberBlocks; block++) {                
+
+        for (int block = 0; block < numberBlocks; block++) {
             int blockBallotSize = retrieveValidVerifiableVoteSize(electionDetails, electionCache, tabTellerSharedKey, block);
-            
+
             for (int ballotIndex = 0; ballotIndex < blockBallotSize; ballotIndex++) {
                 // this teller has posted its commitments for the PETs. Has it posted its decommitment?
                 boolean postedVotePETDecommitment_ = false;
                 PETShare{TT->TT;TT<-TT}[] shares = ttstore.retrieveVoteVotePETShares(SUP, electionID, block, ballotIndex);
-                try {            
+                try {
                     postedVotePETDecommitment_ = tttpet.hasTTPETShareDecommitments(votePETCache, META_VOTES_TO_VOTES, electionDetails, block, ballotIndex, tellerDetails, tellerIndex, shares);
                 }
                 catch (IOException e) {
                     ioex = e;
-                }   
+                }
                 boolean postedVotePETDecommitment = endorse(postedVotePETDecommitment_, {TT<-SUP});
                 eioex = endorse(ioex, {TT<-SUP});
                 if (eioex != null) throw eioex;
                 if (!postedVotePETDecommitment) {
                     // this teller hasn't posted its decommitment
                     try {
-                        if (debugLog != null) debugLog.println("Posting vote-vote pet decommit for block " + block + " ballot " + ballotIndex);                    
+                        if (debugLog != null) debugLog.println("Posting vote-vote pet decommit for block " + block + " ballot " + ballotIndex);
                         failed = (!tttpet.postPETDecommitment(votePETCache, electionDetails, tellerDetails, META_VOTES_TO_VOTES, block, ballotIndex, tellerIndex, shares));
                     }
                     catch (IOException e) {
                         ioex = e;
-                    }                
+                    }
                 }
                 eioex = endorse(ioex, {TT<-SUP});
-                if (eioex != null) throw eioex;            
-    
+                if (eioex != null) throw eioex;
+
                 efailed = endorse(failed, {TT<-SUP});
                 if (efailed) {
                     if (debugLog != null) debugLog.println("Exiting because failed to post vote PET decommit");
@@ -382,18 +382,18 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
             }
 
         }
-        
-        for (int block = 0; block < numberBlocks; block++) {                
+
+        for (int block = 0; block < numberBlocks; block++) {
             int blockBallotSize = retrieveValidVerifiableVoteSize(electionDetails, electionCache, tabTellerSharedKey, block);
             for (int ballotIndex = 0; ballotIndex < blockBallotSize; ballotIndex++) {
-                // this teller has posted its decommitment. Has it posted its share of the distributed decryption?        
+                // this teller has posted its decommitment. Has it posted its share of the distributed decryption?
                 boolean postedVotePETDecrypt_ = false;
                 try {
                     postedVotePETDecrypt_ = hasTTDecryptShares(votePETCache, META_VOTES_TO_VOTES, electionDetails, block, ballotIndex, tellerDetails, tellerIndex);
                 }
                 catch (IOException e) {
                     ioex = e;
-                }   
+                }
                 boolean postedVotePETDecrypt = endorse(postedVotePETDecrypt_, {TT<-SUP});
                 eioex = endorse(ioex, {TT<-SUP});
                 if (eioex != null) throw eioex;
@@ -401,54 +401,54 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                     // this teller hasn't posted it's decrypt shares yet.
                     try {
                         if (debugLog != null) debugLog.println("Posting vote-vote pet decrypt for block " + block + " ballot " + ballotIndex);
-                        failed = (!tttpet.postPETDecryptShare(votePETCache, 
-                                                              electionDetails, 
-                                                              tellerDetails, 
-                                                              META_VOTES_TO_VOTES, 
-                                                              block, ballotIndex, 
+                        failed = (!tttpet.postPETDecryptShare(votePETCache,
+                                                              electionDetails,
+                                                              tellerDetails,
+                                                              META_VOTES_TO_VOTES,
+                                                              block, ballotIndex,
                                                               tellerIndex,
                                                               ttstore.retrieveVoteVotePETShares(SUP, electionID, block, ballotIndex)));
                     }
                     catch (IOException e) {
                         ioex = e;
-                    }                
+                    }
                 }
                 eioex = endorse(ioex, {TT<-SUP});
                 if (eioex != null) throw eioex;
-    
+
                 efailed = endorse(failed, {TT<-SUP});
                 if (efailed) {
                     if (debugLog != null) debugLog.println("Exiting because failed to post vote PET decrypt share");
                     return;
                 }
-                // at this point the vote to vote PETs have been done. We can clear the vote-vote PETs 
+                // at this point the vote to vote PETs have been done. We can clear the vote-vote PETs
                 tttUtil.clearVoteVotePETShares(electionID, block, ballotIndex);
             }
         }
-        
-        
+
+
         // retrieve the condition holder
         final ConditionHolder[{TT<-TT}] allMixesDone = findMixesDoneConditionHolder(electionDetails, numberBlocks);
-        
+
         // Check if mixing has been done or needs to be done
         boolean isVoteMixesAllDone_ = false;
         try {
             try {
                 isVoteMixesAllDone_ = tttm.checkAndMix(electionDetails, votePETCache, electionCache, tabTellerSharedKey, tellerDetails, tellerIndex, true, false, numberBlocks, allMixesDone);
             }
-            catch (IllegalArgumentException e) { 
+            catch (IllegalArgumentException e) {
                 throw new IOException(e.getMessage());
-            }               
+            }
             catch (CryptoException e) {
                 // Abandon the election
                 tttUtil.abandonElection(electionID,
-                                "Cannot perform vote mix: " + e.getMessage(), 
+                                "Cannot perform vote mix: " + e.getMessage(),
                                 tellerIndex);
-            }               
+            }
         }
         catch (IOException e) {
             ioex = e;
-        }   
+        }
         eioex = endorse(ioex, {TT<-SUP});
         if (eioex != null) throw eioex;
         boolean isVoteMixesAllDone = endorse(isVoteMixesAllDone_, {TT<-SUP});
@@ -459,23 +459,23 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
             try {
                 electoralMixesAllDone_ = tttm.checkAndMix(electionDetails, votePETCache, electionCache, tabTellerSharedKey, tellerDetails, tellerIndex, false, true, numberBlocks, allMixesDone);
             }
-            catch (IllegalArgumentException e) { 
+            catch (IllegalArgumentException e) {
                 throw new IOException(e.getMessage());
-            }               
+            }
             catch (CryptoException e) {
                 // Abandon the election
                 tttUtil.abandonElection(electionID,
-                                "Cannot perform electoral roll mix: " + e.getMessage(), 
+                                "Cannot perform electoral roll mix: " + e.getMessage(),
                                 tellerIndex);
-            }               
+            }
         }
         catch (IOException e) {
             ioex = e;
-        }   
+        }
         eioex = endorse(ioex, {TT<-SUP});
         if (eioex != null) throw eioex;
         boolean electoralMixesAllDone = endorse(electoralMixesAllDone_, {TT<-SUP});
-        
+
         if (!isVoteMixesAllDone || !electoralMixesAllDone) {
             // the mixes haven't been completed yet. There
             // is nothing more to do at the moment. We will be informed
@@ -483,22 +483,22 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
             if (debugLog != null) debugLog.println("Mixes not yet done, exiting");
             return;
         }
-        
+
         // set the condition!
         setAllMixesDone(allMixesDone);
-        
+
         if (debugLog != null) debugLog.println("All mixes done");
         // Has this teller posted its release of the mix hashes yet?
         for (int{TT<-SUP} k = 0; k < 2; k++) {
             boolean isVoteMix = (k==0);
-            for (int block = 0; block < numberBlocks; block++) {                
+            for (int block = 0; block < numberBlocks; block++) {
                 boolean postedMixHashRevelation_ = false;
                 try {
                     postedMixHashRevelation_ = tttm.hasTTMixHashRevelation(electionCache, electionDetails, tellerDetails, tellerIndex, isVoteMix, block);
                 }
                 catch (IOException e) {
                     ioex = e;
-                }   
+                }
                 boolean postedMixHashRevelation = endorse(postedMixHashRevelation_, {TT<-SUP});
                 eioex = endorse(ioex, {TT<-SUP});
                 if (eioex != null) throw eioex;
@@ -512,7 +512,7 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                     }
                     catch (IOException e) {
                         ioex = e;
-                    }                
+                    }
                 }
                 eioex = endorse(ioex, {TT<-SUP});
                 if (eioex != null) throw eioex;
@@ -529,14 +529,14 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
         for (int k = 0; k < 2; k++) {
             boolean isVoteMix = (k==0);
 
-            for (int block = 0; block < numberBlocks; block++) {                
+            for (int block = 0; block < numberBlocks; block++) {
                 boolean postedMixRevelation_ = false;
                 try {
                     postedMixRevelation_ = (tttm.retrieveTTMixRevelation(electionDetails, tellerDetails, tellerIndex, isVoteMix, block) != null);
                 }
                 catch (IOException e) {
                     ioex = e;
-                }   
+                }
                 boolean postedMixRevelation = endorse(postedMixRevelation_, {TT<-SUP});
                 eioex = endorse(ioex, {TT<-SUP});
                 if (eioex != null) throw eioex;
@@ -550,7 +550,7 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                     }
                     catch (IOException e) {
                         ioex = e;
-                    }                
+                    }
                 }
                 eioex = endorse(ioex, {TT<-SUP});
                 if (eioex != null) throw eioex;
@@ -562,7 +562,7 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                 }
             }
         }
-        
+
         // go through each of the tellers, and check their revelations.
         boolean allMixesChecked = false;
         try {
@@ -571,7 +571,7 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
         }
         catch (IOException e) {
             ioex = e;
-        }                
+        }
         eioex = endorse(ioex, {TT<-SUP});
         if (eioex != null) throw eioex;
         if (!endorse(allMixesChecked, {TT<-SUP})) {
@@ -579,20 +579,20 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
             if (debugLog != null) debugLog.println("Exiting because the mix revelations are not yet ready to be checked.");
             return;
         }
-        
+
         // at this point, we have checked all of the teller's mix revelations, and decided they passed muster.
-        // We no longer need to store the mix info 
-        for (int block = 0; block < numberBlocks; block++) {                        
+        // We no longer need to store the mix info
+        for (int block = 0; block < numberBlocks; block++) {
             tttUtil.clearVoteMixInfo(electionID, block);
             tttUtil.clearElectoralRollMixInfo(electionID, block);
         }
-        
+
         // we now need to perform PET on the electoral roll and the votes.
         PETCache voteRollPETCache = null;
         if (electionCache != null) {
             voteRollPETCache = electionCache.newPETCache(META_VOTES_TO_ROLL, numberBlocks, numTabTellers);
         }
-        for (int block = 0; block < numberBlocks; block++) {                
+        for (int block = 0; block < numberBlocks; block++) {
             int blockBallotSize = tttm.retrieveInitialMixSize(electionDetails, votePETCache, electionCache, tabTellerSharedKey, true, block, tellerDetails, tellerIndex);
             for (int ballotIndex = 0; ballotIndex < blockBallotSize; ballotIndex++) {
                 // Has this teller posted the commitments for the roll-vote PETs?
@@ -602,7 +602,7 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                 }
                 catch (IOException e) {
                     ioex = e;
-                }   
+                }
                 boolean postedVoteRollPETCommitment = endorse(postedVoteRollPETCommitment_, {TT<-SUP});
                 eioex = endorse(ioex, {TT<-SUP});
                 if (eioex != null) throw eioex;
@@ -614,11 +614,11 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                     }
                     catch (IOException e) {
                         ioex = e;
-                    }                
+                    }
                 }
                 eioex = endorse(ioex, {TT<-SUP});
                 if (eioex != null) throw eioex;
-    
+
                 efailed = endorse(failed, {TT<-SUP});
                 if (efailed) {
                     if (debugLog != null) debugLog.println("Exiting because failed to post roll-vote pet commit.");
@@ -628,25 +628,25 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
 
         }
 
-        for (int block = 0; block < numberBlocks; block++) {                
+        for (int block = 0; block < numberBlocks; block++) {
             int blockBallotSize = tttm.retrieveInitialMixSize(electionDetails, votePETCache, electionCache, tabTellerSharedKey, true, block, tellerDetails, tellerIndex);
             for (int ballotIndex = 0; ballotIndex < blockBallotSize; ballotIndex++) {
                 // this teller has posted its commitments for the PETs. Has it posted its decommitment?
                 boolean postedVoteRollPETDecommitment_ = false;
                 PETShare{TT->TT;TT<-TT}[] shares = ttstore.retrieveRollVotePETShares(SUP, electionID, block, ballotIndex);
-                try {            
-                    postedVoteRollPETDecommitment_ = tttpet.hasTTPETShareDecommitments(voteRollPETCache, 
-                                                                                       META_VOTES_TO_ROLL, 
-                                                                                       electionDetails, 
+                try {
+                    postedVoteRollPETDecommitment_ = tttpet.hasTTPETShareDecommitments(voteRollPETCache,
+                                                                                       META_VOTES_TO_ROLL,
+                                                                                       electionDetails,
                                                                                        block,
                                                                                        ballotIndex,
-                                                                                       tellerDetails, 
+                                                                                       tellerDetails,
                                                                                        tellerIndex,
                                                                                        shares);
                 }
                 catch (IOException e) {
                     ioex = e;
-                }   
+                }
                 boolean postedVoteRollPETDecommitment = endorse(postedVoteRollPETDecommitment_, {TT<-SUP});
                 eioex = endorse(ioex, {TT<-SUP});
                 if (eioex != null) throw eioex;
@@ -654,10 +654,10 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                     // this teller hasn't posted its decommitment
                     try {
                         if (debugLog != null) debugLog.println("Posting roll-vote pet decommit for block " + block + " ballot " + ballotIndex);
-                        failed = (!tttpet.postPETDecommitment(voteRollPETCache, 
-                                                              electionDetails, 
-                                                              tellerDetails, 
-                                                              META_VOTES_TO_ROLL, 
+                        failed = (!tttpet.postPETDecommitment(voteRollPETCache,
+                                                              electionDetails,
+                                                              tellerDetails,
+                                                              META_VOTES_TO_ROLL,
                                                               block,
                                                               ballotIndex,
                                                               tellerIndex,
@@ -665,11 +665,11 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                     }
                     catch (IOException e) {
                         ioex = e;
-                    }                
+                    }
                 }
                 eioex = endorse(ioex, {TT<-SUP});
-                if (eioex != null) throw eioex;            
-    
+                if (eioex != null) throw eioex;
+
                 efailed = endorse(failed, {TT<-SUP});
                 if (efailed) {
                     if (debugLog != null) debugLog.println("Exiting because failed to post roll-vote pet decommit.");
@@ -677,8 +677,8 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                 }
             }
         }
-        
-        for (int block = 0; block < numberBlocks; block++) {                
+
+        for (int block = 0; block < numberBlocks; block++) {
             int blockBallotSize = tttm.retrieveInitialMixSize(electionDetails, votePETCache, electionCache, tabTellerSharedKey, true, block, tellerDetails, tellerIndex);
             for (int ballotIndex = 0; ballotIndex < blockBallotSize; ballotIndex++) {
                 // this teller has posted its decommitment. Has it posted its share of the distributed decryption?
@@ -688,7 +688,7 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                 }
                 catch (IOException e) {
                     ioex = e;
-                }   
+                }
                 boolean postedVoteRollPETDecrypt = endorse(postedVoteRollPETDecrypt_, {TT<-SUP});
                 eioex = endorse(ioex, {TT<-SUP});
                 if (eioex != null) throw eioex;
@@ -696,22 +696,22 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                     // this teller hasn't posted it's decrypt shares yet.
                     try {
                         if (debugLog != null) debugLog.println("Posting roll-vote pet decrypt for block " + block + " ballot " + ballotIndex);
-                        failed = (!tttpet.postPETDecryptShare(voteRollPETCache, 
-                                                              electionDetails, 
-                                                              tellerDetails, 
-                                                              META_VOTES_TO_ROLL, 
-                                                              block, 
+                        failed = (!tttpet.postPETDecryptShare(voteRollPETCache,
+                                                              electionDetails,
+                                                              tellerDetails,
+                                                              META_VOTES_TO_ROLL,
+                                                              block,
                                                               ballotIndex,
                                                               tellerIndex,
                                                               ttstore.retrieveRollVotePETShares(SUP, electionID, block, ballotIndex)));
                     }
                     catch (IOException e) {
                         ioex = e;
-                    }                
+                    }
                 }
                 eioex = endorse(ioex, {TT<-SUP});
                 if (eioex != null) throw eioex;
-    
+
                 efailed = endorse(failed, {TT<-SUP});
                 if (efailed) {
                     if (debugLog != null) debugLog.println("Exiting because failed to post roll-vote pet decrypt share.");
@@ -720,9 +720,9 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                 // We no longer need to store the PET info
                 tttUtil.clearRollVotePETShares(electionID, block, ballotIndex);
             }
-        }        
+        }
 
-                 
+
         DistDecryptCache finalVoteCache = null;
         if (electionCache != null) {
             finalVoteCache = electionCache.newDistDecryptCache(META_FINAL_VOTE_DECRYPTION, numberBlocks, numTabTellers);
@@ -734,7 +734,7 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
             }
             catch (IOException e) {
                 ioex = e;
-            }   
+            }
             boolean postedFinalVotePETDecrypt = endorse(postedFinalVotePETDecrypt_, {TT<-SUP});
             eioex = endorse(ioex, {TT<-SUP});
             if (eioex != null) throw eioex;
@@ -743,27 +743,27 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                 try {
                     try {
                         if (debugLog != null) debugLog.println("Posting final vote decrypt for block " + block);
-                        failed = (!postDecryptVotes(votePETCache, 
-                                                    voteRollPETCache, 
-                                                    finalVoteCache, 
-                                                    electionDetails, 
-                                                    electionCache, 
-                                                    tabTellerSharedKey, 
-                                                    tellerDetails, 
-                                                    tellerIndex, 
+                        failed = (!postDecryptVotes(votePETCache,
+                                                    voteRollPETCache,
+                                                    finalVoteCache,
+                                                    electionDetails,
+                                                    electionCache,
+                                                    tabTellerSharedKey,
+                                                    tellerDetails,
+                                                    tellerIndex,
                                                     block));
                     }
                     catch (CryptoException e) {
                         // Abandon the election
                         tttUtil.abandonElection(electionID,
-                                        "Cannot post final decrypt votes: " + e.getMessage(), 
-                                        tellerIndex);            
-                    }               
+                                        "Cannot post final decrypt votes: " + e.getMessage(),
+                                        tellerIndex);
+                    }
                 }
                 catch (IOException e) {
                     if (debugLog != null) debugLog.println("Error posting final vote decrypt for block " + block + " " + e.getMessage());
                     ioex = e;
-                }                
+                }
             }
             eioex = endorse(ioex, {TT<-SUP});
             if (eioex != null) throw eioex;
@@ -775,8 +775,8 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                 return;
             }
         }
-        
-        
+
+
         // that's it! Tabulation is done.
         if (debugLog != null) debugLog.println("posting election results...");
         boolean postedElectionResults_ = false;
@@ -785,7 +785,7 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
         }
         catch (IOException e) {
             ioex = e;
-        }   
+        }
         boolean postedElectionResults = endorse(postedElectionResults_, {TT<-SUP});
         eioex = endorse(ioex, {TT<-SUP});
         if (eioex != null) throw eioex;
@@ -798,14 +798,14 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                 catch (CryptoException e) {
                     // Abandon the election
                     tttUtil.abandonElection(electionID,
-                                    "Cannot post final election results: " + e.getMessage(), 
-                                    tellerIndex);            
-                }               
-                
+                                    "Cannot post final election results: " + e.getMessage(),
+                                    tellerIndex);
+                }
+
             }
             catch (IOException e) {
                 ioex = e;
-            }                
+            }
         }
         eioex = endorse(ioex, {TT<-SUP});
         if (eioex != null) throw eioex;
@@ -816,19 +816,19 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
             return;
         }
     }
-    
-    private void setAllMixesDone{TT<-SUP}(final ConditionHolder[{TT<-TT}]{TT<-SUP} allMixesDone_) 
+
+    private void setAllMixesDone{TT<-SUP}(final ConditionHolder[{TT<-TT}]{TT<-SUP} allMixesDone_)
     where caller(TT), endorse({TT<-TT}) {
         ConditionHolder[{TT<-TT}] allMixesDone = endorse(allMixesDone_, {TT<-TT});
         if (allMixesDone != null) {
             allMixesDone.c = true;
         }
-        
+
     }
     private ConditionHolder[{TT<-TT}]{TT<-SUP} findMixesDoneConditionHolder{TT<-SUP}(final ElectionDetails{TT<-SUP} electionDetails, int{TT<-SUP} numberBlocks) {
         if (electionDetails == null || bb == null || ttstore == null) return null;
         ElectionID electionID = electionDetails.electionID;
-        if (electionID == null) return null;        
+        if (electionID == null) return null;
 
         // look for a mixinfo
         MixInfo[TT] mi = null;
@@ -836,9 +836,9 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
             mi = ttstore.retrieveVoteMixInfo(SUP, electionID, block, true);
 
             if (mi ==null) {
-                mi = ttstore.retrieveElectoralRollMixInfo(SUP, electionID, block, true);            
+                mi = ttstore.retrieveElectoralRollMixInfo(SUP, electionID, block, true);
             }
-        
+
             if (mi != null) {
                 return mi.allMixesDone;
             }
@@ -848,17 +848,17 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
         return new ConditionHolder[{TT<-TT}]();
     }
 
-    
+
     /**
      * Post the decryption of the final votes.
      */
     private boolean postDecryptVotes{TT<-SUP}(PETCache{TT<-SUP} votePETCache,
             PETCache{TT<-SUP} votesToRollCache,
             DistDecryptCache{TT<-SUP} finalVoteCache,
-            ElectionDetails{TT<-SUP} electionDetails, 
+            ElectionDetails{TT<-SUP} electionDetails,
             ElectionCache{TT<-SUP} electionCache,
             ElGamalPublicKey{TT<-SUP} tabTellerSharedKey,
-            TellerDetails{TT<-SUP} tellerDetails, 
+            TellerDetails{TT<-SUP} tellerDetails,
             int{TT<-SUP} tellerIndex, int{TT<-SUP} block)
     throws (IOException{TT<-SUP}, CryptoException{TT<-SUP}) where caller(TT) {
         if (electionDetails == null || bb == null || ttstore == null || tttpet == null || tttUtil == null) return false;
@@ -867,10 +867,10 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
 
         int numTabTellers = TTTabulationUtil[TT,SUP,TELLS].numTabTellers(tellerDetails);
         ElGamalKeyPairShare keyShare = ttstore.retrieveKeyShare(SUP, electionID);
-        
+
         // now get the final (encrypted) votes
-        Vote{TT<-SUP;TT<-TELLS}[] finalVotes = null; 
-        Vote{TT<-SUP;TT<-TELLS}[] finalVotes_ = null; 
+        Vote{TT<-SUP;TT<-TELLS}[] finalVotes = null;
+        Vote{TT<-SUP;TT<-TELLS}[] finalVotes_ = null;
         IOException ioex = null;
         try {
             try {
@@ -880,7 +880,7 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
             }
             catch (CryptoException e) {
                 tttUtil.abandonElection(electionID,
-                                "Unable to post decryption shares for votes: " + e.getMessage(), 
+                                "Unable to post decryption shares for votes: " + e.getMessage(),
                                 tellerIndex);
             }
         }
@@ -891,8 +891,8 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
         if (eioex != null) throw eioex;
         finalVotes = endorse(finalVotes_, {TT<-SUP});
         if (endorse(finalVotes == null, {TT<-SUP})) return false;
-        
-        
+
+
         // post a decryption of the final votes.
         ElGamalCiphertext{TT<-SUP;TT<-TELLS}[] cprime = tttUtil.votesToCiphertexts(finalVotes);
         finalVotes = null; // clear this pointer to allow garbage collection
@@ -923,30 +923,30 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
         if (eioex != null) throw eioex;
         return true;
     }
-    
+
     static String blockMeta(String m, ElectionDetails electionDetails, int block, int ballotIndex, int tellerIndex) {
         if (electionDetails == null) return null;
         return m + ":" + electionDetails.blockName(block) + ":" + ballotIndex + ":" + tellerIndex;
     }
-       
+
     /**
      * Post the election results
      */
-    private boolean postElectionResults{TT<-SUP}(final ElectionDetails{TT<-SUP} electionDetails, 
+    private boolean postElectionResults{TT<-SUP}(final ElectionDetails{TT<-SUP} electionDetails,
             PETCache{TT<-SUP} cacheVTR,
-            DistDecryptCache{TT<-SUP} finalVoteCache, 
+            DistDecryptCache{TT<-SUP} finalVoteCache,
             ElectionCache{TT<-SUP} electionCache,
             ElGamalPublicKey{TT<-SUP} tabTellerSharedKey,
-            TellerDetails{TT<-SUP} tellerDetails, 
-            int{TT<-SUP} tellerIndex, 
-            int{TT<-SUP} numberBlocks):{} 
+            TellerDetails{TT<-SUP} tellerDetails,
+            int{TT<-SUP} tellerIndex,
+            int{TT<-SUP} numberBlocks):{}
     throws IOException, CryptoException where caller(TT) {
         if (electionDetails == null || bb == null || ttstore == null || tttpet == null || tttUtil == null) return false;
         ElectionID electionID = electionDetails.electionID;
         if (electionID == null) return false;
         BallotDesign ballotDesign = electionDetails.ballotDesign;
         if (ballotDesign == null) return false;
-        
+
         int numTabTellers = TTTabulationUtil[TT,SUP,TELLS].numTabTellers(tellerDetails);
 
         //TallyState[{}] state = endorse(ballotDesign.newTallyState(new label {}), {} to {TT<-SUP});
@@ -954,16 +954,16 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
         if (state == null) {
 //            abandonElection(electionID,
 //                            "Internal error, unable to tally results",
-//                            tellerIndex);    
+//                            tellerIndex);
              return false;
         }
 
         // loop over all the blocks
         for (int{TT<-SUP} block = 0; block < numberBlocks; block++) {
-    
+
             // now get the plaintexts for the final votes
             IOException ioex = null;
-            Vote{TT<-SUP;TT<-TELLS}[] finalVotes_ = null; 
+            Vote{TT<-SUP;TT<-TELLS}[] finalVotes_ = null;
             try {
                 try {
                     if (debugLog != null) debugLog.println("Getting final votes block " + block);
@@ -971,7 +971,7 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                 }
                 catch (CryptoException e) {
                     tttUtil.abandonElection(electionID,
-                                    "Unable to retrieve final votes: " + e.getMessage(), 
+                                    "Unable to retrieve final votes: " + e.getMessage(),
                                     tellerIndex);
                 }
             }
@@ -984,9 +984,9 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
             if (finalVotes == null) {
                 throw new IOException("Unable to retrieve final votes");
             }
-    
+
             if (debugLog != null) debugLog.println("votesToCiphertexts " + block);
-            ElGamalCiphertext{TT<-SUP;TT<-TELLS}[] allCiphertexts = tttUtil.votesToCiphertexts(finalVotes); 
+            ElGamalCiphertext{TT<-SUP;TT<-TELLS}[] allCiphertexts = tttUtil.votesToCiphertexts(finalVotes);
             if (debugLog != null) debugLog.println("done votesToCiphertexts " + block);
 
             // wait for all the tellers to post their shares of the vote decryption.
@@ -996,10 +996,10 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                 ElGamalMsg{TT<-SUP; TT<-TELLS}[] voteDecrypts_ = null;
                 try {
                     try {
-                        voteDecrypts_ = retrieveTTDecrypts(finalVoteCache, 
+                        voteDecrypts_ = retrieveTTDecrypts(finalVoteCache,
                                                            META_FINAL_VOTE_DECRYPTION,
                                                            block,
-                                                           0, 
+                                                           0,
                                                           tabTellerSharedKey,
                                                           electionDetails,
                                                           electionCache,
@@ -1010,13 +1010,13 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                     catch (CryptoException e) {
                         // failed crypto operation.
                         tttUtil.abandonElection(electionID,
-                                        "Unable to retrieve decryption shares for votes: " + e.getMessage(), 
+                                        "Unable to retrieve decryption shares for votes: " + e.getMessage(),
                                         tellerIndex);
                     }
                 }
                 catch (IOException e) {
                     ioex = e;
-                }   
+                }
                 eioex = endorse(ioex, {TT<-SUP});
                 if (eioex != null) throw eioex;
 
@@ -1029,7 +1029,7 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                 }
             }
             if (retriesLeft < 0 || voteDecrypts == null) return false;
-            
+
             if (debugLog != null) debugLog.println("got all final vote decrypt for block " + block);
 
             try {
@@ -1039,29 +1039,29 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                                         "Cannot compute election results: the number of votes (" + finalVotes.length +
                                         ") and the number of decryptions for those votes (" + voteDecrypts.length +
                                         ") disagree",
-                                        tellerIndex);    
+                                        tellerIndex);
                         //return false;
                     }
                 }
                 catch (IOException e) {
                     ioex = e;
-                }   
+                }
                 eioex = endorse(ioex, {TT<-SUP});
                 if (eioex != null) throw eioex;
-                    
+
                 if (debugLog != null) debugLog.println("Tallying final votes block " + block);
                 for (int i = 0; finalVotes != null && i < finalVotes.length; i++) {
                     try {
                         Vote v = finalVotes[i];
                         ElGamalMsg m = voteDecrypts[i];
                         // m is the decryption of v.encChoice
-    
+
                         if (v != null) {
                             try {
                                 ballotDesign.tally(new label {}, electionDetails.baseContext(electionDetails.voterBlockForBlock(block)), m, v.context, state, electionDetails.elGamalParameters);
                             }
                             catch (IllegalArgumentException ignore) { }
-                        }                          
+                        }
                     }
                     catch (ArrayIndexOutOfBoundsException imposs) { }
                 }
@@ -1084,17 +1084,17 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
         }
         if (debugLog != null) debugLog.println("Done posting election results");
         return true;
-    }    
+    }
 
-    VerifiableVote{}[]{TT<-SUP} retrieveValidVerifiableVotes{TT<-SUP}(final ElectionDetails{TT<-SUP} electionDetails, 
-            ElectionCache{TT<-SUP} electionCache, ElGamalPublicKey{TT<-SUP} tabTellerSharedKey, int{TT<-SUP} block) 
+    VerifiableVote{}[]{TT<-SUP} retrieveValidVerifiableVotes{TT<-SUP}(final ElectionDetails{TT<-SUP} electionDetails,
+            ElectionCache{TT<-SUP} electionCache, ElGamalPublicKey{TT<-SUP} tabTellerSharedKey, int{TT<-SUP} block)
     throws (IOException{TT<-SUP}) where caller(TT), SUP equiv electionDetails.supervisor {
         if (ttVotes == null) return null;
         return ttVotes.retrieveValidVerifiableVotes(electionDetails, electionCache, tabTellerSharedKey, block);
     }
 
-    int{TT<-TT} retrieveValidVerifiableVoteSize{TT<-SUP}(final ElectionDetails{TT<-SUP} electionDetails, 
-            ElectionCache{TT<-SUP} electionCache, ElGamalPublicKey{TT<-SUP} tabTellerSharedKey, int{TT<-SUP} block):{TT<-TT} 
+    int{TT<-TT} retrieveValidVerifiableVoteSize{TT<-SUP}(final ElectionDetails{TT<-SUP} electionDetails,
+            ElectionCache{TT<-SUP} electionCache, ElGamalPublicKey{TT<-SUP} tabTellerSharedKey, int{TT<-SUP} block):{TT<-TT}
     throws IOException where caller(TT), SUP equiv electionDetails.supervisor, endorse({TT<-TT}) {
         int ret = -1;
         IOException ioex = null;
@@ -1115,20 +1115,20 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
      * Retrieve from the bulletin board the final array of votes for an election,
      * i.e., the votes that contain capabilities that match one in the electoral roll.
      */
-    private Vote{TT<-SUP;TT<-TELLS}[]{TT<-SUP;TT<-TELLS} retrieveFinalVotes{TT<-SUP;TT<-TELLS}(final ElectionDetails{TT<-SUP;TT<-TELLS} electionDetails, 
+    private Vote{TT<-SUP;TT<-TELLS}[]{TT<-SUP;TT<-TELLS} retrieveFinalVotes{TT<-SUP;TT<-TELLS}(final ElectionDetails{TT<-SUP;TT<-TELLS} electionDetails,
             PETCache{TT<-SUP;TT<-TELLS} votesToRollCache,
             ElectionCache{TT<-SUP;TT<-TELLS} electionCache,
             ElGamalPublicKey{TT<-SUP;TT<-TELLS} tabTellerSharedKey,
-            TellerDetails{TT<-SUP;TT<-TELLS} tellerDetails, 
-            int{TT<-SUP;TT<-TELLS} tellerIndex, int{TT<-SUP;TT<-TELLS} block):{TT<-SUP;TT<-TELLS} 
-    throws IOException, CryptoException 
+            TellerDetails{TT<-SUP;TT<-TELLS} tellerDetails,
+            int{TT<-SUP;TT<-TELLS} tellerIndex, int{TT<-SUP;TT<-TELLS} block):{TT<-SUP;TT<-TELLS}
+    throws IOException, CryptoException
     where caller(TT) {
         if (electionDetails == null || tttUtil == null || votesToRollCache == null) return null;
         BallotDesign ballotDesign = electionDetails.ballotDesign;
         if (ballotDesign == null) return null;
         ElectionID electionID = electionDetails.electionID;
         if (electionID == null) return null;
-        
+
 //        if (electionCache != null) {
 //            if (electionCache.hasFinalVotes(block)) {
 //                return electionCache.getFinalVotes(block);
@@ -1136,8 +1136,8 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
 //        }
 
         int numTabTellers = TTTabulationUtil[TT,SUP,TELLS].numTabTellers(tellerDetails);
-        
-        
+
+
         // read in the final vote mix
         IOException ioex = null;
         VoteMix votes_ = null;
@@ -1146,25 +1146,25 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
             votes_ = (VoteMix)ElectionUtil.retrieveMix(TT, TELLS, electionCache, electionDetails, tellerDetails, true, block, numTabTellers, true);
         }
         catch (ClassCastException unlikely) { }
-        catch (IOException e) { 
+        catch (IOException e) {
             ioex = e;
         }
         VoteMix votes = endorse(votes_, {TT<-SUP;TT<-TELLS});
         IOException eioex = endorse(ioex, {TT<-SUP;TT<-TELLS});
         if (eioex != null) throw eioex;
-        
+
         if (votes == null) {
             if (debugLog != null) debugLog.println("  could not retrieve last vote mix for final votes");
             return null;
         }
-                
+
         int votesSize = endorse(votes.size(), {TT<-SUP;TT<-TELLS});
-        
-        Vote{TT<-SUP;TT<-TELLS}[]{TT<-SUP;TT<-TELLS} validVotes = new Vote[votesSize<0?0:votesSize]; 
+
+        Vote{TT<-SUP;TT<-TELLS}[]{TT<-SUP;TT<-TELLS} validVotes = new Vote[votesSize<0?0:votesSize];
         int{TT<-SUP;TT<-TELLS} count = 0;
 
         for (int ballotIndex = 0; ballotIndex < votesSize; ballotIndex++) {
-            Vote vi = null; 
+            Vote vi = null;
             try {
                 vi = (Vote)votes.get(ballotIndex);
             }
@@ -1180,7 +1180,7 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
             while (petDecrypts == null && retriesLeft-- > 0) {
                 try {
                     try {
-                        petDecrypts = retrieveTTDecrypts(votesToRollCache, 
+                        petDecrypts = retrieveTTDecrypts(votesToRollCache,
                                                          META_VOTES_TO_ROLL,
                                                          block,
                                                          ballotIndex,
@@ -1194,13 +1194,13 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                     catch (CryptoException e) {
                         // failed crypto operation.
                         tttUtil.abandonElection(electionID,
-                                        "Unable to retrieve decryption shares for votes to roll PET: " + e.getMessage(), 
+                                        "Unable to retrieve decryption shares for votes to roll PET: " + e.getMessage(),
                                         tellerIndex);
                     }
                 }
                 catch (IOException e) {
                     ioex = e;
-                }   
+                }
                 eioex = endorse(ioex, {TT<-SUP; TT<-TELLS});
                 if (eioex != null) throw eioex;
 
@@ -1232,10 +1232,10 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
 
             }
         }
-        
-        
+
+
         if (count != validVotes.length) {
-        
+
             // didn't use the whole array. Shrink it down.
             Vote{TT<-SUP;TT<-TELLS}[] n = new Vote[count];
             for (int i = 0; i < count; i++) {
@@ -1247,7 +1247,7 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
             }
             validVotes = n;
         }
-        
+
 //        if (electionCache != null) {
 //            if (electionCache.hasFinalVotes(block)) {
 //                return electionCache.getFinalVotes(block);
@@ -1256,23 +1256,23 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
         return validVotes;
 
     }
-    
-    
-    
+
+
+
     /**
      * Convert an array of decommitments into an array of messages.
      */
-    private ElGamalMsg{TT<-SUP;TT<-TELLS}[]{TT<-SUP;TT<-TELLS} 
+    private ElGamalMsg{TT<-SUP;TT<-TELLS}[]{TT<-SUP;TT<-TELLS}
     decryptionSharesToMsgs{TT<-SUP;TT<-TELLS}(ElectionDetails{TT<-SUP;TT<-TELLS} electionDetails,
                ElectionCache{TT<-SUP;TT<-TELLS} electionCache,
                TellerDetails{TT<-SUP;TT<-TELLS} tellerDetails,
                int{TT<-SUP;TT<-TELLS} tellerIndex,
-               ElGamalPublicKey{TT<-SUP;TT<-TELLS} tabTellerSharedKey, 
-               ElGamalCiphertext{TT<-SUP;TT<-TELLS}[]{TT<-SUP;TT<-TELLS} allCiphertexts, 
-               TabTellerDistributedDecryptions{TT<-SUP;TT<-TELLS}[]{TT<-SUP;TT<-TELLS} allDecs):{TT<-SUP;TT<-TELLS} 
-    throws CryptoException where caller(TT) { 
+               ElGamalPublicKey{TT<-SUP;TT<-TELLS} tabTellerSharedKey,
+               ElGamalCiphertext{TT<-SUP;TT<-TELLS}[]{TT<-SUP;TT<-TELLS} allCiphertexts,
+               TabTellerDistributedDecryptions{TT<-SUP;TT<-TELLS}[]{TT<-SUP;TT<-TELLS} allDecs):{TT<-SUP;TT<-TELLS}
+    throws CryptoException where caller(TT) {
         if (allDecs == null) return null;
-        // We need to have at least one element in the array, 
+        // We need to have at least one element in the array,
         // i.e., there must be at least one tabulation teller.
         if (allDecs.length < 1) return null;
 
@@ -1286,13 +1286,13 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
         catch (ArrayIndexOutOfBoundsException imposs) { }
 
         ElGamalMsg{TT<-SUP;TT<-TELLS}[] ret = new ElGamalMsg[length];
-        ElGamalDecryptionShare{TT<-SUP;TT<-TELLS}[] decs = new ElGamalDecryptionShare[allDecs.length];        
+        ElGamalDecryptionShare{TT<-SUP;TT<-TELLS}[] decs = new ElGamalDecryptionShare[allDecs.length];
         for (int{TT<-SUP;TT<-TELLS} i = 0; i < length; i++) {
-            
+
             for (int{TT<-SUP;TT<-TELLS} j = 0; j < allDecs.length; j++) {
                 try {
                     // check that the decryption shares from teller ttdecs.tellerIndex verify
-                    decs[j] = null; 
+                    decs[j] = null;
                     TabTellerDistributedDecryptions ttdecs = allDecs[j];
                     decs[j] = ttdecs.decrypts[i];
                     if (ttdecs.tellerIndex == tellerIndex) {
@@ -1304,7 +1304,7 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                     ElGamalKeyShare keyShare_ = null;
                     try {
                         if (debugLog != null) debugLog.println("start retrieveTabTellerSharedPublicKey");
-                        keyShare_ = ElectionUtil.retrieveTabTellerSharedPublicKey(electionDetails.electionID, electionCache, ttdecs.tellerIndex); 
+                        keyShare_ = ElectionUtil.retrieveTabTellerSharedPublicKey(electionDetails.electionID, electionCache, ttdecs.tellerIndex);
                     }
                     catch (NullPointerException ignore) { }
                     catch (IOException{} ignore) {
@@ -1324,28 +1324,28 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                 catch (NullPointerException ignore) { }
                 catch (ArrayIndexOutOfBoundsException imposs) { }
             }
-            
+
             try {
-                ret[i] = null; 
+                ret[i] = null;
                 if (debugLog != null) debugLog.println("start combine decrypt share");
                 ret[i] = CryptoUtil.factory().combineDecryptionShares(new label {TT<-SUP;TT<-TELLS}, allCiphertexts[i], decs, electionDetails.elGamalParameters);
                 if (debugLog != null) debugLog.println("stop combine decrypt share");
             }
-            catch (ArrayIndexOutOfBoundsException imposs) { }      
+            catch (ArrayIndexOutOfBoundsException imposs) { }
             catch (NullPointerException imposs) { }
             catch (CryptoException ex) {
-                // the verification of the shares failed. 
+                // the verification of the shares failed.
                 throw ex;
             }
         }
         return ret;
     }
-        
+
 
     /**
      * Create shares and proofs for the messages contained in m
      */
-    TabTellerDistributedDecryptions{} sharesForMsg{}(label lbl, ElGamalCiphertext{*lbl}[]{} m_, ElGamalKeyPairShare{TT->TT} keyShare_, int{} tellerIndex_) 
+    TabTellerDistributedDecryptions{} sharesForMsg{}(label lbl, ElGamalCiphertext{*lbl}[]{} m_, ElGamalKeyPairShare{TT->TT} keyShare_, int{} tellerIndex_)
     where {*lbl} <= {}, caller(TT), endorse({TT<-TT}) {
         ElGamalCiphertext{*lbl}[] m = endorse(m_, {TT<-TT});
         ElGamalKeyPairShare keyShare = endorse(keyShare_, {TT<-TT;TT->TT});
@@ -1353,7 +1353,7 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
         if (m == null) return null;
         ElGamalDecryptionShare{TT<-TT}[] decrypts = new ElGamalDecryptionShare[m.length];
         ElGamalProofDiscLogEquality{TT<-TT}[] proofs = new ElGamalProofDiscLogEquality[m.length];
-        
+
         for (int i = 0; i < m.length; i++) {
             ElGamalCiphertext mi_ = null;
             try {
@@ -1384,28 +1384,28 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
 
             }
         }
-        
+
         return new TabTellerDistributedDecryptions(new label {TT<-TT}, tellerIndex, decrypts, proofs);
     }
 
     ElGamalMsg{TT<-SUP;TT<-TELLS}[]{TT<-SUP; TT<-TELLS} retrieveTTDecrypts{TT<-SUP; TT<-TELLS}(
                            DistDecryptCache{TT<-SUP; TT<-TELLS} cache,
-                           String{TT<-SUP; TT<-TELLS} meta, 
-                           int{TT<-SUP; TT<-TELLS} block, 
-                           int{TT<-SUP; TT<-TELLS} ballotIndex, 
+                           String{TT<-SUP; TT<-TELLS} meta,
+                           int{TT<-SUP; TT<-TELLS} block,
+                           int{TT<-SUP; TT<-TELLS} ballotIndex,
                            ElGamalPublicKey{TT<-SUP; TT<-TELLS} tabTellerSharedKey,
-                           ElectionDetails{TT<-SUP; TT<-TELLS} electionDetails, 
+                           ElectionDetails{TT<-SUP; TT<-TELLS} electionDetails,
                            ElectionCache{TT<-SUP; TT<-TELLS} electionCache,
                            TellerDetails{TT<-SUP; TT<-TELLS} tellerDetails,
                            int{TT<-SUP;TT<-TELLS} tellerIndex,
-                           ElGamalCiphertext{TT<-SUP;TT<-TELLS}[]{TT<-SUP; TT<-TELLS} allCiphertexts):{TT<-SUP;TT<-TELLS} 
-    throws IOException, CryptoException 
+                           ElGamalCiphertext{TT<-SUP;TT<-TELLS}[]{TT<-SUP; TT<-TELLS} allCiphertexts):{TT<-SUP;TT<-TELLS}
+    throws IOException, CryptoException
     where caller(TT)
     {
         // go to the bulletin board, and try to retreive all tab teller decryption shares
         if (electionDetails == null || bb == null || cache == null) return null;
         ElectionID electionID = electionDetails.electionID;
-        
+
         if (debugLog != null) debugLog.println("retrieve tt decrypts for " + meta + " block " + block + " ballot " + ballotIndex);
         int numTabTellers = TTTabulationUtil[TT,SUP,TELLS].numTabTellers(tellerDetails);
         TabTellerDistributedDecryptions{TT<-SUP;TT<-TELLS}[] allDecryptShares = new TabTellerDistributedDecryptions[numTabTellers<0?0:numTabTellers];
@@ -1420,14 +1420,14 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                 if (debugLog != null) debugLog.println("Error 2!: " + ex.getMessage() + " meta " + meta + " block " + block);
                 ioex = ex;
             }
-            
+
             IOException eioex = endorse(ioex, {TT<-SUP;TT<-TELLS});
             if (eioex != null) throw eioex;
-            
+
             TabTellerDistributedDecryptions c = endorse(c_, {TT<-SUP;TT<-TELLS});
 
             if (c == null) return null;
-            try {                
+            try {
                 allDecryptShares[i] = c;
             }
             catch (ArrayIndexOutOfBoundsException imposs) { }
@@ -1440,20 +1440,20 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
             ret = decryptionSharesToMsgs(electionDetails, electionCache, tellerDetails, tellerIndex, tabTellerSharedKey, allCiphertexts, allDecryptShares);
             if (debugLog != null) debugLog.println("done decryption shares to msgs for " + meta + " block " + block + " ballot " + ballotIndex);
         }
-        catch (CryptoException e) { 
+        catch (CryptoException e) {
             cex = e;
         }
         CryptoException ecex = endorse(cex, {TT<-SUP; TT<-TELLS});
-        if (ecex != null) throw ecex;                                         
+        if (ecex != null) throw ecex;
         return ret;
     }
 
     private boolean{} hasTTDecryptShares{}(DistDecryptCache{} cache,
-            String{} meta, 
-            ElectionDetails{} electionDetails, 
+            String{} meta,
+            ElectionDetails{} electionDetails,
             int{} block,
             int{} ballotIndex,
-            TellerDetails{} tellerDetails, 
+            TellerDetails{} tellerDetails,
             int{} tellerIndex) throws (IOException{}) {
         if (electionDetails == null || bb == null) return false;
         if (cache != null && cache.hasDecryptShare(meta, block, ballotIndex, tellerIndex)) {
@@ -1461,13 +1461,13 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
         }
         return retrieveTTDecryptShares(cache, meta, electionDetails, block, ballotIndex, tellerDetails, tellerIndex) != null;
     }
-            
+
     private TabTellerDistributedDecryptions{} retrieveTTDecryptShares{}(DistDecryptCache{} cache,
-            String{} meta, 
-            ElectionDetails{} electionDetails, 
-            int{} block, 
-            int{} ballotIndex, 
-            TellerDetails{} tellerDetails, 
+            String{} meta,
+            ElectionDetails{} electionDetails,
+            int{} block,
+            int{} ballotIndex,
+            TellerDetails{} tellerDetails,
             int{} tellerIndex) throws (IOException{}) {
         // go to the bulletin board, and try to retreive all tab teller decryption shares
         try {
@@ -1475,11 +1475,11 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
             if (cache != null && cache.hasDecryptShare(meta, block, ballotIndex, tellerIndex)) {
                 return cache.getDecryptShare(meta, block, ballotIndex, tellerIndex);
             }
-            
+
             String metaSuffix = blockMeta(meta, electionDetails, block, ballotIndex, tellerIndex);
             List[{}] results = bb.retrieveParams(XMLDeserializers.TabTellerDistributedDecryptions(), TabTellerDistributedDecryptions.META_PREFIX+metaSuffix, null, null);
             if (results == null) return null;
-            // parse and verify the posts. 
+            // parse and verify the posts.
             for (int i = 0; i < results.size(); i++) {
                 BBPost post = null;
                 try {
@@ -1499,13 +1499,13 @@ public class TTTabulation[principal TT, principal SUP, principal TELLS] {
                         return c;
                     }
                 }
-                catch (ClassCastException ignore) {  } 
+                catch (ClassCastException ignore) {  }
             }
-            return null;  
+            return null;
         }
-        catch (IllegalArgumentException e) { 
+        catch (IllegalArgumentException e) {
             throw new IOException(e.getMessage());
-        }        
+        }
     }
-       
+
 }

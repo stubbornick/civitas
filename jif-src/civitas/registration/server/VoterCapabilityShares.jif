@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.registration.server;
 
 import java.io.*;
@@ -24,7 +24,7 @@ public class VoterCapabilityShares[principal RT] {
     // ERASURE POLICY
     // DECLASSIFICATION POLICY
     final VoteCapabilityShare{RT->[RT /delivered/ *]deliveryRequested-> _; RT<-RT}[]{this} caps;
-    
+
     public VoterCapabilityShares{RT<-RT}(int{this} size, ElGamalParameters{this} params) {
         // ERASURE POLICY
         // DECLASSIFICATION POLICY
@@ -37,6 +37,6 @@ public class VoterCapabilityShares[principal RT] {
             catch (NullPointerException imposs) { }
         }
 
-        this.caps = cs;        
+        this.caps = cs;
     }
 }

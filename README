@@ -48,13 +48,13 @@ May 2008
      |  |                            class path correctly.
      |  +- jifec                 JifE compiler.
      +- build.xml            Ant file for compiling Civitas.
-     +- config.xml           Auxiliary ant file for compiling Civitas. 
+     +- config.xml           Auxiliary ant file for compiling Civitas.
      +- config.properties    Override ant configuration settings.
      +- java-src             Java source code for Civitas. Mostly the
      |                         implementation of a cryptographic library,
      |                         and socket listeners for services.
      +- jif-src              JifE source code for Civitas.
-     +- lib                  Jar files for Civitas and components on which 
+     +- lib                  Jar files for Civitas and components on which
      |                         Civitas depends
      +- sig-src              JifE signature files for the Java code in java-src.
      +- test                 Java code for test harnesses and to facilitate
@@ -96,7 +96,7 @@ May 2008
 
 2.2 Services and clients
 ------------------------
-  
+
   If you are not using the experiment framework to simulate an
   election, you can manually start services and run clients.
 

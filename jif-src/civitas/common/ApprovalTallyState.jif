@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import java.util.*;
@@ -12,20 +12,20 @@ import java.io.*;
 /**
  * TallyState for a ApprovalBallotDesign.
  */
-public class ApprovalTallyState[label L] extends TallyState[L] {        
+public class ApprovalTallyState[label L] extends TallyState[L] {
     private final int{L}[]{this} approvals;
     private final int{L}[]{this} disapprovals;
     public final String{this} const[]{this} candidates;
-    
+
     ApprovalTallyState(String{this} const[]{this} candidates) {
         this.candidates = candidates;
         int size = 0;
-        if (candidates != null) size = candidates.length; 
+        if (candidates != null) size = candidates.length;
         this.approvals = new int[size];
         this.disapprovals = new int[size];
         super();
     }
-    
+
     void record{L}(int{L} i, boolean{L} approve) throws (IndexOutOfBoundsException{L}) {
         if (approvals != null && disapprovals != null && i >= 0 && i < approvals.length) {
             try {
@@ -33,7 +33,7 @@ public class ApprovalTallyState[label L] extends TallyState[L] {
                     approvals[i]++;
                 }
                 else {
-                    disapprovals[i]++;                    
+                    disapprovals[i]++;
                 }
                 return;
             }
@@ -41,7 +41,7 @@ public class ApprovalTallyState[label L] extends TallyState[L] {
         }
         throw new IndexOutOfBoundsException();
     }
-    
+
     public TallyStateFinal{L} finalTally{L}() {
         return new ApprovalTallyStateFinal(L, candidates, approvals, disapprovals);
     }

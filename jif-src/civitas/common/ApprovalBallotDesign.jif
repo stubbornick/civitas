@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import civitas.crypto.*;
@@ -12,16 +12,16 @@ import java.io.*;
 
 /**
  * This class is the ballot design of an approval race. In an approval race, there
- * is a slate of candidates, and the voter indicates approval or 
+ * is a slate of candidates, and the voter indicates approval or
  * disapproval of each candidate. An ApprovalBallotDesign describes the
  * candidates in the race.
  */
 public class ApprovalBallotDesign extends BallotDesign {
     public static final String{*<-*} KIND = "approval";
     private static final String{*!:} CONTEXT_SUFFIX = "approval:";
-    
+
     public final String{this} const[]{this} candidates;
-    
+
     public ApprovalBallotDesign{*lbl}(label lbl, String{*lbl}[]{*lbl} candidates) where {*lbl} <= {this} {
         String{this} const[]{this} cs;
         if (candidates != null) {
@@ -38,7 +38,7 @@ public class ApprovalBallotDesign extends BallotDesign {
         if (candidates == null) return 0;
         return candidates.length;
     }
-    
+
     /**
      * Return the index of the candidate cand, -1 if cand is not a candidate.
      */
@@ -52,7 +52,7 @@ public class ApprovalBallotDesign extends BallotDesign {
                 }
             }
             catch (ArrayIndexOutOfBoundsException imposs) { }
-        }        
+        }
         return -1;
     }
 
@@ -60,31 +60,31 @@ public class ApprovalBallotDesign extends BallotDesign {
         if (!(b instanceof ApprovalBallot[lbl])) {
             throw new IllegalArgumentException("Ballot is not an approval ballot.");
         }
-        
+
         ApprovalBallot[lbl] ab = (ApprovalBallot[lbl]) b;
         String{*lbl}[] abCandidates = ab.candidates;
         boolean{*lbl}[] abApproved = ab.approved;
-        
+
         if (abCandidates == null || abApproved == null || candidates == null) {
             throw new IllegalArgumentException("Missing slate.");
         }
-        
+
         if (abCandidates.length != candidates.length || abApproved.length != candidates.length) {
-            throw new IllegalArgumentException("The ballot's candidates do not match the ballot design's candidates.");            
+            throw new IllegalArgumentException("The ballot's candidates do not match the ballot design's candidates.");
         }
-        
+
         for (int i = 0; i < candidates.length; i++) {
             try {
                 String cD = candidates[i];
                 String cB = abCandidates[i];
                 if (cD != cB && (cD == null || !cD.equalsIgnoreCase(cB))) {
-                    throw new IllegalArgumentException("The ballot's candidates do not match the ballot design's candidates.");                            
+                    throw new IllegalArgumentException("The ballot's candidates do not match the ballot design's candidates.");
                 }
             }
             catch (ArrayIndexOutOfBoundsException imposs) { }
         }
     }
-    
+
     /*
      * There is one vote produced for each candidate. Each choice is either 1 for approve,
      * or 0 for not-approve.
@@ -92,17 +92,17 @@ public class ApprovalBallotDesign extends BallotDesign {
     public int{this} votesProducedPerBallot() {
         return numberOfCandidates();
     }
-    public int{this} maxPossibleChoices() {       
+    public int{this} maxPossibleChoices() {
         return 2;
     }
-    
+
 
     public VoterSubmission{*lbl} decompose{*lbl}(label{*lbl} lbl, Ballot[lbl]{*lbl} ballot,
             int{*lbl} voterBlock,
-            ElGamalPublicKey{*lbl} key, 
+            ElGamalPublicKey{*lbl} key,
             ElGamalCiphertext{*lbl}const[]{*lbl} ciphertexts,
-            String{*lbl} context, 
-            Map[lbl,lbl]{*lbl} capabilities) throws (IllegalArgumentException{*lbl}) 
+            String{*lbl} context,
+            Map[lbl,lbl]{*lbl} capabilities) throws (IllegalArgumentException{*lbl})
             {
 
         if (!(ballot instanceof ApprovalBallot[lbl])) {
@@ -111,12 +111,12 @@ public class ApprovalBallotDesign extends BallotDesign {
         ApprovalBallot[lbl] ab = (ApprovalBallot[lbl])ballot;
         boolean{*lbl}[] approved = ab.approved;
         if (candidates == null || approved == null || candidates.length != approved.length) {
-            throw new IllegalArgumentException("Invalid ballot.");            
+            throw new IllegalArgumentException("Invalid ballot.");
         }
         if (key == null) {
-            throw new IllegalArgumentException("No key supplied");            
+            throw new IllegalArgumentException("No key supplied");
         }
-        
+
         // add one vote for each candidate.
         VerifiableVote{*lbl}[] votes = new VerifiableVote[candidates.length];
         for (int i = 0; i < candidates.length; i++) {
@@ -142,9 +142,9 @@ public class ApprovalBallotDesign extends BallotDesign {
                 throw new IllegalArgumentException("Not enough capabilities supplied");
             }
             if (c == null) {
-                throw new IllegalArgumentException("No capability supplied for context " + desiredContext);                
+                throw new IllegalArgumentException("No capability supplied for context " + desiredContext);
             }
-        
+
             ElGamalReencryptFactor encCapFactor = null;
             ElGamalCiphertext encCap = null;
             ProofVote proofVote = null;
@@ -156,43 +156,43 @@ public class ApprovalBallotDesign extends BallotDesign {
             catch (NullPointerException imposs) { }
 
             try {
-                VerifiableVote v = new VerifiableVote(desiredContext, 
-                                                      encChoice, 
+                VerifiableVote v = new VerifiableVote(desiredContext,
+                                                      encChoice,
                                                       encCap,
                                                       proofVote);
 
                 votes[i] = v; // RIGHT HERE THERE SHOULD BE A DECLASSIFICATION!
             }
             catch (ArrayIndexOutOfBoundsException imposs) { }
-        }        
+        }
         VoterSubmission vs = new VoterSubmission(lbl, voterBlock, votes);
         return vs;
-    }    
-    public void checkVoterSubmission(VoterSubmission vs, int startIndex, String context, CiphertextList ciphertexts, ElGamalPublicKey pubKey) 
+    }
+    public void checkVoterSubmission(VoterSubmission vs, int startIndex, String context, CiphertextList ciphertexts, ElGamalPublicKey pubKey)
     throws (IllegalArgumentException{this;vs;startIndex;context;ciphertexts;pubKey}) {
         if (candidates == null) {
-            throw new IllegalArgumentException("Invalid ballot.");            
+            throw new IllegalArgumentException("Invalid ballot.");
         }
-        if (vs == null) {            
-            throw new IllegalArgumentException("Invalid voter submission.");            
+        if (vs == null) {
+            throw new IllegalArgumentException("Invalid voter submission.");
         }
         if (pubKey == null) {
-            throw new IllegalArgumentException("Invalid public Key");                        
+            throw new IllegalArgumentException("Invalid public Key");
         }
         try {
             for (int i = 0; i < votesProducedPerBallot(); i++) {
                 VerifiableVote vv = vs.votes[startIndex + i];
-                if (vv == null) {            
-                    throw new IllegalArgumentException("Invalid verifiable vote.");            
+                if (vv == null) {
+                    throw new IllegalArgumentException("Invalid verifiable vote.");
                 }
                 String vvcontext = vv.context;
                 String desiredContext = (context==null?"":context) + CONTEXT_SUFFIX + i;
                 if (!desiredContext.equals(vvcontext)) {
-                    throw new IllegalArgumentException("Vote did not have correct context");                
+                    throw new IllegalArgumentException("Vote did not have correct context");
                 }
 
                 if (!vv.verify(pubKey, ciphertexts, maxPossibleChoices())) {
-                    throw new IllegalArgumentException("Vote choice does not pass verification.");                
+                    throw new IllegalArgumentException("Vote choice does not pass verification.");
                 }
             }
             return;
@@ -204,7 +204,7 @@ public class ApprovalBallotDesign extends BallotDesign {
     public void contextsNeeded{*lbl}(label{*lbl} lbl, List[lbl]{*lbl} l, String{*lbl} context) throws (IllegalArgumentException{*lbl}) {
         if (l == null) return;
         if (candidates == null) {
-            throw new IllegalArgumentException("Invalid ballot.");            
+            throw new IllegalArgumentException("Invalid ballot.");
         }
         for (int i = 0; i < votesProducedPerBallot(); i++) {
             try {
@@ -217,20 +217,20 @@ public class ApprovalBallotDesign extends BallotDesign {
     public String nthContext(int n) {
         if (n >= 0 && n < votesProducedPerBallot()) return CONTEXT_SUFFIX + n;
         return null;
-    }    
-    
+    }
+
     public void tally{*lbl}(label{*lbl} lbl, String{*lbl} ctxt, ElGamalMsg{*lbl} m, String{*lbl} c, TallyState[lbl]{*lbl} s, ElGamalParameters{*lbl} params) throws (IllegalArgumentException{*lbl}) {
         if (!(s instanceof ApprovalTallyState[lbl])) {
             throw new IllegalArgumentException("Incorrect tally state");
         }
         ApprovalTallyState[lbl] ats = (ApprovalTallyState[lbl])s;
-        
+
         // interpret the context and the message
         String desiredContext = (ctxt==null?"":ctxt) + CONTEXT_SUFFIX;
         if (c == null || desiredContext == null || !c.startsWith(desiredContext)) {
             throw new IllegalArgumentException("Incorrect context");
-        }        
-        
+        }
+
         if (m == null) {
             throw new IllegalArgumentException("Null message");
         }
@@ -247,9 +247,9 @@ public class ApprovalBallotDesign extends BallotDesign {
         catch (NullPointerException imposs) {
             throw new IllegalArgumentException("impossible!");
         }
-        
+
     }
-    
+
     public TallyState[lbl]{*lbl2} newTallyState{*lbl2}(label{*lbl2} lbl, label{*lbl2} lbl2) where lbl2 <= lbl  {
         return new ApprovalTallyState[lbl](this.candidates);
     }
@@ -266,7 +266,7 @@ public class ApprovalBallotDesign extends BallotDesign {
             sb.print("</size>");
         }
         else {
-            sb.print("<size>0</size>");            
+            sb.print("<size>0</size>");
         }
         sb.print("<candidates>");
         try {
@@ -274,14 +274,14 @@ public class ApprovalBallotDesign extends BallotDesign {
                 sb.print("<candidate>");
                 Util.escapeString(candidates[i], lbl, sb);
                 sb.print("</candidate>");
-            }        
+            }
         }
         catch (NullPointerException imposs) { }
         catch (ArrayIndexOutOfBoundsException imposs) { }
         sb.print("</candidates>");
         sb.print("</" + OPENING_TAG + ">");
     }
-    
+
     public static BallotDesign{*lbl} fromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r)  throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
         int size = Util.readSimpleIntTag(lbl, r, "size");
         Util.swallowTag(lbl, r, "candidates");
@@ -294,9 +294,9 @@ public class ApprovalBallotDesign extends BallotDesign {
             catch (ArrayIndexOutOfBoundsException imposs) { }
         }
 
-        
+
         Util.swallowEndTag(lbl, r, "candidates");
         ApprovalBallotDesign b = new ApprovalBallotDesign(lbl, n);
         return b;
-    }   
+    }
 }

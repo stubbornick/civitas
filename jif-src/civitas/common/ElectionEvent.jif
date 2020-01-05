@@ -3,31 +3,31 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import java.io.*;
 
 /**
- * This class is the super class of all election events, such as start, 
+ * This class is the super class of all election events, such as start,
  * stop, and finalize election. Election events are posted by the election
  * supervisor to the bulletin board, and indicate what phase the election is
  * in. For example the election start event is posted when all of the election
  * setup has been produced (e.g., teller details, electoral roll). The election
  * stop event is posted when voting has finished, and tabulation of the
  * election can begin. The finalize event indicates the election has been
- * finalized, and the results declared. 
+ * finalized, and the results declared.
  */
 public class ElectionEvent implements XMLSerializable {
     public static final String{*<-*} META = "electionEvent";
-    
+
     public static final String{*<-*} EVENT_KIND_START = "start";
     public static final String{*<-*} EVENT_KIND_STOP = "stop";
     public static final String{*<-*} EVENT_KIND_FINALIZE = "finalize";
-    
+
     public final String{this} kind;
     public final ElectionID{this} electionID;
-    
+
     /**
      * The sequence number of an event must be a non-negative integer
      * greater than
@@ -38,7 +38,7 @@ public class ElectionEvent implements XMLSerializable {
      * replay attacks.
      */
     public final int{this} sequence;
-    
+
     public ElectionEvent(String{this} kind, ElectionID{this} electionID, int{this} sequence) {
         this.kind = kind;
         this.electionID = electionID;
@@ -59,15 +59,15 @@ public class ElectionEvent implements XMLSerializable {
         sb.print("<seq>" + sequence + "</seq>");
         toXMLsub(lbl, sb);
         sb.print("</electionEvent>");
-    }    
-    
-    protected void toXMLsub{*lbl}(label lbl, PrintWriter[lbl]{*lbl} sb)  {
-        
     }
-    
+
+    protected void toXMLsub{*lbl}(label lbl, PrintWriter[lbl]{*lbl} sb)  {
+
+    }
+
     /**
      * Convert an xml string into an election event
-     * 
+     *
      * @throws IllegalArgumentException of the xml is not appropriate for the object.
      */
     public static ElectionEvent{*lbl} fromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r) throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
@@ -75,13 +75,13 @@ public class ElectionEvent implements XMLSerializable {
         String kind = Util.unescapeString(Util.readSimpleTag(lbl, r, "kind"));
         ElectionID electionID = ElectionID.fromXML(lbl, r);
         int seq = Util.readSimpleIntTag(lbl, r, "seq");
-        
+
         if (EVENT_KIND_FINALIZE != null && EVENT_KIND_FINALIZE.equals(kind)) {
             ElectionEvent e = ElectionEventFinalize.fromXMLsub(lbl, r, electionID, seq);
             Util.swallowEndTag(lbl, r, "electionEvent");
             return e;
         }
-        
+
         Util.swallowEndTag(lbl, r, "electionEvent");
         return new ElectionEvent(kind, electionID, seq);
     }

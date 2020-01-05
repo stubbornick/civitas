@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.crypto;
 
 import java.io.*;
@@ -11,9 +11,9 @@ import java.io.*;
  * The NIZK proof that accompanies a vote when posted on a BB.
  */
 public interface ProofVote {
-    public boolean verify(ElGamalParameters params, 
-                          ElGamalCiphertext encCapability, 
-                          ElGamalCiphertext encChoice, 
+    public boolean verify(ElGamalParameters params,
+                          ElGamalCiphertext encCapability,
+                          ElGamalCiphertext encChoice,
                           String context);
     public void toXML{*lbl}(label lbl, PrintWriter[lbl]{*lbl} sb) where {this} <= lbl;
     public boolean equals(ProofVote p);

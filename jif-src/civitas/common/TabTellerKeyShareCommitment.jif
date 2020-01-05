@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import civitas.crypto.*;
@@ -22,7 +22,7 @@ public class TabTellerKeyShareCommitment implements XMLSerializable {
         this.tellerIndex = tellerIndex;
         this.keyShareHash = keyShareHash;
     }
-    
+
     public void toXML{}(PrintWriter[{}]{} sb) {
         toXML(new label {}, sb);
     }
@@ -38,7 +38,7 @@ public class TabTellerKeyShareCommitment implements XMLSerializable {
         sb.print("</hash>");
         sb.print("</tabTellerKeyShareCommitment>");
     }
-    
+
     public static TabTellerKeyShareCommitment fromXML{}(Reader[{}]{} r) throws (IllegalArgumentException{}, IOException{}) {
         final label lbl = new label {};
         Util.swallowTag(lbl, r, "tabTellerKeyShareCommitment");
@@ -46,5 +46,5 @@ public class TabTellerKeyShareCommitment implements XMLSerializable {
         String hash = Util.readSimpleTag(lbl, r, "hash");
         Util.swallowEndTag(lbl, r, "tabTellerKeyShareCommitment");
         return new TabTellerKeyShareCommitment(index, hash);
-    }    
+    }
 }

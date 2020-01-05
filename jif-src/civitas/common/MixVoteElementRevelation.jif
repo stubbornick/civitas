@@ -3,21 +3,21 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import civitas.crypto.*;
 import java.io.*;
 
 /**
- * A revelation of a single element of a vote mix. 
+ * A revelation of a single element of a vote mix.
  */
 public class MixVoteElementRevelation extends MixElementRevelation {
     public static final String{*<-*} OPENING_TAG = "voteRev";
-    
+
     public final ElGamalReencryptFactor{this} choiceFactor;
     public final ElGamalReencryptFactor{this} reencryptFactor;
-    
+
     public MixVoteElementRevelation(int{this} mapping, byte{}const[]{this} nonce, ElGamalReencryptFactor{this} choiceFactor, ElGamalReencryptFactor{this} reencryptFactor) {
         this.choiceFactor = choiceFactor;
         this.reencryptFactor = reencryptFactor;
@@ -29,7 +29,7 @@ public class MixVoteElementRevelation extends MixElementRevelation {
         }
         VoteMix fromVMix = (VoteMix)fromMix;
         VoteMix toVMix = (VoteMix)toMix;
-        
+
         try {
             Vote fromVote = fromVMix.votes[fromIndex];
             Vote toVote = toVMix.votes[toIndex];
@@ -79,7 +79,7 @@ public class MixVoteElementRevelation extends MixElementRevelation {
         }
         catch (NullPointerException imposs) { }
         Util.swallowEndTag(lbl, r, "r1");
-        
+
         Util.swallowTag(lbl, r, "r2");
         ElGamalReencryptFactor reencryptFactor = null;
         try {
@@ -89,7 +89,7 @@ public class MixVoteElementRevelation extends MixElementRevelation {
         Util.swallowEndTag(lbl, r, "r2");
 
         Util.swallowEndTag(lbl, r, OPENING_TAG);
-        
+
         return new MixVoteElementRevelation(mapping, nonceC, choiceFactor, reencryptFactor);
     }
 }

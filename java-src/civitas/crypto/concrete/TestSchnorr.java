@@ -3,7 +3,7 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.crypto.concrete;
 
 import civitas.crypto.*;
@@ -13,7 +13,7 @@ public class TestSchnorr {
 	public static final CryptoFactoryC f = CryptoFactoryC.singleton();
 	public static ElGamalParametersC ps;
 
-	public static ElGamalMsgC m; 
+	public static ElGamalMsgC m;
 	public static final String attack = "Attack at dawn";
 
 	public static void test(String s, boolean b) {
@@ -71,7 +71,7 @@ public class TestSchnorr {
 		if (!caught) {
 			System.out.println("Reject q+1 as message ? oops");
 		}
-	} 
+	}
 
 	public static void encTest() {
 		ElGamalKeyPair p = f.generateElGamalKeyPair(ps);
@@ -113,7 +113,7 @@ public class TestSchnorr {
 	public static void qrTest() {
 		ElGamalParametersC ps2 = (ElGamalParametersC) f.generateElGamalParameters(160);
 		try {
-			ElGamalMsgC m2 = (ElGamalMsgC) f.elGamalMsg("Attack at dawn", ps2); 
+			ElGamalMsgC m2 = (ElGamalMsgC) f.elGamalMsg("Attack at dawn", ps2);
 			test("Decode QR", m2.plaintextStringValue(ps2).equals(attack));
 		} catch (CryptoException ce) {
 			System.out.println("oops: " + ce);

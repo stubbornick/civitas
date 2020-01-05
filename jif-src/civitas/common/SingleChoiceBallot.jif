@@ -3,14 +3,14 @@
  * Copyright (c) 2007-2008, Civitas project group, Cornell University.
  * See the LICENSE file accompanying this distribution for further license
  * and copyright information.
- */ 
+ */
 package civitas.common;
 
 import java.io.*;
 
 /**
- * This class is the ballot of a single choice race. In a single choice 
- * race, there is a slate of candidates, and the voter selects one candidate. 
+ * This class is the ballot of a single choice race. In a single choice
+ * race, there is a slate of candidates, and the voter selects one candidate.
  * A SingleChoiceBallot records which candidate the voter chose.
  */
 public class SingleChoiceBallot[label L] extends Ballot[L] {
@@ -19,7 +19,7 @@ public class SingleChoiceBallot[label L] extends Ballot[L] {
         this.candidate = candidate;
         super();
     }
-    
+
     public void toXML{L}(PrintWriter[L]{L} sb) {
         if (sb == null) return;
         sb.print("<" + OPENING_TAG + ">");
@@ -31,7 +31,7 @@ public class SingleChoiceBallot[label L] extends Ballot[L] {
         sb.print("</candidate>");
         sb.print("</" + OPENING_TAG + ">");
     }
-    
+
     public static Ballot[lbl]{*lbl} fromXML{*lbl}(label{*lbl} lbl, Reader[lbl]{*lbl} r)  throws (IllegalArgumentException{*lbl}, IOException{*lbl}) {
         return new SingleChoiceBallot[lbl](Util.unescapeString(Util.readSimpleTag(lbl, r, "candidate")));
     }

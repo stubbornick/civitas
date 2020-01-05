@@ -12,12 +12,12 @@ use warnings;
 sub usage {
     print <<USAGE;
 usage: deploy.pl sourceDir targetDir serversFile experimentDescriptionFile
-    Copies everything from sourceDir to targetDir on all servers listed 
-    in the serversFile, using the credentials supplied in the 
-    experimentDescriptionFile. 
-    
+    Copies everything from sourceDir to targetDir on all servers listed
+    in the serversFile, using the credentials supplied in the
+    experimentDescriptionFile.
+
     It also executes "postdeploy.pl targetDir" on each server that it copied the
-    source directory to.    
+    source directory to.
 USAGE
     exit;
 }

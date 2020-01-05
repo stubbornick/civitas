@@ -13,9 +13,9 @@ public class MessageDigestWriter[label L] extends Writer[L] {
 
     public MessageDigestWriter(Writer[L] w, MessageDigest[L] md) {    }
 
-    
+
     native public void write{L}(char{L}[]{L} cbuf, int{L} off, int{L} len):{L} throws IOException, NullPointerException;
     native public void flush{L}():{L} throws IOException;
     native public void close{L}():{L} throws IOException;
-    
+
 }

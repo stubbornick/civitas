@@ -13,7 +13,7 @@ use warnings;
 sub usage {
     print <<USAGE;
 usage: waitForElection.pl experimentDescriptionFile
-    Waits until the election described by the experiment description 
+    Waits until the election described by the experiment description
     file is either abandoned or tabulated.
 USAGE
     exit;
@@ -27,13 +27,13 @@ initExp( $ARGV[0] );
 # either an "abandonElection" message or an "electionResults" message is posted,
 # and then compute the status
 my $electionDone = 0;
-my @doneMetas = ("electionAbandonment", "electionResults:Teller1"); 
+my @doneMetas = ("electionAbandonment", "electionResults:Teller1");
 do {
 
     # wait for a bit
     # XXX FOR BETTER TIMING, SHOULD WE USE SOME KIND OF WAKE UP MECHANISM?
     sleep 10;
-    
+
     foreach my $meta (@doneMetas) {
         my $output = `$CIVITAS/bin/civitasrun civitas.supervisor.cli.Main list meta $meta <$electionID_file`;
         if ($output =~ /<post>/) {
@@ -47,7 +47,7 @@ do {
                     sleep 10;
                 }
             } while ( !$electionDone );
-        }        
+        }
     }
-    
+
 } while ( !$electionDone );
