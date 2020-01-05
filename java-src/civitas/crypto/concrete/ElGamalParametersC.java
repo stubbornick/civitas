@@ -7,14 +7,22 @@
 package civitas.crypto.concrete;
 
 import java.io.*;
+import java.math.BigInteger;
 
 import jif.lang.Label;
 import jif.lang.LabelUtil;
+
+import org.bouncycastle.crypto.params.ECDomainParameters;
+import org.bouncycastle.jce.ECNamedCurveTable;
+import org.bouncycastle.jce.spec.ECParameterSpec;
+import org.bouncycastle.math.ec.ECMultiplier;
+import org.bouncycastle.math.ec.ECPoint;
+import org.bouncycastle.math.ec.FixedPointCombMultiplier;
+
 import civitas.common.Util;
 import civitas.crypto.CryptoError;
 import civitas.crypto.CryptoException;
 import civitas.crypto.ElGamalParameters;
-import civitas.util.CivitasBigInteger;
 
 /**
  * The ElGamal cryptosystem defined by these parameters is over
@@ -23,76 +31,15 @@ import civitas.util.CivitasBigInteger;
  */
 class ElGamalParametersC implements ElGamalParameters {
 
-	/**
-	 * A prime such that p = 2kq + 1 for some k.
-	 */
-	protected final CivitasBigInteger p;
+	public static final String EC_NAMED_CURVE = "secp256k1";
 
 	/**
-	 * A large prime.
+	 * Bouncy Castle elliptic curve parameters.
 	 */
-	protected final CivitasBigInteger q;
+	protected final ECDomainParameters params;
 
-	/**
-	 * A generator of the order q subgroup of Z*p.
-	 */
-	protected final CivitasBigInteger g;
-
-	/**
-	 * A helper object to encode plaintexts into messages,
-	 * and also decode messages to plaintexts.
-	 */
-	protected Encoder encoder;
-
-	/**
-	 * No implicit construction allowed.
-	 */
-	protected ElGamalParametersC() {
-		throw new UnsupportedOperationException();
-	}
-
-	/**
-	 * Constructs a Schnorr prime group where p = 2kq + 1.
-	 * If groupLength = keyLength + 1, this is a safe prime group.
-	 * @param keyLength The number of bits of q.
-	 * @param groupLength The number of bits of p.
-	 */
-	protected ElGamalParametersC(int keyLength, int groupLength) {
-		SchnorrPrime sp;
-		if (groupLength == keyLength + 1) {
-			sp = CryptoAlgs.safePrime(keyLength);
-			encoder = new SafePrimeEncoder();
-		} else {
-			sp = CryptoAlgs.schnorrPrime(keyLength,groupLength);
-			encoder = new SchnorrPrimeEncoder();
-		}
-		p = sp.p;
-		q = sp.q;
-		g = CryptoAlgs.generator(sp);
-	}
-
-	public ElGamalParametersC(CivitasBigInteger p, CivitasBigInteger q, CivitasBigInteger g) {
-		this.p = p;
-		this.q = q;
-		this.g = g;
-		if (p.equals(q.multiply(CivitasBigInteger.TWO).add(CivitasBigInteger.ONE))) {
-			encoder = new SafePrimeEncoder();
-		} else {
-			encoder = new SchnorrPrimeEncoder();
-		}
-		checkGroup();
-	}
-
-	private void checkGroup() {
-		if (! p.subtract(CivitasBigInteger.ONE).mod(q).equals(CivitasBigInteger.ZERO)) {
-			throw new CryptoError("q does not divide p-1");
-		}
-		if (! p.subtract(CivitasBigInteger.ONE).mod(CivitasBigInteger.TWO).equals(CivitasBigInteger.ZERO)) {
-			throw new CryptoError("2 does not divide p-1");
-		}
-		if (! g.modPow(q,p).equals(CivitasBigInteger.ONE)) {
-			throw new CryptoError("g is not order q");
-		}
+	public ElGamalParametersC(ECDomainParameters params) {
+		this.params = params;
 	}
 
 	public String toXML() {
@@ -103,29 +50,34 @@ class ElGamalParametersC implements ElGamalParameters {
 	public void toXML(Label lbl, PrintWriter s) {
 		s.print("<elGamalParameters>");
 
-		s.print("<p>");
-		if (this.p != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.p), lbl, s);
-		s.print("</p>");
-		s.print("<q>");
-		if (this.q != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.q), lbl, s);
-		s.print("</q>");
-		s.print("<g>");
-		if (this.g != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.g), lbl, s);
-		s.print("</g>");
+		s.print("<ECNamedCurve>");
+		s.print(EC_NAMED_CURVE);
+		s.print("</ECNamedCurve>");
 
 		s.print("</elGamalParameters>");
 	}
 
+	public static ElGamalParametersC getDefaultParams() {
+		ECParameterSpec namedCurve = ECNamedCurveTable.getParameterSpec(EC_NAMED_CURVE);
+
+		ECDomainParameters params = new ECDomainParameters(
+			namedCurve.getCurve(),
+			namedCurve.getG(),
+			namedCurve.getN()
+			);
+
+		return new ElGamalParametersC(params);
+	}
+
 	public static ElGamalParametersC fromXML(Label lbl, Reader r) throws IllegalArgumentException, IOException {
 		Util.swallowTag(lbl, r, "elGamalParameters");
-		String sp = Util.unescapeString(Util.readSimpleTag(lbl, r, "p"));
-		String sq = Util.unescapeString(Util.readSimpleTag(lbl, r, "q"));
-		String sg = Util.unescapeString(Util.readSimpleTag(lbl, r, "g"));
+		String curveName = Util.unescapeString(Util.readSimpleTag(lbl, r, "p"));
 		Util.swallowEndTag(lbl, r, "elGamalParameters");
-		CivitasBigInteger p = CryptoFactoryC.stringToBigInt(sp);
-		CivitasBigInteger q = CryptoFactoryC.stringToBigInt(sq);
-		CivitasBigInteger g = CryptoFactoryC.stringToBigInt(sg);
-		return new ElGamalParametersC(p, q, g);
+
+		if (curveName != ElGamalParametersC.EC_NAMED_CURVE) {
+			throw new CryptoError("Only secp256k1 curve is supported");
+		}
+		return ElGamalParametersC.getDefaultParams();
 	}
 
 	public boolean equals(Object o) {
@@ -135,67 +87,30 @@ class ElGamalParametersC implements ElGamalParameters {
 
 		ElGamalParametersC x = (ElGamalParametersC) o;
 
-		return p.equals(x.p) && q.equals(x.q) && g.equals(x.g);
+		return this.params.equals(x.params);
 	}
 
 	public int hashCode() {
-		return p.hashCode() ^ q.hashCode() ^ g.hashCode();
+		return this.params.hashCode();
 	}
 
-	static interface Encoder {
-		CivitasBigInteger encodePlaintext(CivitasBigInteger p) throws CryptoException;
-		CivitasBigInteger decodeMessage(CivitasBigInteger m) throws CryptoException;
+	public BigInteger decodeMessage(ECPoint m) throws CryptoException {
+		throw new CryptoException("Decoding is not supported for ECElGamal.");
 	}
 
-	class SchnorrPrimeEncoder implements Encoder {
-		public CivitasBigInteger encodePlaintext(CivitasBigInteger x) throws CryptoException {
-			if (x.compareTo(q) > 0) {
-				throw new CryptoException("Message is too large for parameters");
-			}
-			return g.modPow(x,p);
-		}
-
-		public CivitasBigInteger decodeMessage(CivitasBigInteger m) throws CryptoException {
-			throw new CryptoException("Decoding is not supported for Schnorr prime groups.");
-		}
-	}
-
-	class SafePrimeEncoder implements Encoder {
-		public CivitasBigInteger encodePlaintext(CivitasBigInteger x) throws CryptoException {
-			CivitasBigInteger encoding = x;
-			if (CryptoAlgs.legendreSymbol(encoding, p, q) == -1) {
-				encoding = p.subtract(encoding); // encoding = -m
-			}
-			return encoding;
-		}
-
-		public CivitasBigInteger decodeMessage(CivitasBigInteger i) throws CryptoException {
-			if (i.compareTo(p) > 0) {
-				throw new CryptoException("Message is too large for parameters");
-			}
-			if (i.compareTo(q) > 0) {
-				i = p.subtract(i); // i = -i
-			}
-			return i;
-		}
-	}
-
-	public CivitasBigInteger decodeMessage(CivitasBigInteger m) throws CryptoException {
-		return this.encoder.decodeMessage(m);
-	}
-
-	public CivitasBigInteger encodePlaintext(CivitasBigInteger p) throws CryptoException {
-		return this.encoder.encodePlaintext(p);
+	public ECPoint encodePlaintext(BigInteger p) throws CryptoException {
+		ECMultiplier mult = new FixedPointCombMultiplier();
+		return mult.multiply(params.getG(), p);
 	}
 
 	/**
 	 * Attempt to decode a message by brute force.
 	 * @return If m does not decode to an integer i such that 1 <= i <= L.
 	 */
-	public int bruteForceDecode(CivitasBigInteger m, int L) throws CryptoException {
+	public int bruteForceDecode(ECPoint m, int L) throws CryptoException {
 		// first, try doing this the nice way
 		try {
-			CivitasBigInteger c = decodeMessage(m);
+			BigInteger c = decodeMessage(m);
 			int i = c.intValue();
 			if (1 <= i && i <= L) {
 				return i;
@@ -205,12 +120,13 @@ class ElGamalParametersC implements ElGamalParameters {
 		}
 
 		// now try brute force
-		CivitasBigInteger x = g;
+		ECPoint g = params.getG();
+		ECPoint x = g;
 		for (int i = 1; i <= L; i++) {
 			if (x.equals(m)) {
 				return i;
 			}
-			x = x.modMultiply(g, p);
+			x = x.add(g);
 		}
 
 		throw new CryptoException("Brute force decoding failed");
