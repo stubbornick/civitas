@@ -24,7 +24,7 @@
 		<delete dir="sig-classes" quiet="true" />
 	</target>
 
-	<target name="clean-civitas-native" 
+	<target name="clean-civitas-native"
                       description="clean up the generated Civitas native files">
 	        <delete includeemptydirs="true">
 	            <fileset dir="${basedir}/java-src">
@@ -80,7 +80,7 @@
                 <include name="build.xml" />
                 <include name="config.xml" />
                 <include name="config.properties" />
-            	
+
             	<include name="experiments/src/**/*.pl" />
             	<include name="experiments/src/**/*.pm" />
             	<include name="experiments/sample1.exp" />
@@ -96,17 +96,17 @@
             <fileset dir="${basedir}" defaultexcludes="yes">
                 <include name="lib/*.jar" />
             </fileset>
-        </copy>        
-    	
+        </copy>
+
     	<!-- Call configure in the dist directory -->
     	<ant antfile="${dist}/build.xml" inheritAll="false" target="configure"/>
     </target>
-    
-    
+
+
     <target name="jar" depends="civitas,civitas-test">
         <jar jarfile="${civitas.lib}/civitas.jar" basedir="${civitas.classes}" includes="civitas/**" />
     </target>
-    
+
 	<!-- ****************************************
 		Civitas targets
 		****************************************  -->
@@ -317,6 +317,7 @@
 		<apply executable="gcc" failonerror="false" dest="${civitas.lib}"
 			skipemptyfilesets="true" vmlauncher="false">
 			<arg value="${jif-native-unix.sharedflag}" />
+			<arg value="-fPIC" />
 			<arg value="-I." />
 			<arg value="-I" />
 			<arg path="${env.JAVA_HOME}/include" />
