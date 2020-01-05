@@ -7,6 +7,7 @@
 package civitas.crypto.concrete;
 
 import java.io.*;
+import java.math.BigInteger;
 
 import jif.lang.Label;
 import jif.lang.LabelUtil;
@@ -14,13 +15,12 @@ import civitas.common.Util;
 import civitas.crypto.ElGamalAbstractKey;
 import civitas.crypto.ElGamalParameters;
 import civitas.crypto.ElGamalPrivateKey;
-import civitas.util.CivitasBigInteger;
 
 public class ElGamalPrivateKeyC extends ElGamalAbstractKey implements ElGamalPrivateKey {
 
-    public final CivitasBigInteger x;
+    public final BigInteger x;
 
-    public ElGamalPrivateKeyC(CivitasBigInteger x, ElGamalParameters params) {
+    public ElGamalPrivateKeyC(BigInteger x, ElGamalParameters params) {
         super(params);
         this.x = x;
     }
@@ -39,7 +39,7 @@ public class ElGamalPrivateKeyC extends ElGamalAbstractKey implements ElGamalPri
         }
         s.print("</params>");
         s.print("<x>");
-        if (this.x != null) Util.escapeString(CryptoFactoryC.bigIntToString(x), lbl, s);
+        if (this.x != null) Util.escapeString(CryptoFactoryC.defaultBigIntToString(x), lbl, s);
         s.print("</x>");
 
         s.print("</elGamalPrivateKey>");
@@ -52,6 +52,6 @@ public class ElGamalPrivateKeyC extends ElGamalAbstractKey implements ElGamalPri
         Util.swallowEndTag(lbl, r, "params");
         String x = Util.unescapeString(Util.readSimpleTag(lbl, r, "x"));
         Util.swallowEndTag(lbl, r, "elGamalPrivateKey");
-        return new ElGamalPrivateKeyC(CryptoFactoryC.stringToBigInt(x), params);
+        return new ElGamalPrivateKeyC(CryptoFactoryC.stringToDefaultBigInt(x), params);
     }
 }

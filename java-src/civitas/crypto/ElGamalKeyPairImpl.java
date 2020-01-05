@@ -6,13 +6,19 @@
  */
 package civitas.crypto;
 
+import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
+import org.bouncycastle.crypto.params.ECPublicKeyParameters;
+
+import civitas.crypto.concrete.ElGamalPrivateKeyC;
+import civitas.crypto.concrete.ElGamalPublicKeyC;
+
 public class ElGamalKeyPairImpl implements ElGamalKeyPair {
 	final ElGamalPublicKey K;
 	final ElGamalPrivateKey k;
 
-	public ElGamalKeyPairImpl(ElGamalPublicKey K, ElGamalPrivateKey k) {
-		this.K = K;
-		this.k = k;
+	public ElGamalKeyPairImpl(ECPublicKeyParameters K, ECPrivateKeyParameters k, ElGamalParameters params) {
+		this.K = new ElGamalPublicKeyC(K, params);
+		this.k = new ElGamalPrivateKeyC(k, params);
 	}
 
 	public ElGamalPublicKey publicKey() {

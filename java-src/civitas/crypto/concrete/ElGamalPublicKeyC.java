@@ -8,17 +8,19 @@ package civitas.crypto.concrete;
 
 import java.io.*;
 
+import org.bouncycastle.math.ec.ECPoint;
+
 import jif.lang.*;
 import civitas.common.Util;
 import civitas.crypto.ElGamalAbstractKey;
 import civitas.crypto.ElGamalParameters;
 import civitas.crypto.ElGamalPublicKey;
-import civitas.util.CivitasBigInteger;
 
 public class ElGamalPublicKeyC extends ElGamalAbstractKey implements ElGamalPublicKey {
-    public final CivitasBigInteger y;
 
-    public ElGamalPublicKeyC(CivitasBigInteger y, ElGamalParameters params) {
+    public final ECPoint y;
+
+    public ElGamalPublicKeyC(ECPoint y, ElGamalParameters params) {
         super(params);
         this.y = y;
     }
@@ -37,7 +39,7 @@ public class ElGamalPublicKeyC extends ElGamalAbstractKey implements ElGamalPubl
         }
         s.print("</params>");
         s.print("<y>");
-        if (this.y != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.y), lbl, s);
+        if (this.y != null) Util.escapeString(CryptoFactoryC.pointToString(this.y), lbl, s);
         s.print("</y>");
 
         s.print("</"); s.print(EG_OPENING_TAG); s.print('>');
@@ -46,11 +48,15 @@ public class ElGamalPublicKeyC extends ElGamalAbstractKey implements ElGamalPubl
     public static ElGamalPublicKeyC fromXML(Label lbl, Reader r) throws IllegalArgumentException, IOException {
         Util.swallowTag(lbl, r, EG_OPENING_TAG);
         Util.swallowTag(lbl, r, "params");
-        ElGamalParameters params = ElGamalParametersC.fromXML(lbl, r);
+        ElGamalParametersC params = ElGamalParametersC.fromXML(lbl, r);
         Util.swallowEndTag(lbl, r, "params");
         String y = Util.unescapeString(Util.readSimpleTag(lbl, r, "y"));
         Util.swallowEndTag(lbl, r, EG_OPENING_TAG);
-        return new ElGamalPublicKeyC(CryptoFactoryC.stringToBigInt(y), params);
+
+        return new ElGamalPublicKeyC(
+            CryptoFactoryC.stringToPoint(y, params.params.getCurve()),
+            params
+            );
     }
 
     public boolean delegatesTo(Principal p) {
@@ -74,13 +80,13 @@ public class ElGamalPublicKeyC extends ElGamalAbstractKey implements ElGamalPubl
         if (prf instanceof ElGamalPrivateKeyC) {
             ElGamalPrivateKeyC k = (ElGamalPrivateKeyC)prf;
             ElGamalParametersC param = (ElGamalParametersC)this.params;
-            return y.equals(param.g.modPow(k.x, param.p));
+            return y.equals(param.params.getG().multiply(k.x));
         }
         return false;
     }
 
     public String name() {
-        return "ElGamalPublicKey-" + CryptoFactoryC.bigIntToString(y);
+        return "ElGamalPublicKey-" + CryptoFactoryC.pointToString(y);
     }
 
 }
