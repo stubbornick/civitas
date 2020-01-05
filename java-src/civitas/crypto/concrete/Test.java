@@ -107,19 +107,24 @@ public class Test {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        
-        
     }
     public static void main(String[] args) {
+        System.out.println("= ps =");
         ps();
-//        performance();
-//        foo();
-//      genTest();
-//      msgTest();
+        System.out.println("= perfomance =");
+        performance();
+        System.out.println("= foo =");
+        foo();
+        System.out.println("= genTest =");
+        genTest();
+        System.out.println("= msgTest =");
+        msgTest();
+        System.out.println("= decTest =");
       decTest();
 //
 //      // showProviderServices();
-//      egHomoTest();
+        System.out.println("= egHomoTest =");
+        egHomoTest();
 //      dvrTest();
 //        oneOfLTest();
 //        proofVoteTest();
@@ -529,46 +534,46 @@ public class Test {
         test("distributed decryption", m2.equals(m));
     }
     public static void msgTest() {
-    	/*
-        try {
-            m = new ElGamalMsgC(attack, ps);
-        } catch (CryptoException e) {
-            System.out.println("oops");
-        }
-        test("BigInt encoding", m.stringValue().equals(attack));
-        CivitasBigInteger i1 = null, i2 = null;
-        ElGamalMsgC m2 = null;
-        try {
-            i1 = findQR();
-            i2 = new ElGamalMsgC(i1, ps).encodeQR(ps);
-            test("Encode a QR", CryptoAlgs.legendreSymbol(i2, ps.p, ps.q) == 1);
-            m2 = ElGamalMsgC.decodeQR(i2, ps);
-            test("Decode a QR", i1.equals(m2.bigIntValue()));
+        // ElGamalMsgC m;
 
-            i1 = findNonQR();
-            i2 = new ElGamalMsgC(i1, ps).encodeQR(ps);
-            test("Encode a non-QR", CryptoAlgs.legendreSymbol(i2, ps.p, ps.q) == 1);
-            m2 = ElGamalMsgC.decodeQR(i2, ps);
-            test("Decode a non-QR", i1.equals(m2.bigIntValue()));
+        // try {
+        //     m = new ElGamalMsgC(attack, ps);
+        // } catch (CryptoException e) {
+        //     System.out.println("oops");
+        // }
+        // test("BigInt encoding", m.stringValue().equals(attack));
+        // CivitasBigInteger i1 = null, i2 = null;
+        // ElGamalMsgC m2 = null;
+        // try {
+        //     i1 = findQR();
+        //     i2 = new ElGamalMsgC(i1, ps).encodeQR(ps);
+        //     test("Encode a QR", CryptoAlgs.legendreSymbol(i2, ps.p, ps.q) == 1);
+        //     m2 = ElGamalMsgC.decodeQR(i2, ps);
+        //     test("Decode a QR", i1.equals(m2.bigIntValue()));
 
-            CivitasBigInteger j = m.encodeQR(ps);
-            ElGamalMsgC m3 = ElGamalMsgC.decodeQR(j, ps);
-            test("BigInt and QR encoding", m3.stringValue().equals(attack));
-        } catch (CryptoException e) {
-            System.out.println("oops");
-        }
+        //     i1 = findNonQR();
+        //     i2 = new ElGamalMsgC(i1, ps).encodeQR(ps);
+        //     test("Encode a non-QR", CryptoAlgs.legendreSymbol(i2, ps.p, ps.q) == 1);
+        //     m2 = ElGamalMsgC.decodeQR(i2, ps);
+        //     test("Decode a non-QR", i1.equals(m2.bigIntValue()));
 
-        boolean caught = false;
-        try {
-            new ElGamalMsgC(ps.q.add(CivitasBigInteger.ONE), ps);
-        } catch (CryptoException e) {
-            System.out.println("Reject q+1 as message ? ok");
-            caught = true;
-        }
-        if (!caught) {
-            System.out.println("Reject q+1 as message ? oops");
-        }
-        */
+        //     CivitasBigInteger j = m.encodeQR(ps);
+        //     ElGamalMsgC m3 = ElGamalMsgC.decodeQR(j, ps);
+        //     test("BigInt and QR encoding", m3.stringValue().equals(attack));
+        // } catch (CryptoException e) {
+        //     System.out.println("oops");
+        // }
+
+        // boolean caught = false;
+        // try {
+        //     new ElGamalMsgC(ps.q.add(CivitasBigInteger.ONE), ps);
+        // } catch (CryptoException e) {
+        //     System.out.println("Reject q+1 as message ? ok");
+        //     caught = true;
+        // }
+        // if (!caught) {
+        //     System.out.println("Reject q+1 as message ? oops");
+        // }
     }
 
     public static CivitasBigInteger findQR() {

@@ -171,21 +171,21 @@ public class TestElGamal {
 		ElGamalMsgC m2 = new ElGamalMsgC(pt2);
 		ElGamalMsgC mMult = new ElGamalMsgC(pt1.multiply(pt2));
 
-		System.err.println("m1 = " + m1);
-		System.err.println("m2 = " + m2);
-		System.err.println("mMult = " + mMult);
+		// System.err.println("m1 = " + m1);
+		// System.err.println("m2 = " + m2);
+		// System.err.println("mMult = " + mMult);
 
         final ElGamalSignedCiphertextC c1 = (ElGamalSignedCiphertextC)f.elGamalSignedEncrypt(K, m1);
         final ElGamalSignedCiphertextC c2 = (ElGamalSignedCiphertextC)f.elGamalSignedEncrypt(K, m2);
-		System.err.println("c1 = " + c1.a + "," + c1.b);
-		System.err.println("c2 = " + c2.a + "," + c2.b);
+		// System.err.println("c1 = " + c1.a + "," + c1.b);
+		// System.err.println("c2 = " + c2.a + "," + c2.b);
 
 		final ElGamalSignedCiphertext[][] cs = new ElGamalSignedCiphertext[2][1];
         cs[0][0] = c1;
         cs[1][0] = c2;
 
 		final ElGamalCiphertextC cMult = (ElGamalCiphertextC)f.multiplyCiphertexts(LabelUtil.singleton().noComponents(), cs, ps)[0];
-		System.err.println("cMult = " + cMult.a + "," + cMult.b);
+		// System.err.println("cMult = " + cMult.a + "," + cMult.b);
 
         ElGamalMsg mRes = null;
         try {
@@ -194,7 +194,7 @@ public class TestElGamal {
         catch (final CryptoException e) {
             e.printStackTrace();
         }
-       	System.err.println("mRes = dec(cMult) = " + mRes);
+       	// System.err.println("mRes = dec(cMult) = " + mRes);
         test("eg homomorphic", mRes.equals(mMult));
     }
 }

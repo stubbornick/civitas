@@ -50,6 +50,8 @@ public class AutomatedVotingClient {
         System.exit(0);        
     }
     public static void main(String[] args) {
+        if (args.length != 16) usage();
+
         int i = 0;
         String electionDetails = args[i++];
         String tellerDetails = args[i++];
@@ -68,8 +70,6 @@ public class AutomatedVotingClient {
         String cacheDir = args[i++];
         String logfile  = args[i++];
         
-        if (args.length != i) usage();
-
         boolean clientCaching = cacheClient.startsWith("y") || cacheClient.equals("true") || cacheClient.equals("1");
         try {
             new AutomatedVotingClient(new PrintWriter(logfile)).submitBallot(cacheDir,
