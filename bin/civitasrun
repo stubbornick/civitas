@@ -23,7 +23,7 @@ fixclasspath() {
 
   cp="$1"
 
-  if [ "$windows" = 1 ]; then 
+  if [ "$windows" = 1 ]; then
     cygpath -pw "$cp"
   else
     echo "$cp"
@@ -39,7 +39,7 @@ unixfilename() {
 
   cp="$1"
 
-  if [ "$windows" = 1 ]; then 
+  if [ "$windows" = 1 ]; then
     cygpath -u "$cp"
   else
     echo "$cp"
@@ -55,7 +55,7 @@ unixpath() {
 
   cp="$1"
 
-  if [ "$windows" = 1 ]; then 
+  if [ "$windows" = 1 ]; then
     cygpath -pu "$cp"
   else
     echo "$cp"
@@ -120,22 +120,22 @@ done
 
 unixclasspath=`unixpath $CLASSPATH`
 classpath="$extra_cp:$dir/classes:$dir/lib/civitas.jar:$dir/lib/jife.jar:$dir/lib/jif.jar:$dir/lib/polyglot.jar"
-lib_classpath="$dir/lib/bcprov-jdk15-133.jar:$dir/lib/jiflib.jar:$dir/lib/jifelib.jar"
+lib_classpath="$dir/lib/bcprov-jdk15to18-164.jar:$dir/lib/jiflib.jar:$dir/lib/jifelib.jar"
 runtime_classpath="$dir/lib/jifrt.jar:$dir/lib/jifert.jar"
 
 
 path_unix=`unixpath $PATH`
 runtime_lib_path="$dir/lib:$path_unix"
 
-if [ -n "$JIFE" ]; then 
-    jife_unix=`unixfilename "$JIFE"` 
+if [ -n "$JIFE" ]; then
+    jife_unix=`unixfilename "$JIFE"`
     runtime_lib_path="$runtime_lib_path:$jife_unix/lib"
     runtime_classpath="$runtime_classpath:$jife_unix/rt-classes:$jife_unix/lib/jifert.jar"
     lib_classpath="$lib_classpath:$jife_unix/lib-classes:$jife_unix/lib/jifelib.jar"
 fi
 
-if [ -n "$JIF" ]; then 
-    jif_unix=`unixfilename "$JIF"` 
+if [ -n "$JIF" ]; then
+    jif_unix=`unixfilename "$JIF"`
     runtime_lib_path="$runtime_lib_path:$jif_unix/lib"
     runtime_classpath="$runtime_classpath:$jif_unix/rt-classes:$jif_unix/lib/jifrt.jar"
     lib_classpath="$lib_classpath:$jif_unix/lib-classes:$jif_unix/lib/jiflib.jar"
