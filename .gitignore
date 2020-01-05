@@ -1,2 +1,5 @@
 sig-classes/
 classes/
+experiments/
+^experiments/src
+config.properties.local
