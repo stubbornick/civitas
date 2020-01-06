@@ -85,9 +85,9 @@ class ProofVoteC implements ProofVote {
         c = factory.hashToDefaultBigInt(factory.hash(E)).mod(N);
         s1 = CivitasBigInteger.modSubtract(r1, CivitasBigInteger.modMultiply(c, alpha1.r, N), N);
         s2 = CivitasBigInteger.modSubtract(r2, CivitasBigInteger.modMultiply(c, alpha2.r, N), N);
-        System.err.println(" c =  " + c);
-        System.err.println(" s1=  " + s1);
-        System.err.println(" s2=  " + s2);
+        // System.err.println(" c =  " + c);
+        // System.err.println(" s1=  " + s1);
+        // System.err.println(" s2=  " + s2);
     }
 
     CryptoHashableList proofEnv(ElGamalParametersC params,

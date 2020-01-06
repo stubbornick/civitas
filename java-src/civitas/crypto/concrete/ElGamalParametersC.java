@@ -71,10 +71,10 @@ class ElGamalParametersC implements ElGamalParameters {
 
 	public static ElGamalParametersC fromXML(Label lbl, Reader r) throws IllegalArgumentException, IOException {
 		Util.swallowTag(lbl, r, "elGamalParameters");
-		String curveName = Util.unescapeString(Util.readSimpleTag(lbl, r, "p"));
+		String curveName = Util.unescapeString(Util.readSimpleTag(lbl, r, "ECNamedCurve"));
 		Util.swallowEndTag(lbl, r, "elGamalParameters");
 
-		if (curveName != ElGamalParametersC.EC_NAMED_CURVE) {
+		if (!curveName.equals(ElGamalParametersC.EC_NAMED_CURVE)) {
 			throw new CryptoError("Only secp256k1 curve is supported");
 		}
 		return ElGamalParametersC.getDefaultParams();
