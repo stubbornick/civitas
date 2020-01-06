@@ -499,61 +499,45 @@ public class CryptoFactoryC implements CryptoFactory {
     /**
      * Compute a hash over a list of BigInteger.
      */
-    byte[] hash(List<BigInteger> l) {
+    byte[] hash(CryptoHashableList l) {
         // Compute the hash by updating a message digest
         // with the byte representation of the big ints.
         MessageDigest md = messageDigest(LabelUtil.singleton().noComponents());
         for (Iterator iter = l.iterator(); iter.hasNext();) {
-            BigInteger i = (BigInteger)iter.next();
-            md.update(i.toByteArray());
+            CryptoHashable h = (CryptoHashable)iter.next();
+            md.update(h.bytes);
         }
         return md.digest();
     }
-    BigInteger hash(BigInteger a, BigInteger b) {
+    BigInteger hash(CryptoHashable a) {
+        return hash(a, null);
+    }
+    BigInteger hash(CryptoHashable a, CryptoHashable b) {
         return hash(a,b,null);
     }
-    BigInteger hash(BigInteger a, BigInteger b, BigInteger c) {
+    BigInteger hash(ECPoint a, ECPoint b) {
+        return hash(new CryptoHashable(a), new CryptoHashable(b), null);
+    }
+    BigInteger hash(CryptoHashable a, CryptoHashable b, CryptoHashable c) {
         return hash(a,b,c,null);
     }
-    BigInteger hash(BigInteger a, BigInteger b, BigInteger c, byte[] d) {
+    BigInteger hash(CryptoHashable a, CryptoHashable b, CryptoHashable c, CryptoHashable d) {
         // Compute the hash by updating a message digest
         // with the byte representation of the big ints.
         MessageDigest md = messageDigest(LabelUtil.singleton().noComponents());
-        if (a != null) md.update(a.toByteArray());
-        if (b != null) md.update(b.toByteArray());
-        if (c != null) md.update(c.toByteArray());
-        if (d != null) md.update(d);
+        if (a != null) md.update(a.bytes);
+        if (b != null) md.update(b.bytes);
+        if (c != null) md.update(c.bytes);
+        if (d != null) md.update(d.bytes);
         return hashToDefaultBigInt(md.digest());
     }
-
-    /**
-     * Compute a hash over a list of ECPoints.
-     */
-    byte[] hashPoints(List<ECPoint> l) {
-        // Compute the hash by updating a message digest
-        // with the byte representation of the big ints.
-        MessageDigest md = messageDigest(LabelUtil.singleton().noComponents());
-        for (Iterator iter = l.iterator(); iter.hasNext();) {
-            ECPoint p = (ECPoint)iter.next();
-            md.update(p.getEncoded(true));
-        }
-        return md.digest();
-    }
-    BigInteger hashPoints(ECPoint a, ECPoint b) {
-        return hashPoints(a,b,null);
-    }
-    BigInteger hashPoints(ECPoint a, ECPoint b, ECPoint c) {
-        return hashPoints(a,b,c,null);
-    }
-    BigInteger hashPoints(ECPoint a, ECPoint b, ECPoint c, byte[] d) {
-        // Compute the hash by updating a message digest
-        // with the byte representation of the big ints.
-        MessageDigest md = messageDigest(LabelUtil.singleton().noComponents());
-        if (a != null) md.update(a.getEncoded(true));
-        if (b != null) md.update(b.getEncoded(true));
-        if (c != null) md.update(c.getEncoded(true));
-        if (d != null) md.update(d);
-        return hashToDefaultBigInt(md.digest());
+    BigInteger hash(ECPoint a, ECPoint b, ECPoint c, byte[] d) {
+        return hash(
+            new CryptoHashable(a),
+            new CryptoHashable(b),
+            new CryptoHashable(c),
+            new CryptoHashable(d)
+        );
     }
 
 
@@ -579,7 +563,7 @@ public class CryptoFactoryC implements CryptoFactory {
             ECPoint a = ps.params.getG().multiply(rr);
             ECPoint b = m.add(k.y.multiply(rr));
 
-            BigInteger c = hashPoints(ps.params.getG().multiply(s), a, b, additionalEnv).mod(ps.params.getN()); // hash of (g^s,g^r,my^r) == (g^s, a, b)
+            BigInteger c = hash(ps.params.getG().multiply(s), a, b, additionalEnv).mod(ps.params.getN()); // hash of (g^s,g^r,my^r) == (g^s, a, b)
             BigInteger d = CivitasBigInteger.modAdd(s, CivitasBigInteger.modMultiply(c, rr, ps.params.getN()), ps.params.getN());
             return new ElGamalSignedCiphertextC(a, b, c, d);
         } catch (ClassCastException e) {
@@ -597,7 +581,7 @@ public class CryptoFactoryC implements CryptoFactory {
             ElGamalSignedCiphertextC cc = (ElGamalSignedCiphertextC)ciphertext;
             // to verify, check that c == h(g^d * a^(-c), a, b)
             ECPoint x = ps.params.getG().multiply(cc.d.mod(ps.params.getN())).add(cc.a.multiply(CivitasBigInteger.modNegate(cc.c, ps.params.getN())));
-            BigInteger v = hashPoints(x, cc.a, cc.b, additionalEnv).mod(ps.params.getN());
+            BigInteger v = hash(x, cc.a, cc.b, additionalEnv).mod(ps.params.getN());
             return cc.c.equals(v);
         } catch (ClassCastException e) {
             throw new CryptoError(e);
@@ -651,7 +635,7 @@ public class CryptoFactoryC implements CryptoFactory {
             ECPoint v = params.params.getG().multiply(x);
             BigInteger z = CryptoAlgs.randomElementDefault(params.params.getN());
             ECPoint a = params.params.getG().multiply(z);
-            BigInteger c = hashPoints(v, a).mod(params.params.getN()); // can take mod q without any ill effects.
+            BigInteger c = hash(v, a).mod(params.params.getN()); // can take mod q without any ill effects.
             BigInteger r = CivitasBigInteger.modAdd(z, CivitasBigInteger.modMultiply(c, x, params.params.getN()), params.params.getN());
             return new ElGamalProofKnowDiscLogC(a,c,r,v);
         }
