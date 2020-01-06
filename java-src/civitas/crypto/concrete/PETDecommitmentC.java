@@ -53,7 +53,7 @@ public class PETDecommitmentC implements PETDecommitment {
         if (di == null || ei == null) return false;
         if (!d.equals(prf.g1) || !e.equals(prf.g2)) return false;
 
-        return com.hash.equals(factory.hashPoints(di, ei)) && prf.verify(params);
+        return com.hash.equals(factory.hash(di, ei)) && prf.verify(params);
     }
 
 

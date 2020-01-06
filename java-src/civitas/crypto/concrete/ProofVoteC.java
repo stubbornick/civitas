@@ -7,12 +7,16 @@
 package civitas.crypto.concrete;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.bouncycastle.math.ec.ECPoint;
 
 import jif.lang.Label;
 import jif.lang.LabelUtil;
 import civitas.common.Util;
+import civitas.crypto.CryptoHashableList;
 import civitas.crypto.ElGamalCiphertext;
 import civitas.crypto.ElGamalParameters;
 import civitas.crypto.ProofVote;
@@ -48,11 +52,11 @@ class ProofVoteC implements ProofVote {
 
      */
 
-    final CivitasBigInteger c;
-    final CivitasBigInteger s1;
-    final CivitasBigInteger s2;
+    final BigInteger c;
+    final BigInteger s1;
+    final BigInteger s2;
 
-    ProofVoteC(final CivitasBigInteger c, final CivitasBigInteger s1, final CivitasBigInteger s2) {
+    ProofVoteC(final BigInteger c, final BigInteger s1, final BigInteger s2) {
         this.c = c;
         this.s1 = s1;
         this.s2 = s2;
@@ -65,46 +69,55 @@ class ProofVoteC implements ProofVote {
                {
         CryptoFactoryC factory = CryptoFactoryC.singleton();
 
-        CivitasBigInteger r1 = CryptoAlgs.randomElement(params.q);
-        CivitasBigInteger r2 = CryptoAlgs.randomElement(params.q);
+        BigInteger N = params.params.getN();
+        ECPoint G = params.params.getG();
 
-        List<CivitasBigInteger> E = proofEnv(params, encCapability, encChoice, context);
-        E.add(params.g.modPow(r1, params.p));
-        E.add(params.g.modPow(r2, params.p));
-//      System.err.println("Adding more");
-//      System.err.println("   " + params.g.modPow(r1, params.p));
-//      System.err.println("   " + params.g.modPow(r2, params.p));
+        BigInteger r1 = CryptoAlgs.randomElementDefault(N);
+        BigInteger r2 = CryptoAlgs.randomElementDefault(N);
 
-        c = factory.hashToBigInt(factory.hash(E)).mod(params.q);
-        s1 = r1.modSubtract(c.modMultiply(alpha1.r, params.q), params.q);
-        s2 = r2.modSubtract(c.modMultiply(alpha2.r, params.q), params.q);
-//      System.err.println(" c =  " + c);
-//      System.err.println(" s1=  " + s1);
-//      System.err.println(" s2=  " + s2);
-               }
+        CryptoHashableList E = proofEnv(params, encCapability, encChoice, context);
+        E.add(G.multiply(r1));
+        E.add(G.multiply(r2));
+        // System.err.println("Adding more");
+        // System.err.println("   " + G.modPow(r1, params.p));
+        // System.err.println("   " + G.modPow(r2, params.p));
 
-    List<CivitasBigInteger> proofEnv(ElGamalParametersC params,
+        c = factory.hashToDefaultBigInt(factory.hash(E)).mod(N);
+        s1 = CivitasBigInteger.modSubtract(r1, CivitasBigInteger.modMultiply(c, alpha1.r, N), N);
+        s2 = CivitasBigInteger.modSubtract(r2, CivitasBigInteger.modMultiply(c, alpha2.r, N), N);
+        System.err.println(" c =  " + c);
+        System.err.println(" s1=  " + s1);
+        System.err.println(" s2=  " + s2);
+    }
+
+    CryptoHashableList proofEnv(ElGamalParametersC params,
                                   ElGamalCiphertextC encCapability, ElGamalCiphertextC encChoice,
                                   String context)
                                   {
         CryptoFactoryC factory = CryptoFactoryC.singleton();
-        List<CivitasBigInteger> E = new LinkedList<CivitasBigInteger>();
-        E.add(params.g);
+        CryptoHashableList E = new CryptoHashableList();
+        E.add(params.params.getG());
         E.add(encCapability.a);
         E.add(encCapability.b);
         E.add(encChoice.a);
         E.add(encChoice.b);
-        E.add(factory.hashToBigInt(factory.messageDigest(LabelUtil.singleton().noComponents(), context.getBytes())));
+        E.add(factory.hashToDefaultBigInt(
+                factory.messageDigest(
+                    LabelUtil.singleton().noComponents(),
+                    context.getBytes()
+                    )
+                )
+            );
 
-//      System.err.println("Constructing proof env");
-//      System.err.println("   " + params.g);
-//      System.err.println("   " + encCapability.a);
-//      System.err.println("   " + encCapability.b);
-//      System.err.println("   " + encChoice.a);
-//      System.err.println("   " + encChoice.b);
-//      System.err.println("   " + factory.hashToBigInt(factory.messageDigest(context)));
+        // System.err.println("Constructing proof env");
+        // System.err.println("   " + params.g);
+        // System.err.println("   " + encCapability.a);
+        // System.err.println("   " + encCapability.b);
+        // System.err.println("   " + encChoice.a);
+        // System.err.println("   " + encChoice.b);
+        // System.err.println("   " + factory.hashToBigInt(factory.messageDigest(context)));
         return E;
-                                  }
+    }
 
     public boolean verify(ElGamalParameters params,
             ElGamalCiphertext encCapability, ElGamalCiphertext encChoice,
@@ -115,22 +128,23 @@ class ProofVoteC implements ProofVote {
             ElGamalParametersC paramsC = (ElGamalParametersC)params;
             ElGamalCiphertextC encCapabilityC = (ElGamalCiphertextC)encCapability;
             ElGamalCiphertextC encChoiceC = (ElGamalCiphertextC)encChoice;
-            CivitasBigInteger a1 = encCapabilityC.a;
-            CivitasBigInteger a2 = encChoiceC.a;
-            CivitasBigInteger p = paramsC.p;
-            CivitasBigInteger q = paramsC.q;
+            ECPoint a1 = encCapabilityC.a;
+            ECPoint a2 = encChoiceC.a;
 
-            List<CivitasBigInteger> E = proofEnv(paramsC, encCapabilityC, encChoiceC, context);
-            E.add(paramsC.g.modPow(this.s1, p).modMultiply(a1.modPow(this.c, p), p));
-            E.add(paramsC.g.modPow(this.s2, p).modMultiply(a2.modPow(this.c, p), p));
-//          System.err.println("Adding more");
-//          System.err.println("   " + paramsC.g.modPow(this.s1, p).multiply(a1.modPow(this.c, p)).mod(p));
-//          System.err.println("   " + paramsC.g.modPow(this.s2, p).multiply(a2.modPow(this.c, p)).mod(p));
+            ECPoint G = paramsC.params.getG();
+            BigInteger N = paramsC.params.getN();
+
+            CryptoHashableList E = proofEnv(paramsC, encCapabilityC, encChoiceC, context);
+            E.add(G.multiply(this.s1).add(a1.multiply(this.c)));
+            E.add(G.multiply(this.s2).add(a2.multiply(this.c)));
+            // System.err.println("Adding more");
+            // System.err.println("   " + G.multiply(this.s1).add(a1.multiply(this.c)));
+            // System.err.println("   " + G.multiply(this.s2).add(a2.multiply(this.c)));
 
             // c =? hash(E, g^s1 * a1^c, g^s2 * a2^c)
-            CivitasBigInteger x = factory.hashToBigInt(factory.hash(E)).mod(q);
+            BigInteger x = factory.hashToDefaultBigInt(factory.hash(E)).mod(N);
             boolean ret = c.equals(x);
-//          System.err.println("ret is " + ret);
+            // System.err.println("ret is " + ret);
             return ret;
         }
         catch (ClassCastException e) {
@@ -148,13 +162,13 @@ class ProofVoteC implements ProofVote {
         s.print("<elGamalProofVote>");
 
         s.print("<c>");
-        if (this.c != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.c), lbl, s);
+        if (this.c != null) Util.escapeString(CryptoFactoryC.defaultBigIntToString(this.c), lbl, s);
         s.print("</c>");
         s.print("<s1>");
-        if (this.s1 != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.s1), lbl, s);
+        if (this.s1 != null) Util.escapeString(CryptoFactoryC.defaultBigIntToString(this.s1), lbl, s);
         s.print("</s1>");
         s.print("<s2>");
-        if (this.s2 != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.s2), lbl, s);
+        if (this.s2 != null) Util.escapeString(CryptoFactoryC.defaultBigIntToString(this.s2), lbl, s);
         s.print("</s2>");
 
         s.print("</elGamalProofVote>");
@@ -179,8 +193,8 @@ class ProofVoteC implements ProofVote {
         String s2 = Util.unescapeString(Util.readSimpleTag(lbl, r, "s2"));
 
         Util.swallowEndTag(lbl, r, "elGamalProofVote");
-        return new ProofVoteC(CryptoFactoryC.stringToBigInt(c),
-                              CryptoFactoryC.stringToBigInt(s1),
-                              CryptoFactoryC.stringToBigInt(s2));
+        return new ProofVoteC(CryptoFactoryC.stringToDefaultBigInt(c),
+                              CryptoFactoryC.stringToDefaultBigInt(s1),
+                              CryptoFactoryC.stringToDefaultBigInt(s2));
     }
 }

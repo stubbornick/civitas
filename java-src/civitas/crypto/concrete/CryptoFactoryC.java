@@ -455,7 +455,7 @@ public class CryptoFactoryC implements CryptoFactory {
         ElGamalParametersC paramsc = (ElGamalParametersC) params;
         // return the int value minus 1, since the well-known ciphertext list is
         // (1, 2, 3, ...), and we want to return the index of the value.
-        return paramsc.bruteForceDecode(mc.bigIntValue(),L) - 1;
+        return paramsc.bruteForceDecode(mc.pointValue(), L) - 1;
     }
     /**
      * Construct a well known ciphertext list. Needs to be coordinated with elGamal1OfLValue(ElGamalMsg)
@@ -468,7 +468,7 @@ public class CryptoFactoryC implements CryptoFactory {
         // Note: the well known ciphertexts MUST be the encryptions of 1,2,3,...
         // using the encryption factor 0. This is assumed by some of the
         // zero knowledge proofs.
-        ElGamalReencryptFactor factor = new ElGamalReencryptFactorC(CivitasBigInteger.ZERO);
+        ElGamalReencryptFactor factor = new ElGamalReencryptFactorC(BigInteger.valueOf(0));
         try {
             ElGamalParametersC params = (ElGamalParametersC)key.getParams();
             for (int i = 0; i < count; i++) {
@@ -778,7 +778,7 @@ public class CryptoFactoryC implements CryptoFactory {
     }
 
     public boolean petResult(ElGamalMsg petResult) {
-        // Pet result is true if the message == 1
+        // Pet result is true if the message == infinity
         if (petResult instanceof ElGamalMsgC) {
             ElGamalMsgC m = (ElGamalMsgC)petResult;
             return getInfinityPoint().equals(m.m);
@@ -1050,7 +1050,9 @@ public class CryptoFactoryC implements CryptoFactory {
             ElGamalReencryptFactor er, ElGamalReencryptFactor erPrime) {
         try {
             ElGamalParametersC ps = (ElGamalParametersC)k.getParams();
-            CivitasBigInteger zeta = ((ElGamalReencryptFactorC)erPrime).r.modSubtract(((ElGamalReencryptFactorC)er).r, ps.q);
+            BigInteger erPrimeInt = ((ElGamalReencryptFactorC)erPrime).r;
+            BigInteger erInt = ((ElGamalReencryptFactorC)er).r;
+            BigInteger zeta = CivitasBigInteger.modSubtract(erPrimeInt, erInt, ps.params.getN());
             return ElGamalProofDVRC.constructProof((ElGamalCiphertextC)e,
                                                    (ElGamalCiphertextC)ePrime,
                                                    (ElGamalPublicKeyC)k,

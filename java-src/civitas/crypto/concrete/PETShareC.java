@@ -49,7 +49,7 @@ class PETShareC implements PETShare {
             ECPoint di = d.multiply(zi);
             ECPoint ei = e.multiply(zi);
 
-            return new PETCommitmentC(factory.hashPoints(di, ei));
+            return new PETCommitmentC(factory.hash(di, ei));
         }
         catch (ClassCastException e) {
             return null;

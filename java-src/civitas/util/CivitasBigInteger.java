@@ -175,6 +175,15 @@ public class CivitasBigInteger {
             return new CivitasBigInteger(this.i.multiply(x.i.modInverse(p.i)).mod(p.i));
     }
 
+    public static BigInteger modDivide(BigInteger first, BigInteger second, BigInteger p) {
+        if (second == BigInteger.ONE) return first.mod(p);
+        if (_nativeOk)
+            return new BigInteger(nativeModDivide(first.toByteArray(),
+				      second.toByteArray(), p.toByteArray()));
+        else
+            return first.multiply(second.modInverse(p)).mod(p);
+    }
+
     public CivitasBigInteger modInverse(CivitasBigInteger p) {
         return new CivitasBigInteger(this.i.modInverse(p.i));
     }
@@ -192,6 +201,10 @@ public class CivitasBigInteger {
 
     public static BigInteger modNegate(BigInteger a, BigInteger p) {
         return a.negate().mod(p);
+    }
+    public static BigInteger modSubtract(BigInteger first, BigInteger second, BigInteger p) {
+        if (second == BigInteger.ZERO) return first.mod(p);
+        return first.subtract(second).mod(p);
     }
 
 	public CivitasBigInteger pow(int j) {

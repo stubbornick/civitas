@@ -8,14 +8,13 @@ package civitas.crypto.concrete;
 
 import java.io.*;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.bouncycastle.math.ec.ECPoint;
 
 import jif.lang.Label;
 import jif.lang.LabelUtil;
 import civitas.common.Util;
+import civitas.crypto.CryptoHashableList;
 import civitas.crypto.ElGamalParameters;
 import civitas.crypto.ElGamalProofDiscLogEquality;
 import civitas.util.CivitasBigInteger;
@@ -77,12 +76,12 @@ public class ElGamalProofDiscLogEqualityC implements ElGamalProofDiscLogEquality
         ECPoint a = g1.multiply(z);
         ECPoint b = g2.multiply(z);
 
-        List<ECPoint> l = new ArrayList<ECPoint>();
+        CryptoHashableList l = new CryptoHashableList();
         l.add(v);
         l.add(w);
         l.add(a);
         l.add(b);
-        BigInteger c = factory.hashToDefaultBigInt(factory.hashPoints(l)).mod(params.params.getN());
+        BigInteger c = factory.hashToDefaultBigInt(factory.hash(l)).mod(params.params.getN());
 
         BigInteger cx = CivitasBigInteger.modMultiply(c, x, params.params.getN());
         BigInteger r = CivitasBigInteger.modAdd(z, cx, params.params.getN());

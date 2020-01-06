@@ -7,25 +7,30 @@
 package civitas.crypto.concrete;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.math.BigInteger;
+
+import org.bouncycastle.math.ec.ECPoint;
 
 import jif.lang.Label;
 import jif.lang.LabelUtil;
 import civitas.common.Util;
-import civitas.crypto.*;
+import civitas.crypto.CryptoError;
+import civitas.crypto.CryptoHashableList;
+import civitas.crypto.ElGamalCiphertext;
+import civitas.crypto.ElGamalProofDVR;
+import civitas.crypto.ElGamalPublicKey;
 import civitas.util.CivitasBigInteger;
 
 public class ElGamalProofDVRC implements ElGamalProofDVR {
     private final ElGamalCiphertextC e;
     private final ElGamalCiphertextC eprime;
-    public final CivitasBigInteger c;
-    public final CivitasBigInteger w;
-    public final CivitasBigInteger r;
-    public final CivitasBigInteger u;
+    public final BigInteger c;
+    public final BigInteger w;
+    public final BigInteger r;
+    public final BigInteger u;
 
     public ElGamalProofDVRC(ElGamalCiphertextC e, ElGamalCiphertextC eprime,
-            CivitasBigInteger c, CivitasBigInteger w, CivitasBigInteger r, CivitasBigInteger u) {
+            BigInteger c, BigInteger w, BigInteger r, BigInteger u) {
         this.e = e;
         this.eprime = eprime;
         this.c = c;
@@ -36,24 +41,27 @@ public class ElGamalProofDVRC implements ElGamalProofDVR {
 
     public static ElGamalProofDVRC constructProof(ElGamalCiphertextC e, ElGamalCiphertextC eprime,
             ElGamalPublicKeyC key, ElGamalPublicKeyC verifierKey,
-            CivitasBigInteger zeta) {
+            BigInteger zeta) {
         CryptoFactoryC factory = CryptoFactoryC.singleton();
 
         // check that the inputs are correct
-//        if (!factory.elGamalReencrypt(key, e, new ElGamalReencryptFactorC(zeta)).equals(eprime)) {
-//            throw new CryptoError("Incorrect value for zeta passed in");
-//        }
+        // if (!factory.elGamalReencrypt(key, e, new ElGamalReencryptFactorC(zeta)).equals(eprime)) {
+        //     throw new CryptoError("Incorrect value for zeta passed in");
+        // }
 
         ElGamalParametersC ps = (ElGamalParametersC)key.getParams();
-        CivitasBigInteger d = CryptoAlgs.randomElement(ps.q);
-        CivitasBigInteger w = CryptoAlgs.randomElement(ps.q);
-        CivitasBigInteger r = CryptoAlgs.randomElement(ps.q);
-        CivitasBigInteger h = key.y;
-        CivitasBigInteger hv = verifierKey.y;
-        CivitasBigInteger a = ps.g.modPow(d, ps.p);
-        CivitasBigInteger b = h.modPow(d, ps.p);
-        CivitasBigInteger s = ps.g.modPow(w, ps.p).modMultiply(hv.modPow(r, ps.p), ps.p);
-        List<CivitasBigInteger> l = new ArrayList<CivitasBigInteger>();
+        BigInteger N = ps.params.getN();
+        ECPoint G = ps.params.getG();
+
+        BigInteger d = CryptoAlgs.randomElementDefault(N);
+        BigInteger w = CryptoAlgs.randomElementDefault(N);
+        BigInteger r = CryptoAlgs.randomElementDefault(N);
+        ECPoint h = key.y;
+        ECPoint hv = verifierKey.y;
+        ECPoint a = G.multiply(d);
+        ECPoint b = h.multiply(d);
+        ECPoint s = G.multiply(w).add(hv.multiply(r));
+        CryptoHashableList l = new CryptoHashableList();
         l.add(e.a);
         l.add(e.b);
         l.add(eprime.a);
@@ -61,26 +69,42 @@ public class ElGamalProofDVRC implements ElGamalProofDVR {
         l.add(a);
         l.add(b);
         l.add(s);
-        CivitasBigInteger c = factory.hashToBigInt(factory.hash(l)).mod(ps.q);
+        BigInteger c = factory.hashToDefaultBigInt(factory.hash(l)).mod(N);
 
-        CivitasBigInteger u = d.modAdd(zeta.modMultiply(c.modAdd(w, ps.q), ps.q), ps.q);
+        BigInteger u = CivitasBigInteger.modAdd(
+            d,
+            CivitasBigInteger.modMultiply(
+                zeta,
+                CivitasBigInteger.modAdd(c, w, N),
+                N
+                ),
+            N
+            );
 
         return new ElGamalProofDVRC(e, eprime, c, w, r, u);
 
     }
 
-    public static ElGamalProofDVRC fakeProof(ElGamalCiphertextC e, ElGamalCiphertextC et, ElGamalPublicKeyC key, ElGamalPublicKeyC verifierKey, ElGamalPrivateKeyC verifierPrivKey) {
+    public static ElGamalProofDVRC fakeProof(
+        ElGamalCiphertextC e,
+        ElGamalCiphertextC et,
+        ElGamalPublicKeyC key,
+        ElGamalPublicKeyC verifierKey,
+        ElGamalPrivateKeyC verifierPrivKey)
+    {
         CryptoFactoryC factory = CryptoFactoryC.singleton();
 
         ElGamalParametersC ps = (ElGamalParametersC)key.getParams();
-        //CivitasBigInteger hv = verifierKey.y;
-        CivitasBigInteger zv = verifierPrivKey.x;
+        BigInteger N = ps.params.getN();
+        ECPoint G = ps.params.getG();
+        //BigInteger hv = verifierKey.y;
+        BigInteger zv = verifierPrivKey.x;
 
-        CivitasBigInteger h = key.y;
-        CivitasBigInteger x = e.a;
-        CivitasBigInteger y = e.b;
-        CivitasBigInteger xt = et.a;
-        CivitasBigInteger yt = et.b;
+        ECPoint h = key.y;
+        ECPoint x = e.a;
+        ECPoint y = e.b;
+        ECPoint xt = et.a;
+        ECPoint yt = et.b;
 
         /*
          *  A verifier can simulate a "proof" that any e~=(x~,y~) is a reencryption of e.
@@ -95,15 +119,15 @@ public class ElGamalProofDVRC implements ElGamalProofDVR {
          *     o r~ = (\beta - w~)/(z_v) (mod q)
          * (c~, w~, r~, u~) will verify as a proof for E~.
          */
-        CivitasBigInteger alpha = CryptoAlgs.randomElement(ps.q);
-        CivitasBigInteger beta = CryptoAlgs.randomElement(ps.q);
-        CivitasBigInteger ut = CryptoAlgs.randomElement(ps.q);
+        BigInteger alpha = CryptoAlgs.randomElementDefault(N);
+        BigInteger beta = CryptoAlgs.randomElementDefault(N);
+        BigInteger ut = CryptoAlgs.randomElementDefault(N);
 
-        CivitasBigInteger at = ps.g.modPow(ut, ps.p).modDivide(xt.modDivide(x, ps.p).modPow(alpha, ps.p), ps.p);
-        CivitasBigInteger bt = h.modPow(ut, ps.p).modDivide(yt.modDivide(y, ps.p).modPow(alpha, ps.p), ps.p);
-        CivitasBigInteger st = ps.g.modPow(beta, ps.p);
+        ECPoint at = G.multiply(ut).subtract(xt.subtract(x).multiply(alpha));
+        ECPoint bt = h.multiply(ut).subtract(yt.subtract(y).multiply(alpha));
+        ECPoint st = G.multiply(beta);
 
-        List<CivitasBigInteger> l = new ArrayList<CivitasBigInteger>();
+        CryptoHashableList l = new CryptoHashableList();
         l.add(e.a);
         l.add(e.b);
         l.add(et.a);
@@ -111,28 +135,28 @@ public class ElGamalProofDVRC implements ElGamalProofDVR {
         l.add(at);
         l.add(bt);
         l.add(st);
-        CivitasBigInteger ct = factory.hashToBigInt(factory.hash(l)).mod(ps.q);
+        BigInteger ct = factory.hashToDefaultBigInt(factory.hash(l)).mod(N);
 
-        CivitasBigInteger wt = alpha.modSubtract(ct, ps.q);
-        CivitasBigInteger rt = beta.modSubtract(wt, ps.q).modDivide(zv, ps.q);
+        BigInteger wt = CivitasBigInteger.modSubtract(alpha, ct, N);
+        BigInteger rt = CivitasBigInteger.modDivide(CivitasBigInteger.modSubtract(beta, wt, N), zv, N);
 
         return new ElGamalProofDVRC(e, et, ct, wt, rt, ut);
-
-
     }
 
     public boolean verify(ElGamalPublicKey K, ElGamalPublicKey verifierKey) {
         CryptoFactoryC factory = CryptoFactoryC.singleton();
 
         ElGamalParametersC ps = (ElGamalParametersC)K.getParams();
+        BigInteger N = ps.params.getN();
+        ECPoint G = ps.params.getG();
         ElGamalPublicKeyC key = (ElGamalPublicKeyC)K;
 
-        CivitasBigInteger hv = ((ElGamalPublicKeyC)verifierKey).y;
-        CivitasBigInteger h = key.y;
-        CivitasBigInteger x = e.a;
-        CivitasBigInteger y = e.b;
-        CivitasBigInteger xp = eprime.a;
-        CivitasBigInteger yp = eprime.b;
+        ECPoint hv = ((ElGamalPublicKeyC)verifierKey).y;
+        ECPoint h = key.y;
+        ECPoint x = e.a;
+        ECPoint y = e.b;
+        ECPoint xp = eprime.a;
+        ECPoint yp = eprime.b;
 
         /*
          * a' = (g^u) / ((x'/x)^(c+w))
@@ -141,11 +165,11 @@ public class ElGamalProofDVRC implements ElGamalProofDVR {
          * c' = hash(E||a'||b'||s')
          */
 
-        CivitasBigInteger ap = ps.g.modPow(u, ps.p).modDivide(xp.modDivide(x, ps.p).modPow(c.modAdd(w, ps.q), ps.p), ps.p);
-        CivitasBigInteger bp = h.modPow(u, ps.p).modDivide(yp.modDivide(y, ps.p).modPow(c.modAdd(w, ps.q), ps.p), ps.p);
-        CivitasBigInteger sp = ps.g.modPow(w, ps.p).modMultiply(hv.modPow(r, ps.p), ps.p);
+        ECPoint ap = G.multiply(u).subtract(xp.subtract(x).multiply(CivitasBigInteger.modAdd(c, w, N)));
+        ECPoint bp = h.multiply(u).subtract(yp.subtract(y).multiply(CivitasBigInteger.modAdd(c, w, N)));
+        ECPoint sp = G.multiply(w).add(hv.multiply(r));
 
-        List<CivitasBigInteger> l = new ArrayList<CivitasBigInteger>();
+        CryptoHashableList l = new CryptoHashableList();
         l.add(e.a);
         l.add(e.b);
         l.add(eprime.a);
@@ -153,7 +177,7 @@ public class ElGamalProofDVRC implements ElGamalProofDVR {
         l.add(ap);
         l.add(bp);
         l.add(sp);
-        CivitasBigInteger cp = factory.hashToBigInt(factory.hash(l)).mod(ps.q);
+        BigInteger cp = factory.hashToDefaultBigInt(factory.hash(l)).mod(N);
 
         return cp.equals(c);
     }
@@ -176,16 +200,16 @@ public class ElGamalProofDVRC implements ElGamalProofDVR {
         e.toXML(lbl, s);
         eprime.toXML(lbl, s);
         s.print("<c>");
-        Util.escapeString(CryptoFactoryC.bigIntToString(c), lbl, s);
+        Util.escapeString(CryptoFactoryC.defaultBigIntToString(c), lbl, s);
         s.print("</c>");
         s.print("<w>");
-        Util.escapeString(CryptoFactoryC.bigIntToString(w), lbl, s);
+        Util.escapeString(CryptoFactoryC.defaultBigIntToString(w), lbl, s);
         s.print("</w>");
         s.print("<r>");
-        Util.escapeString(CryptoFactoryC.bigIntToString(r), lbl, s);
+        Util.escapeString(CryptoFactoryC.defaultBigIntToString(r), lbl, s);
         s.print("</r>");
         s.print("<u>");
-        Util.escapeString(CryptoFactoryC.bigIntToString(u), lbl, s);
+        Util.escapeString(CryptoFactoryC.defaultBigIntToString(u), lbl, s);
         s.print("</u>");
         s.print("</elGamalProofDVR>");
     }
@@ -194,15 +218,12 @@ public class ElGamalProofDVRC implements ElGamalProofDVR {
         Util.swallowTag(lbl, reader, "elGamalProofDVR");
         ElGamalCiphertextC e = (ElGamalCiphertextC)CryptoFactoryC.singleton().elGamalCiphertextFromXML(lbl, reader);
         ElGamalCiphertextC eprime = (ElGamalCiphertextC)CryptoFactoryC.singleton().elGamalCiphertextFromXML(lbl, reader);
-        CivitasBigInteger c = CryptoFactoryC.stringToBigInt(Util.unescapeString(Util.readSimpleTag(lbl, reader, "c")));
-        CivitasBigInteger w = CryptoFactoryC.stringToBigInt(Util.unescapeString(Util.readSimpleTag(lbl, reader, "w")));
-        CivitasBigInteger r = CryptoFactoryC.stringToBigInt(Util.unescapeString(Util.readSimpleTag(lbl, reader, "r")));
-        CivitasBigInteger u = CryptoFactoryC.stringToBigInt(Util.unescapeString(Util.readSimpleTag(lbl, reader, "u")));
+        BigInteger c = CryptoFactoryC.stringToDefaultBigInt(Util.unescapeString(Util.readSimpleTag(lbl, reader, "c")));
+        BigInteger w = CryptoFactoryC.stringToDefaultBigInt(Util.unescapeString(Util.readSimpleTag(lbl, reader, "w")));
+        BigInteger r = CryptoFactoryC.stringToDefaultBigInt(Util.unescapeString(Util.readSimpleTag(lbl, reader, "r")));
+        BigInteger u = CryptoFactoryC.stringToDefaultBigInt(Util.unescapeString(Util.readSimpleTag(lbl, reader, "u")));
 
         Util.swallowEndTag(lbl, reader, "elGamalProofDVR");
         return new ElGamalProofDVRC(e, eprime, c, w, r, u);
     }
-
-
-
 }
