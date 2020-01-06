@@ -17,8 +17,8 @@ public class ElGamalKeyPairImpl implements ElGamalKeyPair {
 	final ElGamalPrivateKey k;
 
 	public ElGamalKeyPairImpl(ECPublicKeyParameters K, ECPrivateKeyParameters k, ElGamalParameters params) {
-		this.K = new ElGamalPublicKeyC(K, params);
-		this.k = new ElGamalPrivateKeyC(k, params);
+		this.K = new ElGamalPublicKeyC(K.getQ(), params);
+		this.k = new ElGamalPrivateKeyC(k.getD(), params);
 	}
 
 	public ElGamalPublicKey publicKey() {
