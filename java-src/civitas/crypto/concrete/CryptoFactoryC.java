@@ -524,7 +524,26 @@ public class CryptoFactoryC implements CryptoFactory {
         return hashToDefaultBigInt(md.digest());
     }
 
-    BigInteger hash(ECPoint a, ECPoint b, ECPoint c, byte[] d) {
+    /**
+     * Compute a hash over a list of ECPoints.
+     */
+    byte[] hashPoints(List<ECPoint> l) {
+        // Compute the hash by updating a message digest
+        // with the byte representation of the big ints.
+        MessageDigest md = messageDigest(LabelUtil.singleton().noComponents());
+        for (Iterator iter = l.iterator(); iter.hasNext();) {
+            ECPoint p = (ECPoint)iter.next();
+            md.update(p.getEncoded(true));
+        }
+        return md.digest();
+    }
+    BigInteger hashPoints(ECPoint a, ECPoint b) {
+        return hashPoints(a,b,null);
+    }
+    BigInteger hashPoints(ECPoint a, ECPoint b, ECPoint c) {
+        return hashPoints(a,b,c,null);
+    }
+    BigInteger hashPoints(ECPoint a, ECPoint b, ECPoint c, byte[] d) {
         // Compute the hash by updating a message digest
         // with the byte representation of the big ints.
         MessageDigest md = messageDigest(LabelUtil.singleton().noComponents());
