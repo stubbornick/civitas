@@ -7,8 +7,11 @@
 package civitas.crypto.concrete;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.bouncycastle.math.ec.ECPoint;
 
 import jif.lang.Label;
 import jif.lang.LabelUtil;
@@ -29,23 +32,25 @@ import civitas.util.CivitasBigInteger;
  */
 public class ElGamalProofDiscLogEqualityC implements ElGamalProofDiscLogEquality {
 
-    public final CivitasBigInteger g1;
-    public final CivitasBigInteger g2;
+    public final ECPoint g1;
+    public final ECPoint g2;
 
-    public final CivitasBigInteger v;
-    public final CivitasBigInteger w;
+    public final ECPoint v;
+    public final ECPoint w;
 
-    public final CivitasBigInteger a;
-    public final CivitasBigInteger b;
-    public final CivitasBigInteger c;
-    public final CivitasBigInteger r;
+    public final ECPoint a;
+    public final ECPoint b;
+    public final BigInteger c;
+    public final BigInteger r;
 
-    public ElGamalProofDiscLogEqualityC(CivitasBigInteger g1,
-            CivitasBigInteger g2,
-            CivitasBigInteger a,
-            CivitasBigInteger v,
-            CivitasBigInteger w,
-            CivitasBigInteger b, CivitasBigInteger c, CivitasBigInteger r) {
+    public ElGamalProofDiscLogEqualityC(
+            ECPoint g1,
+            ECPoint g2,
+            ECPoint a,
+            ECPoint v,
+            ECPoint w,
+            ECPoint b,
+            BigInteger c, BigInteger r) {
         this.g1 = g1;
         this.g2 = g2;
         this.v = v;
@@ -56,25 +61,31 @@ public class ElGamalProofDiscLogEqualityC implements ElGamalProofDiscLogEquality
         this.r = r;
     }
 
-     public static ElGamalProofDiscLogEqualityC constructProof(ElGamalParametersC params, CivitasBigInteger g1, CivitasBigInteger g2, CivitasBigInteger x) {
+    public static ElGamalProofDiscLogEqualityC constructProof(
+        ElGamalParametersC params,
+        ECPoint g1,
+        ECPoint g2,
+        BigInteger x)
+    {
 
         CryptoFactoryC factory = CryptoFactoryC.singleton();
 
-        CivitasBigInteger v = g1.modPow(x, params.p);
-        CivitasBigInteger w = g2.modPow(x, params.p);
+        ECPoint v = g1.multiply(x);
+        ECPoint w = g2.multiply(x);
 
-        CivitasBigInteger z = CryptoAlgs.randomElement(params.q);
-        CivitasBigInteger a = g1.modPow(z, params.p);
-        CivitasBigInteger b = g2.modPow(z, params.p);
+        BigInteger z = CryptoAlgs.randomElementDefault(params.params.getN());
+        ECPoint a = g1.multiply(z);
+        ECPoint b = g2.multiply(z);
 
-        List<CivitasBigInteger> l = new ArrayList<CivitasBigInteger>();
+        List<ECPoint> l = new ArrayList<ECPoint>();
         l.add(v);
         l.add(w);
         l.add(a);
         l.add(b);
-        CivitasBigInteger c = factory.hashToBigInt(factory.hash(l)).mod(params.q);
+        BigInteger c = factory.hashToDefaultBigInt(factory.hashPoints(l)).mod(params.params.getN());
 
-        CivitasBigInteger r = z.modAdd(c.modMultiply(x, params.q), params.q);
+        BigInteger cx = CivitasBigInteger.modMultiply(c, x, params.params.getN());
+        BigInteger r = CivitasBigInteger.modAdd(z, cx, params.params.getN());
 
 
         return new ElGamalProofDiscLogEqualityC(g1, g2, a, v, w, b, c, r);
@@ -82,12 +93,11 @@ public class ElGamalProofDiscLogEqualityC implements ElGamalProofDiscLogEquality
 
     public boolean verify(ElGamalParameters prms) {
         if (!(prms instanceof ElGamalParametersC)) return false;
-        ElGamalParametersC params = (ElGamalParametersC)prms;
 
         try {
             //To verify, check that g_1^r = av^c (mod p) and g_2^r = bw^c (mod p)
-            return g1.modPow(r, params.p).equals(a.modMultiply(v.modPow(c, params.p), params.p)) &&
-                    g2.modPow(r, params.p).equals(b.modMultiply(w.modPow(c, params.p), params.p));
+            return g1.multiply(r).equals(a.add(v.multiply(c))) &&
+                   g2.multiply(r).equals(b.add(w.multiply(c)));
         }
         catch (NullPointerException e) {
             return false;
@@ -105,28 +115,28 @@ public class ElGamalProofDiscLogEqualityC implements ElGamalProofDiscLogEquality
         s.print("<egPrfKnwDscLog>");
 
         s.print("<g1>");
-        if (this.g1 != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.g1), lbl, s);
+        if (this.g1 != null) Util.escapeString(CryptoFactoryC.pointToString(this.g1), lbl, s);
         s.print("</g1>");
         s.print("<g2>");
-        if (this.g2 != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.g2), lbl, s);
+        if (this.g2 != null) Util.escapeString(CryptoFactoryC.pointToString(this.g2), lbl, s);
         s.print("</g2>");
         s.print("<v>");
-        if (this.v != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.v), lbl, s);
+        if (this.v != null) Util.escapeString(CryptoFactoryC.pointToString(this.v), lbl, s);
         s.print("</v>");
         s.print("<w>");
-        if (this.w != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.w), lbl, s);
+        if (this.w != null) Util.escapeString(CryptoFactoryC.pointToString(this.w), lbl, s);
         s.print("</w>");
         s.print("<a>");
-        if (this.a != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.a), lbl, s);
+        if (this.a != null) Util.escapeString(CryptoFactoryC.pointToString(this.a), lbl, s);
         s.print("</a>");
         s.print("<b>");
-        if (this.b != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.b), lbl, s);
+        if (this.b != null) Util.escapeString(CryptoFactoryC.pointToString(this.b), lbl, s);
         s.print("</b>");
         s.print("<c>");
-        if (this.c != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.c), lbl, s);
+        if (this.c != null) Util.escapeString(CryptoFactoryC.defaultBigIntToString(this.c), lbl, s);
         s.print("</c>");
         s.print("<r>");
-        if (this.r != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.r), lbl, s);
+        if (this.r != null) Util.escapeString(CryptoFactoryC.defaultBigIntToString(this.r), lbl, s);
         s.print("</r>");
 
         s.print("</egPrfKnwDscLog>");
@@ -144,9 +154,10 @@ public class ElGamalProofDiscLogEqualityC implements ElGamalProofDiscLogEquality
         String rr = Util.unescapeString(Util.readSimpleTag(lbl, r, "r"));
 
         Util.swallowEndTag(lbl, r, "egPrfKnwDscLog");
-        return new ElGamalProofDiscLogEqualityC(CryptoFactoryC.stringToBigInt(g1), CryptoFactoryC.stringToBigInt(g2),
-                                                CryptoFactoryC.stringToBigInt(a), CryptoFactoryC.stringToBigInt(v),
-                                                CryptoFactoryC.stringToBigInt(w), CryptoFactoryC.stringToBigInt(b),
-                                                CryptoFactoryC.stringToBigInt(c), CryptoFactoryC.stringToBigInt(rr));
+        return new ElGamalProofDiscLogEqualityC(
+            CryptoFactoryC.stringToPoint(g1),CryptoFactoryC.stringToPoint(g2),
+            CryptoFactoryC.stringToPoint(a), CryptoFactoryC.stringToPoint(v),
+            CryptoFactoryC.stringToPoint(w), CryptoFactoryC.stringToPoint(b),
+            CryptoFactoryC.stringToDefaultBigInt(c), CryptoFactoryC.stringToDefaultBigInt(rr));
     }
 }

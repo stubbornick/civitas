@@ -9,19 +9,21 @@ package civitas.crypto.concrete;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.math.BigInteger;
+
+import org.bouncycastle.math.ec.ECPoint;
 
 import jif.lang.Label;
 import civitas.common.Util;
 import civitas.crypto.*;
-import civitas.util.CivitasBigInteger;
 
 class PETShareC implements PETShare {
     protected final ElGamalCiphertextC ciphertext1;
     protected final ElGamalCiphertextC ciphertext2;
 
-    public final CivitasBigInteger exponent;
+    public final BigInteger exponent;
 
-    public PETShareC(ElGamalCiphertextC ciphertext1, ElGamalCiphertextC ciphertext2, CivitasBigInteger exponent) {
+    public PETShareC(ElGamalCiphertextC ciphertext1, ElGamalCiphertextC ciphertext2, BigInteger exponent) {
         this.ciphertext1 = ciphertext1;
         this.ciphertext2 = ciphertext2;
         this.exponent = exponent;
@@ -40,14 +42,14 @@ class PETShareC implements PETShare {
             ElGamalParametersC ps = (ElGamalParametersC)params;
             CryptoFactoryC factory = CryptoFactoryC.singleton();
 
-            CivitasBigInteger zi = exponent;
-            CivitasBigInteger d = ciphertext1.a.modDivide(ciphertext2.a, ps.p);
-            CivitasBigInteger e = ciphertext1.b.modDivide(ciphertext2.b, ps.p);
+            BigInteger zi = exponent;
+            ECPoint d = ciphertext1.a.subtract(ciphertext2.a);
+            ECPoint e = ciphertext1.b.subtract(ciphertext2.b);
 
-            CivitasBigInteger di = d.modPow(zi, ps.p);
-            CivitasBigInteger ei = e.modPow(zi, ps.p);
+            ECPoint di = d.multiply(zi);
+            ECPoint ei = e.multiply(zi);
 
-            return new PETCommitmentC(factory.hash(di, ei));
+            return new PETCommitmentC(factory.hashPoints(di, ei));
         }
         catch (ClassCastException e) {
             return null;
@@ -59,12 +61,12 @@ class PETShareC implements PETShare {
         try {
             ElGamalParametersC params = (ElGamalParametersC)p;
 
-            CivitasBigInteger zi = exponent;
-            CivitasBigInteger d = ciphertext1.a.modDivide(ciphertext2.a, params.p);
-            CivitasBigInteger e = ciphertext1.b.modDivide(ciphertext2.b, params.p);
+            BigInteger zi = exponent;
+            ECPoint d = ciphertext1.a.subtract(ciphertext2.a);
+            ECPoint e = ciphertext1.b.subtract(ciphertext2.b);
 
-            CivitasBigInteger di = d.modPow(zi, params.p);
-            CivitasBigInteger ei = e.modPow(zi, params.p);
+            ECPoint di = d.multiply(zi);
+            ECPoint ei = e.multiply(zi);
 
             return new PETDecommitmentC(di, ei, decommitmentProof(params, d, e, zi));
         }
@@ -74,9 +76,9 @@ class PETShareC implements PETShare {
     }
 
     private static ElGamalProofDiscLogEquality decommitmentProof(ElGamalParametersC params,
-            CivitasBigInteger g1,
-            CivitasBigInteger g2,
-            CivitasBigInteger x) {
+            ECPoint g1,
+            ECPoint g2,
+            BigInteger x) {
         return ElGamalProofDiscLogEqualityC.constructProof(params, g1, g2, x);
     }
 
@@ -91,7 +93,7 @@ class PETShareC implements PETShare {
         }
         if (this.exponent != null) {
             sb.append("<exponent>");
-            Util.escapeString(CryptoFactoryC.bigIntToString(this.exponent), lbl, sb);
+            Util.escapeString(CryptoFactoryC.defaultBigIntToString(this.exponent), lbl, sb);
             sb.append("</exponent>");
         }
         sb.append("</petShare>");
@@ -106,10 +108,7 @@ class PETShareC implements PETShare {
         ciphertext1 = ElGamalCiphertextC.fromXML(lbl, r);
         ciphertext2 = ElGamalCiphertextC.fromXML(lbl, r);
 
-
-
-        CivitasBigInteger exponent = CryptoFactoryC.stringToBigInt(Util.unescapeString(Util.readSimpleTag(lbl, r, "exponent")));
-
+        BigInteger exponent = CryptoFactoryC.stringToDefaultBigInt(Util.unescapeString(Util.readSimpleTag(lbl, r, "exponent")));
 
         Util.swallowEndTag(lbl, r, "petShare");
 
@@ -124,7 +123,7 @@ class PETShareC implements PETShare {
 		return ciphertext2;
 	}
 
-	public CivitasBigInteger exponent() {
+	public BigInteger exponent() {
 		return exponent;
 	}
 }

@@ -7,13 +7,15 @@
 package civitas.crypto.concrete;
 
 import java.io.*;
+import java.math.BigInteger;
+
+import org.bouncycastle.math.ec.ECPoint;
 
 import jif.lang.Label;
 import jif.lang.LabelUtil;
 import civitas.common.Util;
 import civitas.crypto.ElGamalParameters;
 import civitas.crypto.ElGamalProofKnowDiscLog;
-import civitas.util.CivitasBigInteger;
 
 /**
  * Proof that an entity knows x in v = g^x.
@@ -28,12 +30,12 @@ public class ElGamalProofKnowDiscLogC implements ElGamalProofKnowDiscLog {
      *
      * To verify proof, check that g^r = av^c (mod p)
      */
-    public final CivitasBigInteger a;
-    public final CivitasBigInteger c;
-    public final CivitasBigInteger r;
-    public final CivitasBigInteger v;
+    public final ECPoint a;
+    public final BigInteger c;
+    public final BigInteger r;
+    public final ECPoint v;
 
-    public ElGamalProofKnowDiscLogC(CivitasBigInteger a, CivitasBigInteger c, CivitasBigInteger r, CivitasBigInteger v) {
+    public ElGamalProofKnowDiscLogC(ECPoint a, BigInteger c, BigInteger r, ECPoint v) {
         this.a = a;
         this.c = c;
         this.r = r;
@@ -44,8 +46,8 @@ public class ElGamalProofKnowDiscLogC implements ElGamalProofKnowDiscLog {
         if (!(prms instanceof ElGamalParametersC)) return false;
         ElGamalParametersC params = (ElGamalParametersC)prms;
         try {
-            CivitasBigInteger u = params.g.modPow(r, params.p);
-            CivitasBigInteger w = a.modMultiply(v.modPow(c, params.p), params.p);
+            ECPoint u = params.params.getG().multiply(r);
+            ECPoint w = a.add(v.multiply(c));
 
             return u.equals(w);
         }
@@ -65,16 +67,16 @@ public class ElGamalProofKnowDiscLogC implements ElGamalProofKnowDiscLog {
         s.print("<elGamalProofKnowDiscLog>");
 
         s.print("<a>");
-        if (this.a != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.a), lbl, s);
+        if (this.a != null) Util.escapeString(CryptoFactoryC.pointToString(this.a), lbl, s);
         s.print("</a>");
         s.print("<c>");
-        if (this.c != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.c), lbl, s);
+        if (this.c != null) Util.escapeString(CryptoFactoryC.defaultBigIntToString(this.c), lbl, s);
         s.print("</c>");
         s.print("<r>");
-        if (this.r != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.r), lbl, s);
+        if (this.r != null) Util.escapeString(CryptoFactoryC.defaultBigIntToString(this.r), lbl, s);
         s.print("</r>");
         s.print("<v>");
-        if (this.v != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.v), lbl, s);
+        if (this.v != null) Util.escapeString(CryptoFactoryC.pointToString(this.v), lbl, s);
         s.print("</v>");
 
         s.print("</elGamalProofKnowDiscLog>");
@@ -88,7 +90,11 @@ public class ElGamalProofKnowDiscLogC implements ElGamalProofKnowDiscLog {
         String v = Util.unescapeString(Util.readSimpleTag(lbl, r, "v"));
 
         Util.swallowEndTag(lbl, r, "elGamalProofKnowDiscLog");
-        return new ElGamalProofKnowDiscLogC(CryptoFactoryC.stringToBigInt(a), CryptoFactoryC.stringToBigInt(c),
-                                            CryptoFactoryC.stringToBigInt(rr), CryptoFactoryC.stringToBigInt(v));
+        return new ElGamalProofKnowDiscLogC(
+            CryptoFactoryC.stringToPoint(a),
+            CryptoFactoryC.stringToDefaultBigInt(c),
+            CryptoFactoryC.stringToDefaultBigInt(rr),
+            CryptoFactoryC.stringToPoint(v)
+            );
     }
 }

@@ -9,6 +9,9 @@ package civitas.crypto.concrete;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.math.BigInteger;
+
+import org.bouncycastle.math.ec.ECPoint;
 
 import jif.lang.IDComparable;
 import jif.lang.JifObject;
@@ -17,12 +20,11 @@ import until.lang.LabelUntilUtil;
 import civitas.common.Util;
 import civitas.crypto.CryptoException;
 import civitas.crypto.VoteCapabilityShare;
-import civitas.util.CivitasBigInteger;
 
 public class VoteCapabilityShareC extends ElGamalMsgC implements VoteCapabilityShare, JifObject {
 
 
-    public VoteCapabilityShareC(CivitasBigInteger c, ElGamalParametersC params) throws CryptoException {
+    public VoteCapabilityShareC(BigInteger c, ElGamalParametersC params) throws CryptoException {
         super(c, params);
     }
 
@@ -30,7 +32,7 @@ public class VoteCapabilityShareC extends ElGamalMsgC implements VoteCapabilityS
         super(c, params);
     }
 
-    public VoteCapabilityShareC(CivitasBigInteger c) {
+    public VoteCapabilityShareC(ECPoint c) {
 		super(c);
 	}
 
@@ -65,17 +67,13 @@ public class VoteCapabilityShareC extends ElGamalMsgC implements VoteCapabilityS
     public void toXML(Label lbl, PrintWriter s) {
         s.print('<'); s.print(OPENING_TAG); s.print('>');
         if (this.m != null) {
-            Util.escapeString(CryptoFactoryC.bigIntToString(this.m), null, s);
+            Util.escapeString(CryptoFactoryC.pointToString(this.m), null, s);
         }
         s.print("</"); s.print(OPENING_TAG); s.print('>');
     }
     public static VoteCapabilityShare fromXML(Label lbl, Reader r) throws IllegalArgumentException, IOException {
         String s = Util.unescapeString(Util.readSimpleTag(lbl, r, OPENING_TAG));
-        return new VoteCapabilityShareC(CryptoFactoryC.stringToBigInt(s));
-    }
-
-    public int intValue() throws NumberFormatException {
-        return m.intValue();
+        return new VoteCapabilityShareC(CryptoFactoryC.stringToPoint(s));
     }
 
 }

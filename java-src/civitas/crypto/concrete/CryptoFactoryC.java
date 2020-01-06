@@ -253,9 +253,9 @@ public class CryptoFactoryC implements CryptoFactory {
         ElGamalParametersC ps = (ElGamalParametersC) params;
 
         // choose x in Z_q at random. This is the share of the private key.
-        CivitasBigInteger x = CryptoAlgs.randomElementDefault(ps.params.getN());
+        BigInteger x = CryptoAlgs.randomElementDefault(ps.params.getN());
         // the public part of the key is y
-        CivitasBigInteger y = ps.g.modPow(x, ps.p);
+        ECPoint y = ps.params.getG().multiply(x);
 
         ElGamalPublicKey pub = new ElGamalPublicKeyC(y, params);
         ElGamalPrivateKey priv = new ElGamalPrivateKeyC(x, params);
@@ -264,7 +264,7 @@ public class CryptoFactoryC implements CryptoFactory {
 
     public VoteCapabilityShare generateVoteCapabilityShare(ElGamalParameters p) {
         ElGamalParametersC ps = (ElGamalParametersC) p;
-        CivitasBigInteger x = CryptoAlgs.randomElementDefault(ps.params.getN());
+        BigInteger x = CryptoAlgs.randomElementDefault(ps.params.getN());
         try {
             return new VoteCapabilityShareC(x, ps);
         }
@@ -275,9 +275,8 @@ public class CryptoFactoryC implements CryptoFactory {
     public VoteCapability[] combineVoteCapabilityShares(Label lbl, VoteCapabilityShare[][] shares, ElGamalParameters p) {
         if (shares == null) return null;
         try {
-            ElGamalParametersC params = (ElGamalParametersC)p;
             // multiply all the shares together
-            CivitasBigInteger[] accum = new CivitasBigInteger[shares[0].length];
+            ECPoint[] accum = new ECPoint[shares[0].length];
             for (int i = 0; i < shares.length; i++) {
                 for (int j = 0; j < shares[i].length; j++) {
                     VoteCapabilityShareC s = (VoteCapabilityShareC)shares[i][j];
@@ -285,7 +284,7 @@ public class CryptoFactoryC implements CryptoFactory {
                         accum[j] = s.m;
                     }
                     else {
-                        accum[j] = accum[j].modMultiply(s.m, params.p);
+                        accum[j] = accum[j].add(s.m);
                     }
                 }
             }
@@ -309,10 +308,9 @@ public class CryptoFactoryC implements CryptoFactory {
     public ElGamalCiphertext[] multiplyCiphertexts(Label lbl, ElGamalSignedCiphertext[][] ciphertexts, ElGamalParameters p) {
         if (ciphertexts == null) return null;
         try {
-            ElGamalParametersC params = (ElGamalParametersC)p;
             // multiply all the shares together
-            CivitasBigInteger[] aAccum = new CivitasBigInteger[ciphertexts[0].length];
-            CivitasBigInteger[] bAccum = new CivitasBigInteger[ciphertexts[0].length];
+            ECPoint[] aAccum = new ECPoint[ciphertexts[0].length];
+            ECPoint[] bAccum = new ECPoint[ciphertexts[0].length];
             for (int i = 0; i < ciphertexts.length; i++) {
                 for (int j = 0; j < ciphertexts[i].length; j++) {
                     ElGamalCiphertextC s = (ElGamalCiphertextC)ciphertexts[i][j];
@@ -321,8 +319,8 @@ public class CryptoFactoryC implements CryptoFactory {
                         bAccum[j] = s.b;
                     }
                     else {
-                        aAccum[j] = aAccum[j].modMultiply(s.a, params.p);
-                        bAccum[j] = bAccum[j].modMultiply(s.b, params.p);
+                        aAccum[j] = aAccum[j].add(s.a);
+                        bAccum[j] = bAccum[j].add(s.b);
                     }
                 }
             }
@@ -644,13 +642,13 @@ public class CryptoFactoryC implements CryptoFactory {
             return null;
         }
         ElGamalParametersC params = (ElGamalParametersC)prms;
-        CivitasBigInteger x = ((ElGamalPrivateKeyC)k).x;
+        BigInteger x = ((ElGamalPrivateKeyC)k).x;
         try {
-            CivitasBigInteger v = params.g.modPow(x, params.p);
-            CivitasBigInteger z = CryptoAlgs.randomElement(params.q);
-            CivitasBigInteger a = params.g.modPow(z, params.p);
-            CivitasBigInteger c = hash(v, a).mod(params.q); // can take mod q without any ill effects.
-            CivitasBigInteger r = z.modAdd(c.modMultiply(x, params.q), params.q);
+            ECPoint v = params.params.getG().multiply(x);
+            BigInteger z = CryptoAlgs.randomElementDefault(params.params.getN());
+            ECPoint a = params.params.getG().multiply(z);
+            BigInteger c = hashPoints(v, a).mod(params.params.getN()); // can take mod q without any ill effects.
+            BigInteger r = CivitasBigInteger.modAdd(z, CivitasBigInteger.modMultiply(c, x, params.params.getN()), params.params.getN());
             return new ElGamalProofKnowDiscLogC(a,c,r,v);
         }
         catch (RuntimeException e) {
@@ -668,7 +666,7 @@ public class CryptoFactoryC implements CryptoFactory {
         ElGamalCiphertextC bc = (ElGamalCiphertextC)b;
 
         try {
-            CivitasBigInteger z = CryptoAlgs.randomElement(params.q);
+            BigInteger z = CryptoAlgs.randomElementDefault(params.params.getN());
             return new PETShareC(ac, bc, z);
         }
         catch (RuntimeException e) {

@@ -7,17 +7,17 @@
 package civitas.crypto.concrete;
 
 import java.io.*;
+import java.math.BigInteger;
 
 import jif.lang.Label;
 import jif.lang.LabelUtil;
 import civitas.common.Util;
 import civitas.crypto.PETCommitment;
-import civitas.util.CivitasBigInteger;
 
 public class PETCommitmentC implements PETCommitment {
-    public final CivitasBigInteger hash;
+    public final BigInteger hash;
 
-    public PETCommitmentC(CivitasBigInteger hash) {
+    public PETCommitmentC(BigInteger hash) {
         this.hash = hash;
     }
     public String toXML() {
@@ -28,14 +28,14 @@ public class PETCommitmentC implements PETCommitment {
     public void toXML(Label lbl, PrintWriter s) {
         s.print('<'); s.print(OPENING_TAG); s.print('>');
 
-        if (hash != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.hash), lbl, s);
+        if (hash != null) Util.escapeString(CryptoFactoryC.defaultBigIntToString(this.hash), lbl, s);
 
         s.print("</"); s.print(OPENING_TAG); s.print('>');
     }
 
     public static PETCommitmentC fromXML(Label lbl, Reader r) throws IllegalArgumentException, IOException {
         String d = Util.unescapeString(Util.readSimpleTag(lbl, r, OPENING_TAG));
-        return new PETCommitmentC(CryptoFactoryC.stringToBigInt(d));
+        return new PETCommitmentC(CryptoFactoryC.stringToDefaultBigInt(d));
     }
 
 }

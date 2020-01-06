@@ -8,21 +8,22 @@ package civitas.crypto.concrete;
 
 import java.io.*;
 
+import org.bouncycastle.math.ec.ECPoint;
+
 import jif.lang.Label;
 import jif.lang.LabelUtil;
 import civitas.common.Util;
 import civitas.crypto.*;
-import civitas.util.CivitasBigInteger;
 
 /**
  * A server's decommitment for a PET share
  */
 public class PETDecommitmentC implements PETDecommitment {
-    public final CivitasBigInteger di;
-    public final CivitasBigInteger ei;
+    public final ECPoint di;
+    public final ECPoint ei;
     public final ElGamalProofDiscLogEquality proof;
 
-    public PETDecommitmentC(CivitasBigInteger di, CivitasBigInteger ei, ElGamalProofDiscLogEquality proof) {
+    public PETDecommitmentC(ECPoint di, ECPoint ei, ElGamalProofDiscLogEquality proof) {
         this.di = di;
         this.ei = ei;
         this.proof = proof;
@@ -45,15 +46,14 @@ public class PETDecommitmentC implements PETDecommitment {
 
         CryptoFactoryC factory = CryptoFactoryC.singleton();
 
-        CivitasBigInteger d = m1.a.modDivide(m2.a, ps.p);
-        CivitasBigInteger e = m1.b.modDivide(m2.b, ps.p);
-
+        ECPoint d = m1.a.subtract(m2.a);
+        ECPoint e = m1.b.subtract(m2.b);
 
         // check that it's a proof of the correct thing.
         if (di == null || ei == null) return false;
         if (!d.equals(prf.g1) || !e.equals(prf.g2)) return false;
 
-        return com.hash.equals(factory.hash(di, ei)) && prf.verify(params);
+        return com.hash.equals(factory.hashPoints(di, ei)) && prf.verify(params);
     }
 
 
@@ -65,10 +65,10 @@ public class PETDecommitmentC implements PETDecommitment {
     public void toXML(Label lbl, PrintWriter s) {
         s.print('<'); s.print(OPENING_TAG); s.print('>');
         s.print("<d>");
-        if (di != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.di), lbl, s);
+        if (di != null) Util.escapeString(CryptoFactoryC.pointToString(this.di), lbl, s);
         s.print("</d>");
         s.print("<e>");
-        if (ei != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.ei), lbl, s);
+        if (ei != null) Util.escapeString(CryptoFactoryC.pointToString(this.ei), lbl, s);
         s.print("</e>");
         s.print("<prf>");
         proof.toXML(lbl, s);
@@ -84,7 +84,12 @@ public class PETDecommitmentC implements PETDecommitment {
         ElGamalProofDiscLogEquality proof = ElGamalProofDiscLogEqualityC.fromXML(lbl, r);
         Util.swallowEndTag(lbl, r, "prf");
         Util.swallowEndTag(lbl, r, OPENING_TAG);
-        return new PETDecommitmentC(CryptoFactoryC.stringToBigInt(d), CryptoFactoryC.stringToBigInt(e), proof);
+
+        return new PETDecommitmentC(
+            CryptoFactoryC.stringToPoint(d),
+            CryptoFactoryC.stringToPoint(e),
+            proof
+            );
     }
 
 }
