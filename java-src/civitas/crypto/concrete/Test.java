@@ -7,6 +7,7 @@
 package civitas.crypto.concrete;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.security.Provider;
 import java.security.Security;
 
@@ -29,7 +30,7 @@ public class Test {
             ps = ElGamalParametersC.fromXML(LabelUtil.singleton().noComponents(), new FileReader("experiments/keys/elGamalKeyParams-224-2048.xml"));
         }
         catch (IOException e) {
-            ps = (ElGamalParametersC) f.generateElGamalParameters(224, 2048);
+            ps = (ElGamalParametersC) f.generateElGamalParameters();
         }
 //        ps = (ElGamalParametersC) f.generateElGamalParameters(160, 1024);
         return ps;
@@ -115,8 +116,6 @@ public class Test {
         performance();
         System.out.println("= foo =");
         foo();
-        System.out.println("= genTest =");
-        genTest();
         System.out.println("= msgTest =");
         msgTest();
         System.out.println("= decTest =");
@@ -316,20 +315,6 @@ public class Test {
 
     }
 
-    public static void genTest() {
-        System.out.println("p = " + ps.p);
-        System.out.println("q = " + ps.q);
-        System.out.println("g = " + ps.g);
-        test("p=2q+1", ps.p.equals(ps.q.multiply(CivitasBigInteger.valueOf(2)).add(CivitasBigInteger.ONE)));
-        // g is a generator of QR_p if it passes two tests.
-        // Test 1. g is order q, i.e. g^q = 1.
-        test("g^q mod p = 1", ps.g.modPow(ps.q, ps.p).equals(CivitasBigInteger.ONE));
-        // Test 2. g is in QR_p, i.e. J_p(g) = 1.
-        test("J_p(g) = 1", CryptoAlgs.legendreSymbol(ps.g, ps.p, ps.q) == 1);
-        // If g \in QR_p then -g \notin QR_p
-        test("J_p(-g) = -1", CryptoAlgs.legendreSymbol(ps.g.modNegate(ps.p), ps.p, ps.q) == -1);
-    }
-
     /**
      * Test the designated verifier proof
      *
@@ -384,7 +369,7 @@ public class Test {
 //        System.err.println("m1 in QR = " + m1.encodeQR(ps));
 //        System.err.println("m2 in QR = " + m2.encodeQR(ps));
 
-        ElGamalReencryptFactorC r = new ElGamalReencryptFactorC(CivitasBigInteger.ONE);
+        ElGamalReencryptFactorC r = new ElGamalReencryptFactorC(BigInteger.ONE);
 
         ElGamalSignedCiphertextC c1 = (ElGamalSignedCiphertextC)f.elGamalSignedEncrypt(K, m1, r);
         ElGamalSignedCiphertextC c2 = (ElGamalSignedCiphertextC)f.elGamalSignedEncrypt(K, m2, r);
@@ -576,24 +561,24 @@ public class Test {
         // }
     }
 
-    public static CivitasBigInteger findQR() {
-        return findQR(1);
-    }
+    // public static CivitasBigInteger findQR() {
+    //     return findQR(1);
+    // }
 
-    public static CivitasBigInteger findNonQR() {
-        return findQR(-1);
-    }
+    // public static CivitasBigInteger findNonQR() {
+    //     return findQR(-1);
+    // }
 
-    /**
-     * @param flag 1 to find QR, -1 to find non-QR
-     */
-    public static CivitasBigInteger findQR(int flag) {
-        CivitasBigInteger i = null;
-        do {
-            i = CryptoAlgs.randomElement(ps.q);
-        } while (CryptoAlgs.legendreSymbol(i, ps.p, ps.q) != flag);
-        return i;
-    }
+    // /**
+    //  * @param flag 1 to find QR, -1 to find non-QR
+    //  */
+    // public static CivitasBigInteger findQR(int flag) {
+    //     CivitasBigInteger i = null;
+    //     do {
+    //         i = CryptoAlgs.randomElement(ps.q);
+    //     } while (CryptoAlgs.legendreSymbol(i, ps.p, ps.q) != flag);
+    //     return i;
+    // }
 
     public static void decTest() {
 
@@ -627,7 +612,7 @@ public class Test {
           boolean b = f.elGamalVerify(ps, c3);
           test("Signature checks", b);
 
-          ElGamalSignedCiphertext c4 = new ElGamalSignedCiphertextC(c3.a, c3.b, CivitasBigInteger.ONE, CivitasBigInteger.ONE);
+          ElGamalSignedCiphertext c4 = new ElGamalSignedCiphertextC(c3.a, c3.b, BigInteger.ONE, BigInteger.ONE);
           boolean b2 = f.elGamalVerify(ps, c4);
           test("Signature corrupted", !b2);
 
@@ -704,36 +689,39 @@ public class Test {
 
     private static void performance() {
         Label lbl = LabelUtil.singleton().noComponents();
-        ElGamalParametersC[] ps = new ElGamalParametersC[4];
+        ElGamalParametersC[] ps = new ElGamalParametersC[1];
         System.err.println("Generating params 1");
-        try {
-            ps[0] = ElGamalParametersC.fromXML(LabelUtil.singleton().noComponents(), new FileReader("experiments/keys/elGamalKeyParams-160-1024.xml"));
-        }
-        catch (IOException e) {
-            ps[0] = (ElGamalParametersC) f.generateElGamalParameters(160, 1024);
-        }
-        System.err.println("Generating params 2");
-        ElGamalParametersC ps2 = null;
-        try {
-            ps[1] = ElGamalParametersC.fromXML(LabelUtil.singleton().noComponents(), new FileReader("experiments/keys/elGamalKeyParams-224-2048.xml"));
-        }
-        catch (IOException e) {
-            ps[1] = (ElGamalParametersC) f.generateElGamalParameters(224, 2048);
-        }
-        System.err.println("Generating params 3");
-        try {
-            ps[2] = ElGamalParametersC.fromXML(LabelUtil.singleton().noComponents(), new FileReader("experiments/keys/elGamalKeyParams-1024-1025.xml"));
-        }
-        catch (IOException e) {
-            ps[2] = (ElGamalParametersC) f.generateElGamalParameters(1024, 1025);
-        }
-        System.err.println("Generating params 4");
-        try {
-            ps[3] = ElGamalParametersC.fromXML(LabelUtil.singleton().noComponents(), new FileReader("experiments/keys/elGamalKeyParams-256-3072.xml"));
-        }
-        catch (IOException e) {
-            ps[3] = (ElGamalParametersC) f.generateElGamalParameters(256, 3072);
-        }
+        ps[0] = (ElGamalParametersC) f.generateElGamalParameters();
+
+        // System.err.println("Generating params 1");
+        // try {
+        //     ps[0] = ElGamalParametersC.fromXML(LabelUtil.singleton().noComponents(), new FileReader("experiments/keys/elGamalKeyParams-160-1024.xml"));
+        // }
+        // catch (IOException e) {
+        //     ps[0] = (ElGamalParametersC) f.generateElGamalParameters(160, 1024);
+        // }
+        // System.err.println("Generating params 2");
+        // ElGamalParametersC ps2 = null;
+        // try {
+        //     ps[1] = ElGamalParametersC.fromXML(LabelUtil.singleton().noComponents(), new FileReader("experiments/keys/elGamalKeyParams-224-2048.xml"));
+        // }
+        // catch (IOException e) {
+        //     ps[1] = (ElGamalParametersC) f.generateElGamalParameters(224, 2048);
+        // }
+        // System.err.println("Generating params 3");
+        // try {
+        //     ps[2] = ElGamalParametersC.fromXML(LabelUtil.singleton().noComponents(), new FileReader("experiments/keys/elGamalKeyParams-1024-1025.xml"));
+        // }
+        // catch (IOException e) {
+        //     ps[2] = (ElGamalParametersC) f.generateElGamalParameters(1024, 1025);
+        // }
+        // System.err.println("Generating params 4");
+        // try {
+        //     ps[3] = ElGamalParametersC.fromXML(LabelUtil.singleton().noComponents(), new FileReader("experiments/keys/elGamalKeyParams-256-3072.xml"));
+        // }
+        // catch (IOException e) {
+        //     ps[3] = (ElGamalParametersC) f.generateElGamalParameters(256, 3072);
+        // }
 
         int COUNT = 100;
         // try doing 100 el gamal encryptions with different length keys
@@ -747,7 +735,10 @@ public class Test {
                 ElGamalCiphertext encCap = f.elGamalEncrypt(pair.publicKey(), msg);
             }
             long total = System.currentTimeMillis() - start;
-            System.err.println("Time to do " + COUNT + " encryptions with params " + params.q.bitLength() + "-" + params.p.bitLength() + " : " + total);
+
+            BigInteger q = params.params.getN();
+            BigInteger p = params.params.getN().multiply(params.params.getH());
+            System.err.println("Time to do " + COUNT + " encryptions with params " + q.bitLength() + "-" + p.bitLength() + " : " + total);
 
             // try some distributed decryptions
             ElGamalMsgC msg = (ElGamalMsgC)f.generateVoteCapabilityShare(params);
@@ -758,7 +749,7 @@ public class Test {
                 f.constructDecryptionShare(lbl, lbl, encCap, keyShare);
             }
             total = System.currentTimeMillis() - start;
-            System.err.println("Time to do " + COUNT + " distributed decryptions with params " + params.q.bitLength() + "-" + params.p.bitLength() + " : " + total);
+            System.err.println("Time to do " + COUNT + " distributed decryptions with params " + q.bitLength() + "-" + p.bitLength() + " : " + total);
         }
     }
 
@@ -797,7 +788,7 @@ public class Test {
         ElGamalKeyPair p = f.generateElGamalKeyPair(ps);
         ElGamalPublicKeyC K = (ElGamalPublicKeyC)p.publicKey();
         ElGamalPrivateKeyC k = (ElGamalPrivateKeyC)p.privateKey();
-        ElGamalMsg m = new ElGamalMsgC(CryptoAlgs.randomElement(ps.q), ps);
+        ElGamalMsg m = new ElGamalMsgC(CryptoAlgs.randomElementDefault(ps.params.getN()), ps);
         ElGamalCiphertextC c = (ElGamalCiphertextC)f.elGamalEncrypt(K,m);
         //ElGamalCiphertext d = f.elGamalEncrypt(K,m);
         Label lbl = LabelUtil.singleton().noComponents();

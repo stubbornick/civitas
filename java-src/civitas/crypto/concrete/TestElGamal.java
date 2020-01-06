@@ -8,8 +8,9 @@ package civitas.crypto.concrete;
 
 import java.math.BigInteger;
 
+import org.bouncycastle.math.ec.ECPoint;
+
 import civitas.crypto.*;
-import civitas.util.CivitasBigInteger;
 
 import jif.lang.LabelUtil;
 
@@ -22,7 +23,7 @@ public class TestElGamal {
 
 	private static ElGamalParametersC ps() {
 		if (ps == null) {
-			ps = (ElGamalParametersC) f.generateElGamalParameters(224, 2048);
+			ps = (ElGamalParametersC) f.generateElGamalParameters();
 		}
 		return ps;
     }
@@ -32,7 +33,7 @@ public class TestElGamal {
 	}
 
 
-	public static void main(final String[] args) {
+	public static void main(final String[] args) throws CryptoException {
 		System.out.println("= ps =");
 		ps();
 		System.out.println("= msgTest =");
@@ -56,7 +57,7 @@ public class TestElGamal {
 		}
 		boolean caught = false;
 		try {
-			new ElGamalMsgC(ps.q.add(CivitasBigInteger.ONE), ps);
+			new ElGamalMsgC(ps.params.getN().add(BigInteger.ONE), ps);
 		} catch (final CryptoException e) {
 			System.out.println("Reject q+1 as message ? ok");
 			caught = true;
@@ -96,7 +97,7 @@ public class TestElGamal {
 			final boolean b = f.elGamalVerify(ps, c3);
 			test("Scnorr signature checks", b);
 
-			final ElGamalSignedCiphertext c4 = new ElGamalSignedCiphertextC(c3.a, c3.b, CivitasBigInteger.ONE, CivitasBigInteger.ONE);
+			final ElGamalSignedCiphertext c4 = new ElGamalSignedCiphertextC(c3.a, c3.b, BigInteger.ONE, BigInteger.ONE);
 			final boolean b2 = f.elGamalVerify(ps, c4);
 			test("Corrupted signature detected", !b2);
 
@@ -108,7 +109,7 @@ public class TestElGamal {
 	public static void qrTest() {
 		System.out.println("= qrTest =");
 
-		final ElGamalParametersC ps2 = (ElGamalParametersC) f.generateElGamalParameters(160);
+		final ElGamalParametersC ps2 = (ElGamalParametersC) f.generateElGamalParameters();
 		try {
 			final ElGamalMsgC m2 = (ElGamalMsgC) f.elGamalMsg("Attack at dawn", ps2);
 			test("Decode QR", m2.plaintextStringValue(ps2).equals(attack));
@@ -131,7 +132,7 @@ public class TestElGamal {
         vs[0][0] = m1;
         vs[1][0] = m2;
 
-        final ElGamalReencryptFactorC r = new ElGamalReencryptFactorC(CivitasBigInteger.ONE);
+        final ElGamalReencryptFactorC r = new ElGamalReencryptFactorC(BigInteger.ONE);
 
         final ElGamalSignedCiphertextC c1 = (ElGamalSignedCiphertextC)f.elGamalSignedEncrypt(K, m1, r);
         final ElGamalSignedCiphertextC c2 = (ElGamalSignedCiphertextC)f.elGamalSignedEncrypt(K, m2, r);
@@ -157,19 +158,21 @@ public class TestElGamal {
 	}
 
 	/**
-     * test homomorphic properties of el gamal
-     */
-	private static void egHomoTest() {
+	 * test homomorphic properties of el gamal
+	 *
+	 * @throws CryptoException
+	 */
+	private static void egHomoTest() throws CryptoException {
         final ElGamalKeyPair pair = f.generateElGamalKeyPair(ps);
         final ElGamalPrivateKeyC k = (ElGamalPrivateKeyC)pair.privateKey();
 		final ElGamalPublicKeyC K = (ElGamalPublicKeyC)pair.publicKey();
 
-		CivitasBigInteger pt1 = CivitasBigInteger.valueOf(10);
-		CivitasBigInteger pt2 = CivitasBigInteger.valueOf(24);
+		ECPoint pt1 = ps.encodePlaintext(BigInteger.valueOf(10));
+		ECPoint pt2 = ps.encodePlaintext(BigInteger.valueOf(24));
 
 		ElGamalMsgC m1 = new ElGamalMsgC(pt1);
 		ElGamalMsgC m2 = new ElGamalMsgC(pt2);
-		ElGamalMsgC mMult = new ElGamalMsgC(pt1.multiply(pt2));
+		ElGamalMsgC mMult = new ElGamalMsgC(pt1.add(pt2));
 
 		// System.err.println("m1 = " + m1);
 		// System.err.println("m2 = " + m2);

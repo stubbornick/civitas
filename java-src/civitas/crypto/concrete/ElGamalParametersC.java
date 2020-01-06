@@ -99,6 +99,10 @@ class ElGamalParametersC implements ElGamalParameters {
 	}
 
 	public ECPoint encodePlaintext(BigInteger p) throws CryptoException {
+		if (p.compareTo(params.getN()) > 0) {
+			throw new CryptoException("Message is too large for parameters");
+		}
+
 		ECMultiplier mult = new FixedPointCombMultiplier();
 		return mult.multiply(params.getG(), p);
 	}

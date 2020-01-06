@@ -57,12 +57,7 @@ public class GenerateTestFiles {
             try {
                 PrintStream paramsOut = new PrintStream(new FileOutputStream(args[1]));
                 ElGamalParameters params = null;
-                if (args.length > 2) {
-                    params = CryptoUtil.factory().generateElGamalParameters(Integer.parseInt(args[2]), Integer.parseInt(args[3]));
-                }
-                else {
-                    params = CryptoUtil.factory().generateElGamalParameters();
-                }
+                params = CryptoUtil.factory().generateElGamalParameters();
                 Label lbl = LabelUtil.singleton().noComponents();
                 StringWriter sb = new StringWriter();
                 params.toXML(lbl, new PrintWriter(sb));
