@@ -54,7 +54,7 @@ public class ElGamalPublicKeyC extends ElGamalAbstractKey implements ElGamalPubl
         Util.swallowEndTag(lbl, r, EG_OPENING_TAG);
 
         return new ElGamalPublicKeyC(
-            CryptoFactoryC.stringToPoint(y, params.params.getCurve()),
+            CryptoFactoryC.stringToPoint(y),
             params
             );
     }

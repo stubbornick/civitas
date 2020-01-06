@@ -7,8 +7,12 @@
 package civitas.crypto.concrete;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.security.*;
-import java.security.spec.*;
+import java.security.spec.KeySpec;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 
 import javax.crypto.*;
@@ -17,7 +21,14 @@ import javax.crypto.spec.SecretKeySpec;
 import jif.lang.Label;
 import jif.lang.LabelUtil;
 
+import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
+import org.bouncycastle.crypto.generators.ECKeyPairGenerator;
+import org.bouncycastle.crypto.params.ECKeyGenerationParameters;
+import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
+import org.bouncycastle.crypto.params.ECPublicKeyParameters;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.math.ec.ECCurve;
+import org.bouncycastle.math.ec.ECPoint;
 
 import civitas.common.Util;
 import civitas.crypto.*;
@@ -31,13 +42,6 @@ import civitas.util.CivitasBigInteger;
 
 public class CryptoFactoryC implements CryptoFactory {
     private final boolean DEBUG = false;
-
-    private final int BIT_SECURITY_80 = 1;
-    private final int BIT_SECURITY_112 = 2;
-    private final int BIT_SECURITY_128 = 3;
-    private final int BIT_SECURITY_CCS07 = 0;
-
-    private final int BIT_SECURITY = BIT_SECURITY_80;
 
     /*
      * The following constants define the algorithms and providers to use.
@@ -55,9 +59,6 @@ public class CryptoFactoryC implements CryptoFactory {
 //  private final String PUBLIC_KEY_CIPHER_ALG = "RSA/NONE/OAEPPADDING";
     private final String PUBLIC_KEY_SIGNATURE_ALG = "SHA512WithRSAEncryption";
     private final String PUBLIC_KEY_PROVIDER = "BC";
-
-    private int EL_GAMAL_GROUP_LENGTH; // size in bits for p
-    private int EL_GAMAL_KEY_LENGTH; // size in bits for q
 
     private Map<String, KeyGenerator> sharedKeyGenerators = new HashMap<String, KeyGenerator>();
     private Map<String, KeyPairGenerator> publicKeyGenerators = new HashMap<String, KeyPairGenerator>();
@@ -99,50 +100,7 @@ public class CryptoFactoryC implements CryptoFactory {
     public static CryptoFactoryC singleton() { return singleton; }
 
     private CryptoFactoryC() {
-        setBitSecurity();
         initializeCryptoProviders();
-    }
-
-    /**
-     * Initialize the fields of this class that define bit security.
-     * I.e., the sizes of keys and nonces.
-     */
-    private void setBitSecurity() {
-        // TODO:  need to initialize nonce sizes too.
-
-        switch (BIT_SECURITY) {
-        /* Original CCS submission values.  Not a
-         * consistent level of security. */
-        case BIT_SECURITY_CCS07:
-            EL_GAMAL_KEY_LENGTH = 1024;
-            EL_GAMAL_GROUP_LENGTH = 1025;  // not originally used
-            break;
-
-            /* Note:  the remaining cases set the shared key length to 128.
-             * This is generally higher than the bits of security would suggest.
-             * The code does this because 128 is the minimum size for AES, which
-             * is the assumed shared key cipher.  For 80 bits of security, e.g.,
-             * it would be possible to instead use 3DES.  */
-
-            /* 80 bits of security - NIST says use 2007 to 2010 */
-        case BIT_SECURITY_80:
-        default:
-            EL_GAMAL_KEY_LENGTH = 160;
-            EL_GAMAL_GROUP_LENGTH = 1024;
-        break;
-
-        /* 112 bits of security - NIST says use 2011 to 2030 */
-        case BIT_SECURITY_112:
-            EL_GAMAL_KEY_LENGTH = 224;
-            EL_GAMAL_GROUP_LENGTH = 2048;
-            break;
-
-            /* 128 bits of security - NIST says use > 2030 */
-        case BIT_SECURITY_128:
-            EL_GAMAL_KEY_LENGTH = 256;
-            EL_GAMAL_GROUP_LENGTH = 3072;
-            break;
-        }
     }
 
 
@@ -261,27 +219,24 @@ public class CryptoFactoryC implements CryptoFactory {
         return perm;
     }
 
-    /** Generate a Schnorr prime group */
-    public ElGamalParameters generateElGamalParameters(int keyLength, int groupLength) {
-        return new ElGamalParametersC(keyLength, groupLength);
-    }
-
-    /** Generate a safe prime group */
-    public ElGamalParameters generateElGamalParameters(int keyLength) {
-        return new ElGamalParametersC(keyLength, keyLength+1);
-    }
-
     public ElGamalParameters generateElGamalParameters() {
-        return generateElGamalParameters(EL_GAMAL_KEY_LENGTH, EL_GAMAL_GROUP_LENGTH);
+        return ElGamalParametersC.getDefaultParams();
     }
 
     public ElGamalKeyPair generateElGamalKeyPair(ElGamalParameters p) {
         ElGamalParametersC ps = (ElGamalParametersC) p;
-        CivitasBigInteger x = CryptoAlgs.randomElement(ps.q);
-        CivitasBigInteger y = ps.g.modPow(x, ps.p);
-        ElGamalPrivateKeyC k = new ElGamalPrivateKeyC(x, ps);
-        ElGamalPublicKeyC K = new ElGamalPublicKeyC(y, ps);
-        return new ElGamalKeyPairImpl(K, k);
+
+        ECKeyGenerationParameters keyParams = new ECKeyGenerationParameters(
+            ps.params,
+            CryptoAlgs.rng()
+            );
+
+		ECKeyPairGenerator generator = new ECKeyPairGenerator();
+        generator.init(keyParams);
+        AsymmetricCipherKeyPair keyPair = generator.generateKeyPair();
+		ECPrivateKeyParameters privateKey = (ECPrivateKeyParameters)keyPair.getPrivate();
+		ECPublicKeyParameters publicKey = (ECPublicKeyParameters)keyPair.getPublic();
+        return new ElGamalKeyPairImpl(publicKey, privateKey, ps);
     }
 
     public KeyPair generateKeyPair(int keyLength) {
@@ -298,7 +253,7 @@ public class CryptoFactoryC implements CryptoFactory {
         ElGamalParametersC ps = (ElGamalParametersC) params;
 
         // choose x in Z_q at random. This is the share of the private key.
-        CivitasBigInteger x = CryptoAlgs.randomElement(ps.q);
+        CivitasBigInteger x = CryptoAlgs.randomElementDefault(ps.params.getN());
         // the public part of the key is y
         CivitasBigInteger y = ps.g.modPow(x, ps.p);
 
@@ -309,7 +264,7 @@ public class CryptoFactoryC implements CryptoFactory {
 
     public VoteCapabilityShare generateVoteCapabilityShare(ElGamalParameters p) {
         ElGamalParametersC ps = (ElGamalParametersC) p;
-        CivitasBigInteger x = CryptoAlgs.randomElement(ps.q);
+        CivitasBigInteger x = CryptoAlgs.randomElementDefault(ps.params.getN());
         try {
             return new VoteCapabilityShareC(x, ps);
         }
@@ -416,30 +371,32 @@ public class CryptoFactoryC implements CryptoFactory {
         return new ElGamalPublicKeyC(accum, params);
     }
 
-    public ElGamalCiphertext elGamalEncrypt(ElGamalPublicKey key, ElGamalMsg msg) {
+    public ElGamalReencryptFactor generateElGamalReencryptFactor(ElGamalParameters params) {
         try {
-            numElGamalEncs++;
-            ElGamalParametersC ps = (ElGamalParametersC) key.getParams();
-            ElGamalPublicKeyC k = (ElGamalPublicKeyC) key;
-            CivitasBigInteger m = ((ElGamalMsgC)msg).bigIntValue();
-            CivitasBigInteger r = CryptoAlgs.randomElement(ps.q);
-            CivitasBigInteger a = ps.g.modPow(r, ps.p);
-            CivitasBigInteger b = m.modMultiply(k.y.modPow(r, ps.p), ps.p);
-            return new ElGamalCiphertextC(a, b);
+            ElGamalParametersC ps = (ElGamalParametersC) params;
+            return new ElGamalReencryptFactorC(CryptoAlgs.randomElementDefault(ps.params.getN()));
         } catch (ClassCastException e) {
             throw new CryptoError(e);
         }
     }
 
-    public ElGamalCiphertext elGamalEncrypt(ElGamalPublicKey key, ElGamalMsg msg, ElGamalReencryptFactor encryptFactor) {
+    public ElGamalCiphertext elGamalEncrypt(ElGamalPublicKey key, ElGamalMsg msg) {
+        return elGamalEncrypt(key, msg, generateElGamalReencryptFactor(key.getParams()));
+    }
+
+    public ElGamalCiphertext elGamalEncrypt(
+        ElGamalPublicKey key,
+        ElGamalMsg msg,
+        ElGamalReencryptFactor encryptFactor)
+    {
         try {
             numElGamalEncs++;
             ElGamalParametersC ps = (ElGamalParametersC) key.getParams();
             ElGamalPublicKeyC k = (ElGamalPublicKeyC) key;
-            CivitasBigInteger r = ((ElGamalReencryptFactorC) encryptFactor).r;
-            CivitasBigInteger m = ((ElGamalMsgC) msg).bigIntValue();
-            CivitasBigInteger a = ps.g.modPow(r, ps.p);
-            CivitasBigInteger b = m.modMultiply(k.y.modPow(r, ps.p), ps.p);
+            BigInteger r = ((ElGamalReencryptFactorC) encryptFactor).r;
+            ECPoint m = ((ElGamalMsgC) msg).pointValue();
+            ECPoint a = ps.params.getG().multiply(r);
+            ECPoint b = m.add(k.y.multiply(r));
             return new ElGamalCiphertextC(a, b);
         } catch (ClassCastException e) {
             throw new CryptoError(e);
@@ -447,43 +404,24 @@ public class CryptoFactoryC implements CryptoFactory {
     }
 
     public ElGamalCiphertext elGamalReencrypt(ElGamalPublicKey key, ElGamalCiphertext ciphertext) {
+        return elGamalReencrypt(key, ciphertext, generateElGamalReencryptFactor(key.getParams()));
+    }
+
+    public ElGamalCiphertext elGamalReencrypt(
+        ElGamalPublicKey key,
+        ElGamalCiphertext ciphertext,
+        ElGamalReencryptFactor factor)
+    {
         try {
             numElGamalReencs++;
             ElGamalParametersC ps = (ElGamalParametersC) key.getParams();
             ElGamalPublicKeyC k = (ElGamalPublicKeyC) key;
             ElGamalCiphertextC c = (ElGamalCiphertextC) ciphertext;
-            CivitasBigInteger a = c.a;
-            CivitasBigInteger b = c.b;
-            CivitasBigInteger r = CryptoAlgs.randomElement(ps.q);
-            a = a.modMultiply(ps.g.modPow(r, ps.p), ps.p);
-            b = b.modMultiply(k.y.modPow(r, ps.p), ps.p);
-            return new ElGamalCiphertextC(a, b);
-        } catch (ClassCastException e) {
-            throw new CryptoError(e);
-        }
-    }
-
-    public ElGamalReencryptFactor generateElGamalReencryptFactor(ElGamalParameters params) {
-        try {
-            ElGamalParametersC ps = (ElGamalParametersC) params;
-            return new ElGamalReencryptFactorC(CryptoAlgs.randomElement(ps.q));
-        } catch (ClassCastException e) {
-            throw new CryptoError(e);
-        }
-
-    }
-
-    public ElGamalCiphertext elGamalReencrypt(ElGamalPublicKey key, ElGamalCiphertext ciphertext, ElGamalReencryptFactor factor) {
-        try {
-            numElGamalReencs++;
-            ElGamalParametersC ps = (ElGamalParametersC) key.getParams();
-            ElGamalPublicKeyC k = (ElGamalPublicKeyC) key;
-            ElGamalCiphertextC c = (ElGamalCiphertextC) ciphertext;
-            CivitasBigInteger a = c.a;
-            CivitasBigInteger b = c.b;
-            CivitasBigInteger r = ((ElGamalReencryptFactorC)factor).r;
-            a = a.modMultiply(ps.g.modPow(r, ps.p), ps.p);
-            b = b.modMultiply(k.y.modPow(r, ps.p), ps.p);
+            ECPoint a = c.a;
+            ECPoint b = c.b;
+            BigInteger r = ((ElGamalReencryptFactorC) factor).r;
+            a = a.add(ps.params.getG().multiply(r));
+            b = b.add(k.y.multiply(r));
             return new ElGamalCiphertextC(a, b);
         } catch (ClassCastException e) {
             throw new CryptoError(e);
@@ -550,32 +488,32 @@ public class CryptoFactoryC implements CryptoFactory {
      * Convert a hash (or rather, an arbitrary byte array) to
      * an element from the group defined by the El Gamal parameters.
      */
-    CivitasBigInteger hashToBigInt(byte[] hash) {
+    BigInteger hashToDefaultBigInt(byte[] hash) {
         // Force the hash to be positive.
-        CivitasBigInteger x = new CivitasBigInteger(1, hash);
+        BigInteger x = new BigInteger(1, hash);
         return x;
     }
 
     /**
-     * Compute a hash over a list of CivitasBigIntegers.
+     * Compute a hash over a list of BigInteger.
      */
-    byte[] hash(List<CivitasBigInteger> l) {
+    byte[] hash(List<BigInteger> l) {
         // Compute the hash by updating a message digest
         // with the byte representation of the big ints.
         MessageDigest md = messageDigest(LabelUtil.singleton().noComponents());
         for (Iterator iter = l.iterator(); iter.hasNext();) {
-            CivitasBigInteger i = (CivitasBigInteger)iter.next();
+            BigInteger i = (BigInteger)iter.next();
             md.update(i.toByteArray());
         }
         return md.digest();
     }
-    CivitasBigInteger hash(CivitasBigInteger a, CivitasBigInteger b) {
+    BigInteger hash(BigInteger a, BigInteger b) {
         return hash(a,b,null);
     }
-    CivitasBigInteger hash(CivitasBigInteger a, CivitasBigInteger b, CivitasBigInteger c) {
+    BigInteger hash(BigInteger a, BigInteger b, BigInteger c) {
         return hash(a,b,c,null);
     }
-    CivitasBigInteger hash(CivitasBigInteger a, CivitasBigInteger b, CivitasBigInteger c, byte[] d) {
+    BigInteger hash(BigInteger a, BigInteger b, BigInteger c, byte[] d) {
         // Compute the hash by updating a message digest
         // with the byte representation of the big ints.
         MessageDigest md = messageDigest(LabelUtil.singleton().noComponents());
@@ -583,7 +521,18 @@ public class CryptoFactoryC implements CryptoFactory {
         if (b != null) md.update(b.toByteArray());
         if (c != null) md.update(c.toByteArray());
         if (d != null) md.update(d);
-        return hashToBigInt(md.digest());
+        return hashToDefaultBigInt(md.digest());
+    }
+
+    BigInteger hash(ECPoint a, ECPoint b, ECPoint c, byte[] d) {
+        // Compute the hash by updating a message digest
+        // with the byte representation of the big ints.
+        MessageDigest md = messageDigest(LabelUtil.singleton().noComponents());
+        if (a != null) md.update(a.getEncoded(true));
+        if (b != null) md.update(b.getEncoded(true));
+        if (c != null) md.update(c.getEncoded(true));
+        if (d != null) md.update(d);
+        return hashToDefaultBigInt(md.digest());
     }
 
 
@@ -593,19 +542,24 @@ public class CryptoFactoryC implements CryptoFactory {
     public ElGamalSignedCiphertext elGamalSignedEncrypt(ElGamalPublicKey key, ElGamalMsg msg, ElGamalReencryptFactor r) {
         return elGamalSignedEncrypt(key, msg, r, null);
     }
-    public ElGamalSignedCiphertext elGamalSignedEncrypt(ElGamalPublicKey key, ElGamalMsg msg, ElGamalReencryptFactor r, byte[] additionalEnv) {
+    public ElGamalSignedCiphertext elGamalSignedEncrypt(
+        ElGamalPublicKey key,
+        ElGamalMsg msg,
+        ElGamalReencryptFactor r,
+        byte[] additionalEnv)
+    {
         try {
             numElGamalSignedEncs++;
             ElGamalParametersC ps = (ElGamalParametersC) key.getParams();
             ElGamalPublicKeyC k = (ElGamalPublicKeyC) key;
-            CivitasBigInteger m = ((ElGamalMsgC) msg).bigIntValue();
-            CivitasBigInteger rr = ((ElGamalReencryptFactorC)r).r;
-            CivitasBigInteger s = CryptoAlgs.randomElement(ps.q);
-            CivitasBigInteger a = ps.g.modPow(rr, ps.p);
-            CivitasBigInteger b = m.modMultiply(k.y.modPow(rr, ps.p), ps.p);
+            ECPoint m = ((ElGamalMsgC) msg).pointValue();
+            BigInteger rr = ((ElGamalReencryptFactorC)r).r;
+            BigInteger s = CryptoAlgs.randomElementDefault(ps.params.getN());
+            ECPoint a = ps.params.getG().multiply(rr);
+            ECPoint b = m.add(k.y.multiply(rr));
 
-            CivitasBigInteger c = hash(ps.g.modPow(s, ps.p), a, b, additionalEnv).mod(ps.q); // hash of (g^s,g^r,my^r) == (g^s, a, b)
-            CivitasBigInteger d = s.modAdd(c.modMultiply(rr, ps.q), ps.q);
+            BigInteger c = hash(ps.params.getG().multiply(s), a, b, additionalEnv).mod(ps.params.getN()); // hash of (g^s,g^r,my^r) == (g^s, a, b)
+            BigInteger d = CivitasBigInteger.modAdd(s, CivitasBigInteger.modMultiply(c, rr, ps.params.getN()), ps.params.getN());
             return new ElGamalSignedCiphertextC(a, b, c, d);
         } catch (ClassCastException e) {
             throw new CryptoError(e);
@@ -621,8 +575,8 @@ public class CryptoFactoryC implements CryptoFactory {
             ElGamalParametersC ps = (ElGamalParametersC) params;
             ElGamalSignedCiphertextC cc = (ElGamalSignedCiphertextC)ciphertext;
             // to verify, check that c == h(g^d * a^(-c), a, b)
-            CivitasBigInteger x = ps.g.modPow(cc.d.mod(ps.q), ps.p).modMultiply(cc.a.modPow(cc.c.modNegate(ps.q), ps.p), ps.p);
-            CivitasBigInteger v = hash(x, cc.a, cc.b, additionalEnv).mod(ps.q);
+            ECPoint x = ps.params.getG().multiply(cc.d.mod(ps.params.getN())).add(cc.a.multiply(CivitasBigInteger.modNegate(cc.c, ps.params.getN())));
+            BigInteger v = hash(x, cc.a, cc.b, additionalEnv).mod(ps.params.getN());
             return cc.c.equals(v);
         } catch (ClassCastException e) {
             throw new CryptoError(e);
@@ -644,9 +598,9 @@ public class CryptoFactoryC implements CryptoFactory {
                 }
             }
             ElGamalCiphertextC c = (ElGamalCiphertextC) ciphertext;
-            CivitasBigInteger a = c.a;
-            CivitasBigInteger b = c.b;
-            CivitasBigInteger m = b.modDivide(a.modPow(k.x, ps.p), ps.p);
+            ECPoint a = c.a;
+            ECPoint b = c.b;
+            ECPoint m = b.subtract(a.multiply(k.x));
             return new ElGamalMsgC(m);
         }
         catch (ClassCastException e) {
@@ -704,7 +658,7 @@ public class CryptoFactoryC implements CryptoFactory {
         }
     }
 
-    public ElGamalMsg elGamalMsg(CivitasBigInteger m, ElGamalParameters params) throws CryptoException {
+    public ElGamalMsg elGamalMsg(BigInteger m, ElGamalParameters params) throws CryptoException {
         try {
             return new ElGamalMsgC(m, (ElGamalParametersC)params);
         } catch (ClassCastException e) {
@@ -1254,6 +1208,21 @@ public class CryptoFactoryC implements CryptoFactory {
 
     public SharedKeyMsg sharedKeyMsg(String m) throws CryptoException {
         return new SharedKeyMsgC(m);
+    }
+
+    public static String pointToString(ECPoint point) {
+        return Base64.encodeBytes(point.getEncoded(true));
+    }
+    public static ECPoint stringToPoint(String s) {
+        ECCurve curve = ElGamalParametersC.getDefaultParams().params.getCurve();
+        return curve.decodePoint(Base64.decode(s));
+    }
+
+    public static String defaultBigIntToString(BigInteger i) {
+        return Base64.encodeBytes(i.toByteArray());
+    }
+    public static BigInteger stringToDefaultBigInt(String s) {
+        return new BigInteger(Base64.decode(s));
     }
 
     public static String bigIntToString(CivitasBigInteger i) {

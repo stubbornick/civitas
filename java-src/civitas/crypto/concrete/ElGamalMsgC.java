@@ -7,11 +7,13 @@
 package civitas.crypto.concrete;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+
+import org.bouncycastle.math.ec.ECPoint;
 
 import civitas.crypto.CryptoError;
 import civitas.crypto.CryptoException;
 import civitas.crypto.ElGamalMsg;
-import civitas.util.CivitasBigInteger;
 
 /**
  * An element of an El Gamal message space.
@@ -29,7 +31,7 @@ class ElGamalMsgC implements ElGamalMsg {
     /**
      * The message.  It is an element of a multiplicative group.
      */
-    protected final CivitasBigInteger m;
+    protected final ECPoint m;
 
     /**
      * @param plaintext A plaintext.  This is not the same as a message.  A plaintext
@@ -38,7 +40,7 @@ class ElGamalMsgC implements ElGamalMsg {
      * @throws CryptoException Unless plaintext can be converted to a valid message
      *          in the message space defined by params.
      */
-    protected ElGamalMsgC(CivitasBigInteger plaintext, ElGamalParametersC params) throws CryptoException {
+    protected ElGamalMsgC(BigInteger plaintext, ElGamalParametersC params) throws CryptoException {
         this.m = params.encodePlaintext(plaintext);
     }
 
@@ -46,7 +48,7 @@ class ElGamalMsgC implements ElGamalMsg {
      * @param message An element of a group.  This constructor does not do any
      *                verification that the element corresponds to any particular group.
      */
-    protected ElGamalMsgC(CivitasBigInteger message) {
+    protected ElGamalMsgC(ECPoint message) {
         this.m = message;
     }
 
@@ -55,7 +57,7 @@ class ElGamalMsgC implements ElGamalMsg {
      *          in the message space defined by params.
      */
     protected ElGamalMsgC(int i, ElGamalParametersC params) throws CryptoException {
-        this(CivitasBigInteger.valueOf(i), params);
+        this(BigInteger.valueOf(i), params);
     }
 
     /**
@@ -70,7 +72,7 @@ class ElGamalMsgC implements ElGamalMsg {
         return plaintextBigIntValue(params).intValue();
     }
 
-    public CivitasBigInteger plaintextBigIntValue(ElGamalParametersC params) throws CryptoException {
+    public BigInteger plaintextBigIntValue(ElGamalParametersC params) throws CryptoException {
         return params.decodeMessage(m);
     }
 
@@ -78,16 +80,16 @@ class ElGamalMsgC implements ElGamalMsg {
         return bigIntToString(plaintextBigIntValue(params));
     }
 
-    public CivitasBigInteger bigIntValue() {
+    public ECPoint pointValue() {
         return m;
     }
 
-    protected static CivitasBigInteger stringToBigInt(String s) throws CryptoException {
+    protected static BigInteger stringToBigInt(String s) throws CryptoException {
         if (s.length() < 1) {
             throw new CryptoException("ElGamal messages cannot be constructed from empty strings");
         }
         try {
-            return new CivitasBigInteger(s.getBytes(CHARSET));
+            return new BigInteger(s.getBytes(CHARSET));
         } catch (UnsupportedEncodingException e) {
             // Note: UTF-8 is required to be supported by all VMs by the Java API spec.
             throw new CryptoError("Character set " + CHARSET + " is not supported by this VM");
@@ -97,7 +99,7 @@ class ElGamalMsgC implements ElGamalMsg {
         }
     }
 
-    protected static String bigIntToString(CivitasBigInteger m) {
+    protected static String bigIntToString(BigInteger m) {
         try {
             return new String(m.toByteArray(), CHARSET);
         } catch (UnsupportedEncodingException e) {
@@ -107,7 +109,7 @@ class ElGamalMsgC implements ElGamalMsg {
     }
 
     public String toString() {
-        return CryptoFactoryC.bigIntToString(m);
+        return CryptoFactoryC.pointToString(m);
     }
 
     public boolean equals(Object o) {

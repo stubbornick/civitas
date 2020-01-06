@@ -8,17 +8,18 @@ package civitas.crypto.concrete;
 
 import java.io.*;
 
+import org.bouncycastle.math.ec.ECPoint;
+
 import jif.lang.Label;
 import jif.lang.LabelUtil;
 import civitas.common.Util;
 import civitas.crypto.ElGamalCiphertext;
-import civitas.util.CivitasBigInteger;
 
 public class ElGamalCiphertextC implements ElGamalCiphertext {
-    public final CivitasBigInteger a;
-    public final CivitasBigInteger b;
+    public final ECPoint a;
+    public final ECPoint b;
 
-    public ElGamalCiphertextC(CivitasBigInteger a, CivitasBigInteger b) {
+    public ElGamalCiphertextC(ECPoint a, ECPoint b) {
         this.a = a;
         this.b = b;
     }
@@ -33,10 +34,10 @@ public class ElGamalCiphertextC implements ElGamalCiphertext {
         s.print(OPENING_TAG);
         s.print('>');
         s.print("<a>");
-        if (a != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.a), lbl, s);
+        if (a != null) Util.escapeString(CryptoFactoryC.pointToString(this.a), lbl, s);
         s.print("</a>");
         s.print("<b>");
-        if (b != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.b), lbl, s);
+        if (b != null) Util.escapeString(CryptoFactoryC.pointToString(this.b), lbl, s);
         s.print("</b>");
         s.print("</");
         s.print(OPENING_TAG);
@@ -45,16 +46,16 @@ public class ElGamalCiphertextC implements ElGamalCiphertext {
 
     public static ElGamalCiphertextC fromXML(Label lbl, Reader r) throws IllegalArgumentException, IOException {
         Util.swallowTag(lbl, r, OPENING_TAG);
-        CivitasBigInteger a = null;
+        ECPoint a = null;
         String sa = Util.unescapeString(Util.readSimpleTag(lbl, r, "a"));
         if (sa != null && sa.length() > 0) {
-            a = CryptoFactoryC.stringToBigInt(sa);
+            a = CryptoFactoryC.stringToPoint(sa);
         }
 
-        CivitasBigInteger b = null;
+        ECPoint b = null;
         String sb = Util.unescapeString(Util.readSimpleTag(lbl, r, "b"));
         if (sb != null && sb.length() > 0) {
-            b = CryptoFactoryC.stringToBigInt(sb);
+            b = CryptoFactoryC.stringToPoint(sb);
         }
 
         Util.swallowEndTag(lbl, r, OPENING_TAG);

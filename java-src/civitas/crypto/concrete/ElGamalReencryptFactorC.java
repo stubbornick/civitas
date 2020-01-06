@@ -7,16 +7,16 @@
 package civitas.crypto.concrete;
 
 import java.io.*;
+import java.math.BigInteger;
 
 import jif.lang.Label;
 import jif.lang.LabelUtil;
 import civitas.common.Util;
 import civitas.crypto.ElGamalReencryptFactor;
-import civitas.util.CivitasBigInteger;
 
 public class ElGamalReencryptFactorC implements ElGamalReencryptFactor {
-    protected final CivitasBigInteger r;
-    public ElGamalReencryptFactorC(CivitasBigInteger r) {
+    protected final BigInteger r;
+    public ElGamalReencryptFactorC(BigInteger r) {
         this.r = r;
     }
     public String toXML() {
@@ -26,14 +26,14 @@ public class ElGamalReencryptFactorC implements ElGamalReencryptFactor {
     }
     public void toXML(Label lbl, PrintWriter s) {
         s.print("<r>");
-        if (this.r != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.r), lbl, s);
+        if (this.r != null) Util.escapeString(CryptoFactoryC.defaultBigIntToString(this.r), lbl, s);
         s.print("</r>");
     }
 
 
     public static ElGamalReencryptFactor fromXML(Label lbl, Reader r) throws IllegalArgumentException, IOException {
         String s = Util.unescapeString(Util.readSimpleTag(lbl, r, "r"));
-        return new ElGamalReencryptFactorC(CryptoFactoryC.stringToBigInt(s));
+        return new ElGamalReencryptFactorC(CryptoFactoryC.stringToDefaultBigInt(s));
     }
 
 }

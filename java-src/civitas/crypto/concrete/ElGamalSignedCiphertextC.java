@@ -7,18 +7,20 @@
 package civitas.crypto.concrete;
 
 import java.io.*;
+import java.math.BigInteger;
+
+import org.bouncycastle.math.ec.ECPoint;
 
 import jif.lang.Label;
 import jif.lang.LabelUtil;
 import civitas.common.Util;
 import civitas.crypto.ElGamalSignedCiphertext;
-import civitas.util.CivitasBigInteger;
 
 public class ElGamalSignedCiphertextC extends ElGamalCiphertextC implements ElGamalSignedCiphertext {
-    public final CivitasBigInteger c;
-    public final CivitasBigInteger d;
+    public final BigInteger c;
+    public final BigInteger d;
 
-    public ElGamalSignedCiphertextC(CivitasBigInteger a, CivitasBigInteger b, CivitasBigInteger c, CivitasBigInteger d) {
+    public ElGamalSignedCiphertextC(ECPoint a, ECPoint b, BigInteger c, BigInteger d) {
         super(a,b);
         this.c = c;
         this.d = d;
@@ -32,44 +34,44 @@ public class ElGamalSignedCiphertextC extends ElGamalCiphertextC implements ElGa
     public void toXML(Label lbl, PrintWriter s) {
         s.print("<elGamalSignedCiphertext>");
         s.print("<a>");
-        if (a != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.a), lbl, s);
+        if (a != null) Util.escapeString(CryptoFactoryC.pointToString(this.a), lbl, s);
         s.print("</a>");
         s.print("<b>");
-        if (b != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.b), lbl, s);
+        if (b != null) Util.escapeString(CryptoFactoryC.pointToString(this.b), lbl, s);
         s.print("</b>");
         s.print("<c>");
-        if (c != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.c), lbl, s);
+        if (c != null) Util.escapeString(CryptoFactoryC.defaultBigIntToString(this.c), lbl, s);
         s.print("</c>");
         s.print("<d>");
-        if (d != null) Util.escapeString(CryptoFactoryC.bigIntToString(this.d), lbl, s);
+        if (d != null) Util.escapeString(CryptoFactoryC.defaultBigIntToString(this.d), lbl, s);
         s.print("</d>");
         s.print("</elGamalSignedCiphertext>");
     }
 
     public static ElGamalSignedCiphertext fromXMLsub(Label lbl, Reader r) throws IllegalArgumentException, IOException {
         Util.swallowTag(lbl, r, "elGamalSignedCiphertext");
-        CivitasBigInteger a = null;
+        ECPoint a = null;
         String sa = Util.readSimpleTag(lbl, r, "a");
         if (sa != null && sa.length() > 0) {
-            a = CryptoFactoryC.stringToBigInt(Util.unescapeString(sa));
+            a = CryptoFactoryC.stringToPoint(Util.unescapeString(sa));
         }
 
-        CivitasBigInteger b = null;
+        ECPoint b = null;
         String sb = Util.readSimpleTag(lbl, r, "b");
         if (sb != null && sb.length() > 0) {
-            b = CryptoFactoryC.stringToBigInt(Util.unescapeString(sb));
+            b = CryptoFactoryC.stringToPoint(Util.unescapeString(sb));
         }
 
-        CivitasBigInteger c = null;
+        BigInteger c = null;
         String sc = Util.readSimpleTag(lbl, r, "c");
         if (sc != null && sc.length() > 0) {
-            c = CryptoFactoryC.stringToBigInt(Util.unescapeString(sc));
+            c = CryptoFactoryC.stringToDefaultBigInt(Util.unescapeString(sc));
         }
 
-        CivitasBigInteger d = null;
+        BigInteger d = null;
         String sd = Util.readSimpleTag(lbl, r, "d");
         if (sd != null && sd.length() > 0) {
-            d = CryptoFactoryC.stringToBigInt(Util.unescapeString(sd));
+            d = CryptoFactoryC.stringToDefaultBigInt(Util.unescapeString(sd));
         }
 
         Util.swallowEndTag(lbl, r, "elGamalSignedCiphertext");

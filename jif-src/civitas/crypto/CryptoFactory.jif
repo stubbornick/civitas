@@ -30,7 +30,6 @@ public interface CryptoFactory {
     KeyPair generateKeyPair(int keyLength);
 
     ElGamalParameters generateElGamalParameters();
-    ElGamalParameters generateElGamalParameters(int keyLength, int groupLength);
     ElGamalKeyPair generateElGamalKeyPair(ElGamalParameters params);
     ElGamalKeyPairShare generateKeyPairShare(ElGamalParameters params);
     ElGamalKeyShare constructKeyShare(ElGamalKeyPairShare kps);

@@ -6,8 +6,8 @@
  */
 package civitas.crypto.concrete;
 
+import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.Random;
 
 import civitas.crypto.CryptoError;
 import civitas.util.CivitasBigInteger;
@@ -18,13 +18,13 @@ class CryptoAlgs {
 	protected final static CivitasBigInteger TWO = CivitasBigInteger.valueOf(2);
 
 	// TODO: should we be requesting a specific RNG algorithm in the constructor call?
-	private static Random rng = new SecureRandom();
+	private static SecureRandom rng = new SecureRandom();
 
 	private CryptoAlgs() {
 		// No instantiation allowed
 	}
 
-	public static Random rng() {
+	public static SecureRandom rng() {
 		return rng;
 	}
 
@@ -137,6 +137,21 @@ class CryptoAlgs {
 			r = new CivitasBigInteger(n.bitLength(), rng());
 		} while (r.equals(CivitasBigInteger.ZERO) || r.compareTo(n) >= 0); // while r >= n
 		// The guard is necessary because the CivitasBigInteger constructor returns
+		// a random element from [0..2^|n|-1], which is not distributed
+		// the same as [1..n-1].
+
+		return r;
+	}
+
+	/**
+	 * @return A random element from Z*_n, where n is prime, or equivalently from [1..n-1].
+	 */
+	protected static BigInteger randomElementDefault(BigInteger n) {
+		BigInteger r = null;
+		do {
+			r = new BigInteger(n.bitLength(), rng());
+		} while (r.equals(BigInteger.ZERO) || r.compareTo(n) >= 0); // while r >= n
+		// The guard is necessary because the BigInteger constructor returns
 		// a random element from [0..2^|n|-1], which is not distributed
 		// the same as [1..n-1].
 
