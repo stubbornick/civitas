@@ -342,9 +342,13 @@ public class CryptoFactoryC implements CryptoFactory {
         }
     }
 
+    public ECPoint getInfinityPoint() {
+        return ElGamalParametersC.getDefaultParams().params.getCurve().getInfinity();
+    }
+
     public ElGamalPublicKey combineKeyShares(Label lbl, ElGamalKeyShare[] shares) throws CryptoException {
         if (shares == null) return null;
-        CivitasBigInteger accum = CivitasBigInteger.ONE;
+        ECPoint accum = getInfinityPoint();
         ElGamalParameters params = null;
         for (int i = 0; i < shares.length; i++) {
             ElGamalKeyShare s = shares[i];
@@ -363,7 +367,7 @@ public class CryptoFactoryC implements CryptoFactory {
             }
             // accumulate the keys..
             if (s.pubKey() instanceof ElGamalPublicKeyC) {
-                accum = accum.multiply(((ElGamalPublicKeyC)s.pubKey()).y);
+                accum = accum.add(((ElGamalPublicKeyC)s.pubKey()).y);
             }
         }
         return new ElGamalPublicKeyC(accum, params);
@@ -575,7 +579,7 @@ public class CryptoFactoryC implements CryptoFactory {
             ECPoint a = ps.params.getG().multiply(rr);
             ECPoint b = m.add(k.y.multiply(rr));
 
-            BigInteger c = hash(ps.params.getG().multiply(s), a, b, additionalEnv).mod(ps.params.getN()); // hash of (g^s,g^r,my^r) == (g^s, a, b)
+            BigInteger c = hashPoints(ps.params.getG().multiply(s), a, b, additionalEnv).mod(ps.params.getN()); // hash of (g^s,g^r,my^r) == (g^s, a, b)
             BigInteger d = CivitasBigInteger.modAdd(s, CivitasBigInteger.modMultiply(c, rr, ps.params.getN()), ps.params.getN());
             return new ElGamalSignedCiphertextC(a, b, c, d);
         } catch (ClassCastException e) {
@@ -593,7 +597,7 @@ public class CryptoFactoryC implements CryptoFactory {
             ElGamalSignedCiphertextC cc = (ElGamalSignedCiphertextC)ciphertext;
             // to verify, check that c == h(g^d * a^(-c), a, b)
             ECPoint x = ps.params.getG().multiply(cc.d.mod(ps.params.getN())).add(cc.a.multiply(CivitasBigInteger.modNegate(cc.c, ps.params.getN())));
-            BigInteger v = hash(x, cc.a, cc.b, additionalEnv).mod(ps.params.getN());
+            BigInteger v = hashPoints(x, cc.a, cc.b, additionalEnv).mod(ps.params.getN());
             return cc.c.equals(v);
         } catch (ClassCastException e) {
             throw new CryptoError(e);
@@ -760,15 +764,15 @@ public class CryptoFactoryC implements CryptoFactory {
     }
 
     public ElGamalMsg combineDecryptionShares(Label lbl, ElGamalCiphertext c, ElGamalDecryptionShare[] shares, ElGamalParameters params) throws CryptoException {
-        CivitasBigInteger prod = CivitasBigInteger.ONE;
+        ECPoint prod = getInfinityPoint();
         try {
             ElGamalCiphertextC cipher = (ElGamalCiphertextC)c;
             ElGamalParametersC ps = (ElGamalParametersC)params;
             for (int i = 0; i < shares.length; i++) {
                 ElGamalDecryptionShareC share = (ElGamalDecryptionShareC)shares[i];
-                prod = prod.modMultiply(share.ai, ps.p);
+                prod = prod.add(share.ai);
             }
-            CivitasBigInteger m = cipher.b.modDivide(prod, ps.p);
+            ECPoint m = cipher.b.subtract(prod);
             return new ElGamalMsgC(m);
         }
         catch (RuntimeException e) {
@@ -777,14 +781,14 @@ public class CryptoFactoryC implements CryptoFactory {
     }
 
     public ElGamalCiphertext combinePETShareDecommitments(Label lbl, PETDecommitment[] decs, ElGamalParameters params) throws CryptoException {
-        CivitasBigInteger d = CivitasBigInteger.ONE;
-        CivitasBigInteger e = CivitasBigInteger.ONE;
+        ECPoint d = getInfinityPoint();
+        ECPoint e = getInfinityPoint();
         ElGamalParametersC ps = (ElGamalParametersC) params;
 
         for (int i = 0; i < (decs==null?0:decs.length); i++) {
             PETDecommitmentC decom = (PETDecommitmentC)decs[i];
-            d = d.modMultiply(decom.di, ps.p);
-            e = e.modMultiply(decom.ei, ps.p);
+            d = d.add(decom.di);
+            e = e.add(decom.ei);
         }
         return new ElGamalCiphertextC(d, e);
     }
@@ -793,7 +797,7 @@ public class CryptoFactoryC implements CryptoFactory {
         // Pet result is true if the message == 1
         if (petResult instanceof ElGamalMsgC) {
             ElGamalMsgC m = (ElGamalMsgC)petResult;
-            return CivitasBigInteger.ONE.equals(m.m);
+            return getInfinityPoint().equals(m.m);
         }
         return false;
     }
@@ -808,12 +812,14 @@ public class CryptoFactoryC implements CryptoFactory {
                 ElGamalCiphertextC mc = (ElGamalCiphertextC)c;
                 ElGamalPrivateKeyC priv = (ElGamalPrivateKeyC)keyShare.privKey;
                 ElGamalParametersC params = (ElGamalParametersC)priv.getParams();
-                CivitasBigInteger ai = mc.a.modPow(priv.x, params.p);
-                return new ElGamalDecryptionShareC(ai,
-                                                   ElGamalProofDiscLogEqualityC.constructProof(params,
-                                                                                               mc.a,
-                                                                                               params.g,
-                                                                                               priv.x));
+                ECPoint ai = mc.a.multiply(priv.x);
+                return new ElGamalDecryptionShareC(
+                    ai,
+                    ElGamalProofDiscLogEqualityC.constructProof(params,
+                                                                mc.a,
+                                                                params.params.getG(),
+                                                                priv.x)
+                    );
             }
             catch (RuntimeException e) {
                 if (DEBUG) e.printStackTrace(System.err);

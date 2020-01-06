@@ -8,17 +8,21 @@ package civitas.crypto.concrete;
 
 import java.io.*;
 
+import org.bouncycastle.math.ec.ECPoint;
+
 import jif.lang.Label;
 import jif.lang.LabelUtil;
 import civitas.common.Util;
-import civitas.crypto.*;
-import civitas.util.CivitasBigInteger;
+import civitas.crypto.ElGamalCiphertext;
+import civitas.crypto.ElGamalDecryptionShare;
+import civitas.crypto.ElGamalProofDiscLogEquality;
+import civitas.crypto.ElGamalPublicKey;
 
 public class ElGamalDecryptionShareC implements ElGamalDecryptionShare {
-    public final CivitasBigInteger ai;
+    public final ECPoint ai;
     public final ElGamalProofDiscLogEqualityC proof;
 
-    public ElGamalDecryptionShareC(CivitasBigInteger ai, ElGamalProofDiscLogEqualityC proof) {
+    public ElGamalDecryptionShareC(ECPoint ai, ElGamalProofDiscLogEqualityC proof) {
         this.ai = ai;
         this.proof = proof;
     }
@@ -44,7 +48,7 @@ public class ElGamalDecryptionShareC implements ElGamalDecryptionShare {
                 //    proof.g2 == params.g and
                 //    proof.v == ai
                 //    proof.w == yi == public key and
-                if (proof.g1.equals(cipher.a) && proof.g2.equals(params.g) &&
+                if (proof.g1.equals(cipher.a) && proof.g2.equals(params.params.getG()) &&
                         proof.v.equals(ai) && proof.w.equals(KC.y)) {
                     return proof.verify(params);
                 }
@@ -53,7 +57,7 @@ public class ElGamalDecryptionShareC implements ElGamalDecryptionShare {
                     System.err.println("proof.g1 = " + proof.g1);
                     System.err.println("    mc.a = " + cipher.a);
                     System.err.println("proof.g2 = " + proof.g2);
-                    System.err.println("params.g = " + params.g);
+                    System.err.println("params.G = " + params.params.getG());
                     System.err.println("       v = " + proof.v);
                     System.err.println("      ai = " + ai);
                     System.err.println("    kc.y = " + KC.y);
@@ -83,7 +87,7 @@ public class ElGamalDecryptionShareC implements ElGamalDecryptionShare {
         s.print(OPENING_TAG);
         s.print('>');
         s.print("<ai>");
-        if (ai != null) Util.escapeString(CryptoFactoryC.bigIntToString(ai), lbl, s);
+        if (ai != null) Util.escapeString(CryptoFactoryC.pointToString(ai), lbl, s);
         s.print("</ai>");
         if (proof != null) this.proof.toXML(lbl, s);
         s.print("</");
@@ -95,7 +99,7 @@ public class ElGamalDecryptionShareC implements ElGamalDecryptionShare {
         Util.swallowTag(lbl, r, OPENING_TAG);
 
         String sa = Util.unescapeString(Util.readSimpleTag(lbl, r, "ai"));
-        CivitasBigInteger ai = CryptoFactoryC.stringToBigInt(sa);
+        ECPoint ai = CryptoFactoryC.stringToPoint(sa);
 
         ElGamalProofDiscLogEqualityC proof = (ElGamalProofDiscLogEqualityC)CryptoFactoryC.singleton().elGamalProofDiscLogEqualityFromXML(lbl, r);
 
